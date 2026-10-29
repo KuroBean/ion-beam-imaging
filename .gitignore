@@ -1,0 +1,5 @@
+# COMSOL model files (too large for GitHub; stored outside git for now)
+*.mph
+*.mph.lock
+*.lock
+*.recovery
