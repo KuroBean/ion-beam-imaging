@@ -1,0 +1,31 @@
+# Which simulation backend to use, worker settings, mock simulator settings.
+
+backend: mock                # mock | queue
+transport: local             # local | ssh (queue backend only; ssh is a stub in Phase 1)
+poll_interval_s: 2           # QueueBackend polling interval
+job_timeout_s: 1800          # per-job timeout (2D ~30 s, refined 3D ~8 min on the WorkSpace)
+
+worker:
+  count: 1                   # COMSOL workers on this machine
+  restart_after_jobs: 20     # restart the COMSOL client after this many jobs
+
+ssh:                         # never put hostnames or credentials here
+  host_env_var: IONOPT_SSH_HOST            # env var holding an alias from ~/.ssh/config
+  remote_queue_dir_env_var: IONOPT_SSH_QUEUE_DIR
+
+mock:                        # analytic toy optics for developing tools without COMSOL (plan 9.4)
+  seed: 0
+  f0: 0.02                   # r_land = z_mcp * tan(theta) * f0 + chroma * (KE0 - E0)
+  lens_channel: LV2          # supply channel that controls the chromatic term
+  lens_opt_V: 85.0           # known optimum of the lens channel
+  lens_scale_V: 50.0
+  mesh_opt_V: -200.0         # known optimum of HV4 (mesh)
+  mesh_scale_V: 500.0
+  chroma_min_m_per_eV: 1.0e-5    # chromatic coefficient at the optimum
+  chroma_coeff_m_per_eV: 2.0e-4  # growth of the chromatic coefficient away from the optimum
+  fold_theta_deg: null       # if set, r(theta) folds back above this angle (crossover test)
+  noise_r_um: 0.0            # Gaussian noise on landing radius
+  energy_noise_eV: 0.0       # Gaussian noise on landing kinetic energy
+  failure_rate: 0.0          # random injected failures (0..1)
+  timeout_rate: 0.0          # random injected timeouts (0..1)
+  missing_file_rate: 0.0     # random runs missing ions_final.csv (0..1)

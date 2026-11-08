@@ -1,0 +1,13 @@
+# Paths. Relative paths are resolved against the repository root (the folder that
+# contains config/). Nothing in the code hard-codes a path; change it here.
+
+comsol_root: "C:/Program Files/COMSOL/COMSOL55/Multiphysics"   # COMSOL install (bundled JRE lives under java/win64/jre/bin)
+
+models:                      # base models, READ ONLY for all code
+  2d: lens8_axisym.mph                     # TBD move to models/ after the electrode rework
+  3d: lens8newMCP_ks_v3_touchup.mph        # TBD move to models/ after the electrode rework
+
+queue_dir: queue             # pending/ running/ done/ failed/ job folders (QueueBackend + worker)
+results_dir: results         # one folder per job_id
+db_path: results/runlog.sqlite         # run log (jobs, metrics, studies, promotions)
+optuna_db_path: results/optuna.sqlite  # Optuna study storage (resumable studies)

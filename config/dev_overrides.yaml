@@ -1,0 +1,48 @@
+﻿# PLACEHOLDER values for developing and testing the tools with the MOCK backend only.
+# These are NOT physical decisions. Use with:  ionopt --overrides config/dev_overrides.yaml ...
+# Every key here must already exist in the main config files (typos are rejected).
+
+spec:
+  launch:
+    n_theta: 26
+    n_E: 3
+    n_phi: 8
+    E0_eV: 2.0
+    launch_offset_um: 0.0
+    t_end_us: 100
+  detector:
+    sigma_mcp_um: 80
+    mesh_open_fraction: 0.8
+  requirements:
+    eta_min: 0.3
+    impact_threshold_eV_per_charge: 1000
+  tolerances:
+    energy_conservation_rel: 0.01
+    potential_match_V: 1.0
+    monotonic_tol_um: 1.0
+    convergence_rel: 0.05
+    fate_position_tol_um: 50
+
+constraints:
+  chamber_setups:
+    1:
+      z_mcp_mm: [145, 145]
+      mesh_gap_mm: [12.7, 12.7]
+      electrode_z_mm: [3, 100]
+  mesh:
+    min_gap_to_mcp_mm: 5
+  electrodes:
+    outer_diameter_mm: 65
+    aperture_diameter_mm: 10
+    thickness_mm: 2
+    min_gap_mm: 2
+    e1_z_mm: [3, 10]
+  supplies:
+    low_voltage:
+      range_V: [-300, 300]
+    mcp_front_V: [-10000, -2000]
+    mesh_V: [-1000, 500]
+    mcp_back_offset_V: 1000
+    phosphor_offset_V: 3000
+  electrical:
+    max_field_kV_per_mm: 1.0

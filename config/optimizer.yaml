@@ -1,0 +1,8 @@
+# Optimizer settings (plan 9.9).
+
+sampler: auto                # auto (GP if PyTorch is installed, else TPE) | gp | tpe
+seed: 0
+n_startup_trials: 10         # random trials before the model-based sampler takes over
+default_budget: 50           # number of solves per study when --budget is not given
+nonevaluable_score_deg: 90   # objective value reported when dtheta cannot be evaluated (run still marked infeasible)
+write_plots: false           # write diagnostic plots for every optimizer job

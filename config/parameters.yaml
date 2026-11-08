@@ -1,0 +1,64 @@
+# Parameter registry (plan section 7.1). Every COMSOL parameter the code may set is
+# declared here; nothing outside the registry gets set. Bounds are NOT stored here,
+# they come from constraints.yaml.
+#
+# Fields: name (code name), comsol_name (global parameter name in BOTH models; null =
+# TBD), type (float | int | bool, default float), unit (unit the value is written to
+# COMSOL with), allowed (optional list of allowed values), per_electrode (true =
+# template expanded for k = 1..constraints.electrodes.count; use {k} in name and
+# comsol_name).
+#
+# comsol_name values are filled after the electrode rework + introspection (task 8).
+# Current 2-lens 2D model has: cfg, mcp_z (derived), V_lens1, V_lens2, V_mcp_front,
+# V_mcp_back, V_screen; the 3D model has only cfg as a parameter (voltages are set
+# directly on physics nodes).
+
+parameters:
+  - name: cfg
+    comsol_name: cfg           # confirmed in both current models
+    type: int
+    allowed: [1, 2, 3]
+    description: "chamber setup: 1 = chamber 1 (tube), 2 = chamber 2 (sphere), 3 = both joined"
+  - name: z_mcp
+    comsol_name: null          # TBD (current models: mcp_z is derived; free only for cfg 1 via z_mcp_c1)
+    unit: mm
+    description: MCP front face position
+  - name: mesh_gap
+    comsol_name: null          # TBD (current models hard-code 12.7 mm)
+    unit: mm
+    description: mesh plane distance in front of the MCP face (mesh rides on the MCP holder)
+  - name: v_tip
+    comsol_name: null          # TBD (needle is grounded in the current models)
+    unit: V
+    description: tip potential
+  - name: v_mesh
+    comsol_name: null          # TBD (2D model: V_screen)
+    unit: V
+    description: mesh potential (HV4)
+  - name: v_mcp_front
+    comsol_name: null          # TBD (2D model: V_mcp_front)
+    unit: V
+    description: MCP front potential (HV1)
+  - name: v_mcp_back
+    comsol_name: null          # TBD (2D model: V_mcp_back); only if the model includes it
+    unit: V
+    description: MCP back potential (HV2), from mcp_back_offset_V
+  - name: v_phosphor
+    comsol_name: null          # TBD; only if the model includes it
+    unit: V
+    description: phosphor potential (HV3), from phosphor_offset_V
+  - name: use_e{k}
+    comsol_name: null          # TBD
+    type: bool
+    per_electrode: true
+    description: electrode k present in the geometry (E1 always present)
+  - name: z_e{k}
+    comsol_name: null          # TBD
+    unit: mm
+    per_electrode: true
+    description: axial position of electrode k (centre of disk)
+  - name: v_e{k}
+    comsol_name: null          # TBD
+    unit: V
+    per_electrode: true
+    description: potential of electrode k, set from the wiring map

@@ -1,0 +1,22 @@
+# Fixed configuration list for baseline B0 (plan 9.10). The author writes the real
+# hand-designed templates; the entries below are EXAMPLES taken from the plan.
+# wiring: tip and every used electrode -> LV1..LV4 or GND. HV roles are fixed.
+
+configurations:
+  - config_id: example_extractor_only
+    description: "EXAMPLE: extractor only, positive tip"
+    cfg: 1
+    electrodes_used: [1]
+    wiring: {tip: LV1, e1: GND}
+
+  - config_id: example_einzel
+    description: "EXAMPLE: extractor + Einzel lens (E2, E4 grounded, E3 on LV2), positive tip"
+    cfg: 1
+    electrodes_used: [1, 2, 3, 4]
+    wiring: {tip: LV1, e1: GND, e2: GND, e3: LV2, e4: GND}
+
+  - config_id: example_einzel_accel
+    description: "EXAMPLE (plan 7.2): Einzel lens + accelerating stage"
+    cfg: 1
+    electrodes_used: [1, 2, 3, 4, 7, 8]
+    wiring: {tip: LV1, e1: GND, e2: GND, e3: LV2, e4: GND, e7: LV3, e8: LV3}

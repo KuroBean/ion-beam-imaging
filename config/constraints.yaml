@@ -1,0 +1,47 @@
+# Chambers, positions, electrodes and supplies (plan section 12). Used for optimizer
+# bounds and job validation. Positions are along z from the model tip apex (mm).
+# null = TBD. Ask the author before changing values here.
+
+chamber_setups:              # 2 physical chambers, 3 setups (same numbering as the cfg parameter)
+  1:
+    name: chamber 1 alone (tube)
+    z_mcp_mm: [null, null]       # TBD allowed range of the MCP front face
+    mesh_gap_mm: [null, null]    # TBD, mesh distance in front of the MCP face
+    electrode_z_mm: [null, null] # TBD allowed range for E1..E9 centres
+  2:
+    name: chamber 2 alone (sphere)
+    z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
+    mesh_gap_mm: [null, null]
+    electrode_z_mm: [null, null]
+  3:
+    name: chambers 1 and 2 joined
+    z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
+    mesh_gap_mm: [null, null]
+    electrode_z_mm: [null, null]
+
+mesh:
+  min_gap_to_mcp_mm: null    # TBD, lower bound on mesh_gap (current model 12.7)
+
+electrodes:
+  count: 9                   # identical disks E1..E9, E1 = extractor
+  outer_diameter_mm: null    # TBD, from the electrode STEP file
+  aperture_diameter_mm: null # TBD
+  thickness_mm: null         # TBD
+  min_gap_mm: null           # TBD, free gap between adjacent disks (face to face)
+  e1_z_mm: [null, null]      # TBD, allowed extractor centre position relative to the tip
+
+supplies:
+  low_voltage:
+    channels: [LV1, LV2, LV3, LV4]
+    range_V: [null, null]    # TBD, +/- a few hundred V
+    connectable: [tip, e1, e2, e3, e4, e5, e6, e7, e8, e9]   # each uses an LV channel or GND
+  high_voltage:
+    range_V: [-10000, 10000]
+    roles: {HV1: mcp_front, HV2: mcp_back, HV3: phosphor, HV4: mesh}   # fixed, one to one
+  mcp_front_V: [null, null]  # TBD, upper limit also set by the velocity requirement
+  mesh_V: [null, null]       # TBD
+  mcp_back_offset_V: null    # TBD, back = front + offset (detector operation)
+  phosphor_offset_V: null    # TBD, phosphor = back + offset
+
+electrical:
+  max_field_kV_per_mm: null  # TBD, arcing limit between adjacent electrodes

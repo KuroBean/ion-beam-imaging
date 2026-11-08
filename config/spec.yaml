@@ -1,0 +1,45 @@
+# Launch assumptions, detector, thresholds and tolerances (plan section 10).
+# null = TBD: loading succeeds, but any step that needs the value stops with an error
+# naming the key. Ask the author before changing values here.
+
+launch:
+  hwhm_deg: 20               # half width at half max of dI/dOmega (Gaussian in theta)
+  theta_max_deg: 50          # largest launch angle
+  n_theta: null              # TBD, number of theta grid points incl. 0 (e.g. 41 for search)
+  n_E: null                  # TBD, number of energy points across the spread (e.g. 3)
+  n_phi: null                # TBD, 3D only, number of azimuth points (e.g. 8)
+  E0_eV: null                # TBD, mean initial kinetic energy
+  dE_eV: 2                   # full width of the uniform energy spread (1 to 2)
+  charge: 1                  # signed charge number; +1 for Na+, -1 would be Cl-
+  mass_Da: 22.99             # Na+ (NaCl solutions first); 175.1 for protonated arginine later
+  launch_offset_um: null     # TBD, distance of the launch point from the model tip apex (along +z)
+  axis_offset_nm: 1          # 2D release: start this far off the axis (verified: r = 1e-6 mm)
+  t_end_us: null             # TBD, particle tracing end time (Na+ ~30 us vs ~200 us at 1024 Da)
+  convergence_ion_factor: 2  # ion_level=convergence multiplies n_theta by this
+
+detector:
+  model: Hamamatsu F2225-21P
+  mcp_active_diameter_mm: 40 # plate diameter
+  sigma_mcp_um: null         # TBD, MCP + phosphor + camera resolution (1 sigma)
+  mesh_opening_diameter_mm: 10   # TBD: current model has 11
+  mesh_open_fraction: null   # TBD, wire transmission (0..1)
+
+requirements:
+  eta_min: null              # TBD, minimum collection efficiency (0..1)
+  impact_threshold_eV_per_charge: null   # TBD (literature review); set this OR impact_threshold_mps
+  impact_threshold_mps: null             # TBD, alternative: minimum impact speed of the threshold species
+  threshold_species_mass_Da: null        # TBD, heaviest species of interest (Na+ 22.99, Na2Cl+ ~81, hydrated Na+?); null = launch mass
+  frac_fast_min: 0.90        # minimum weighted fraction of MCP ions above the threshold
+  optional_constraints: {}   # extra constraints on spot statistics, e.g. {min_fill_fraction: 0.5, max_rms_axis_mm: 8}
+
+tolerances:
+  energy_conservation_rel: null   # TBD, max |KE_land - (KE0 + q(V_start - V_end))| / expected
+  potential_match_V: null         # TBD, max |exported electrode V - assigned V|
+  monotonic_tol_um: null          # TBD, r(theta) may decrease by at most this between grid points
+  convergence_rel: null           # TBD, max relative change of dtheta and eta in a convergence rerun
+  fate_position_tol_um: null      # TBD, distance tolerance when matching final positions to surfaces
+  eval_range_landed_frac: 0.99    # theta is in the evaluation range while this fraction of its weight lands on the active MCP
+
+analysis:
+  drdtheta_method: central   # central | spline
+  spline_smoothing: null     # smoothing factor s for scipy UnivariateSpline (spline method only; null = interpolate)
