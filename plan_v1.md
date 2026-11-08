@@ -632,15 +632,15 @@ for agent proposals.
 
 ## 13. Task order for Claude Code
 
-- [ ] 1. Repo skeleton, config system (section 4) with validation, overrides, snapshots
+- [x] 1. Repo skeleton, config system (section 4) with validation, overrides, snapshots
          and `config-check`; schemas; pytest setup.
-- [ ] 2. launch.py with tests.
-- [ ] 3. electrodes.py (wiring validation and expansion) with tests.
-- [ ] 4. MockBackend (with failure injection) and QueueBackend + LocalFSTransport,
+- [x] 2. launch.py with tests.
+- [x] 3. electrodes.py (wiring validation and expansion) with tests.
+- [x] 4. MockBackend (with failure injection) and QueueBackend + LocalFSTransport,
          tested with a fake worker that uses the mock.
-- [ ] 5. checker.py (derived table, spot statistics, metrics, recheck) with analytic tests.
-- [ ] 6. runlog.py and plots.py.
-- [ ] 7. optimize.py tested on the mock (must find the known optimum).
+- [x] 5. checker.py (derived table, spot statistics, metrics, recheck) with analytic tests.
+- [x] 6. runlog.py and plots.py.
+- [x] 7. optimize.py tested on the mock (must find the known optimum).
 - [ ] 8. COMSOL introspection script: print the model tree, parameters, selections,
          studies, release and export nodes, and electrode geometry features for both models.
          Record findings in docs/comsol_api_notes.md. (Requires COMSOL; author runs or
