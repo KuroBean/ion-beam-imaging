@@ -3,3 +3,19 @@
 *.mph.lock
 *.lock
 *.recovery
+
+# Python virtual environment
+.venv/
+
+# Script output
+logs/
+__pycache__/
+
+# ionopt run artifacts
+results/
+queue/
+*.sqlite
+*.sqlite-journal
+models/
+.pytest_cache/
+*.egg-info/
