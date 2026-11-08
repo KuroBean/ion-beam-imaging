@@ -181,6 +181,15 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     final = final.sample(frac=1, random_state=int(rng.integers(1 << 31)))  # COMSOL order is not ion order
     if inject != "missing_file":
         final.to_csv(out_dir / FILES["ions_final"], index=False)
+    # toy trajectories (straight lines, phi = 0 ions only) so trajectory plots can be developed
+    sel = np.where(ions["phi_deg"].to_numpy() == 0)[0]
+    s = np.linspace(0, 1, 12)
+    pd.DataFrame({
+        "ion_id": np.repeat(ions["ion_id"].to_numpy()[sel], len(s)),
+        "t_s": (tof[sel, None] * s).ravel(),
+        "x_m": (x[sel, None] * s).ravel(), "y_m": (y[sel, None] * s).ravel(),
+        "z_m": (z0 + (z_end[sel, None] - z0) * s).ravel(),
+    }).to_csv(out_dir / FILES["traj"], index=False)
 
     _write_fields(job, cfg, geom, out_dir)
     ep = expected_potentials(job, cfg)

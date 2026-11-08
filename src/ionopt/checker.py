@@ -20,7 +20,7 @@ from .config import Config, ConfigError, TBDError
 from .electrodes import expected_potentials
 from .results import load_job, read_bundle
 from .schemas import FATES, FILES, REQUIRED_RAW, JobSpec, Metrics
-from .utils import read_json, write_json
+from .utils import clean, read_json, write_json
 
 SURFACE = {"mcp_active": "sel_mcp_face", "mcp_outside": "sel_mcp_face", "mesh_frame": "sel_mesh_frame",
            "wall": "sel_walls", "in_flight": "", "missing": ""}
@@ -342,7 +342,7 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
             flags.append(f"optional constraint {key} = {limit} not met ({stat} = {v})")
     score = mp["score_dtheta_deg"]
     feas = {
-        "evaluable": score is not None,
+        "evaluable": score is not None and math.isfinite(score),
         "monotonic": mp["monotonic"],
         "eta_ok": eta >= eta_min,
         "fast_ok": frac_fast >= req.frac_fast_min,
@@ -358,13 +358,13 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
     counts = {f: int((dv["fate"] == f).sum()) for f in FATES}
     if n_missing:
         counts["missing"] = n_missing
-    m = Metrics(
+    m = Metrics.model_validate(clean(dict(
         job_id=job.job_id, spec_hash=cfg.spec_hash(), valid=valid, feasible=feasible, score=score,
         flags=flags, validity=validity, fates=fates, fate_counts=counts, spot=spot, mapping=mp,
         requirements={"eta": eta, "eta_min": eta_min, "mesh_open_fraction": open_frac, "frac_fast": frac_fast,
                       "frac_fast_min": req.frac_fast_min, "max_energy_error_rel": max_err, **feas},
         n_launched=int(len(launch)), fidelity=job.fidelity,
-    )
+    )))
     return _finish(d, m, dv, write)
 
 

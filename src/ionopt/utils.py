@@ -40,12 +40,12 @@ def git_commit(repo: Path | str | None = None) -> str | None:
         return None
 
 
-def _clean(o: Any) -> Any:
+def clean(o: Any) -> Any:
     """Make data JSON-safe: NaN/inf -> None, numpy scalars -> python."""
     if isinstance(o, dict):
-        return {str(k): _clean(v) for k, v in o.items()}
+        return {str(k): clean(v) for k, v in o.items()}
     if isinstance(o, (list, tuple)):
-        return [_clean(v) for v in o]
+        return [clean(v) for v in o]
     if hasattr(o, "item") and not isinstance(o, (str, bytes)):
         try:
             o = o.item()
@@ -57,7 +57,7 @@ def _clean(o: Any) -> Any:
 
 
 def write_json(path: Path | str, data: Any) -> None:
-    Path(path).write_text(json.dumps(_clean(data), indent=2), encoding="utf-8")
+    Path(path).write_text(json.dumps(clean(data), indent=2), encoding="utf-8")
 
 
 def read_json(path: Path | str) -> Any:
