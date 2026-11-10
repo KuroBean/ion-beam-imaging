@@ -1,0 +1,35 @@
+﻿COMSOL 5.5 started in 9.4 s
+Loaded lens8newMCP_ks_v4_lens_voltages.mph in 10.2 s
+== size nodes ==
+  size1        'Size 1 needle' dim=[3] n=2 named='geom1_sel1' custom=off hauto=4 hmax=66.5 hmin=8.32 hgrad=1.45 hcurve=0.5 hnarrow=0.6
+  size2        'Size 2 spherical chamber' dim=[3] n=11 named='geom1_sel9_dom' custom=off hauto=4 hmax=66.5 hmin=8.32 hgrad=1.45 hcurve=0.5 hnarrow=0.6
+  size3        'Size 3 boundary cyl' dim=[2] n=54 named='' custom=off hauto=5 hmax=83.2 hmin=15 hgrad=1.5 hcurve=0.6 hnarrow=0.5
+  size4        'Size 4 tube chamber' dim=[2] n=68 named='geom1_sel8_bnd' custom=off hauto=4 hmax=66.5 hmin=8.32 hgrad=1.45 hcurve=0.5 hnarrow=0.6
+  size5        'Size 5 lenses' dim=[3] n=18 named='geom1_uni6_dom' custom=off hauto=3 hmax=45.7 hmin=3.33 hgrad=1.4 hcurve=0.4 hnarrow=0.7
+  size6        'Size 6 mcp holder' dim=[3] n=7 named='geom1_sel7' custom=off hauto=4 hmax=66.5 hmin=8.32 hgrad=1.45 hcurve=0.5 hnarrow=0.6
+  size7        'Size 7 mesh cross' dim=[3] n=14 named='geom1_sel6' custom=off hauto=5 hmax=83.2 hmin=15 hgrad=1.5 hcurve=0.6 hnarrow=0.5
+  size_ap      'Beam region: lens apertures' dim=[2] n=56 named='sel_apertures' custom=on hauto=5 hmax=0.6 hgrad=1.3
+  size_needle  'Beam region: needle' dim=[2] n=10 named='adj5' custom=on hauto=5 hmax=0.15 hgrad=1.3
+  global size: hauto=5 custom=off hmax=83.2 hmin=15 hgrad=1.5
+
+total 3671997 tets
+vacuum domain = 2
+  lens assembly (incl. rods, bracket)      1480578 tets  (18 domains, median h 0.65 mm)
+  chamber 2 sphere                          166971 tets  (11 domains, median h 5.10 mm)
+  needle                                     48821 tets  (2 domains, median h 0.16 mm)
+  MCP + surround + ring                       9777 tets  (7 domains, median h 3.74 mm)
+  screen cross                                4890 tets  (14 domains, median h 1.04 mm)
+  screen mesh disc                            1324 tets  (6 domains, median h 0.49 mm)
+  other solids (chamber 1, posts, ...)         951 tets  (median h 2.23 mm)
+
+vacuum: 1959469 tets
+  needle shank/cone (z < tip, r < 5)                      128671  median h   0.21 mm  min h 0.087
+  tip..assembly end, r < 7 (beam)                         140016  median h   0.73 mm  min h 0.113
+  tip..assembly end, 7 <= r < 33 (inside electrodes)     1167174  median h   0.69 mm  min h 0.255
+  tip..assembly end, r >= 33 (outside electrodes)         146057  median h   2.20 mm  min h 0.459
+  drift, assembly end..MCP-20, r < 20                      17693  median h   1.27 mm  min h 0.475
+  drift, assembly end..MCP-20, r >= 20                    175962  median h   6.69 mm  min h 0.188
+  MCP/screen region MCP-20..MCP+20                         32331  median h   5.30 mm  min h 0.339
+  behind MCP (z > MCP+20)                                 132139  median h   8.08 mm  min h 0.241
+  before needle (z < tip, r >= 5)                          19426  median h  10.33 mm  min h 1.424
+  (of these) r > 102 mm, outside chamber 1 flanges        206328  median h   8.20 mm

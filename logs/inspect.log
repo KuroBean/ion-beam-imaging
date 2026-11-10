@@ -1,0 +1,143 @@
+COMSOL 5.5 started in 12.3 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 11.0 s
+
+== Parameters ==
+  cfg            = 3                                                       -> [3. 3. 3. ... 3. 3. 3.]  
+  tip_z          = 105[mm]                                                 -> [105. 105. 105. ... 105. 105. 105.]  z coordinate of tip where ions get released
+  tip_base_z     = 65[mm]                                                  -> [65. 65. 65. ... 65. 65. 65.]  z coord of tip base (for reference measurements)
+  z_c2_center    = 215.9[mm]                                               -> [215.9 215.9 215.9 ... 215.9 215.9 215.9]  
+  L_c1           = 300[mm]                                                 -> [300. 300. 300. ... 300. 300. 300.]  
+  z_c2           = if(cfg==3,L_c1,0[mm])                                   -> [300. 300. 300. ... 300. 300. 300.]  
+  z_mcp_c1       = 250[mm]                                                 -> [250. 250. 250. ... 250. 250. 250.]  
+  mcp_z          = if(cfg==1,z_mcp_c1, if(cfg==2, z_c2_center, z_c2_center+L_c1)) -> [515.9 515.9 515.9 ... 515.9 515.9 515.9]  z coord of mcp face
+  L_dom          = if(cfg==3,2*z_c2_center+L_c1+0.1[m],L_c1+0.1[m])        -> [831.8 831.8 831.8 ... 831.8 831.8 831.8]  
+
+== Geometry features ==
+  if1          If                     If need spherical chamber 2
+  imp7         Import                 Import Chamber 2  file=embedded:///sphere chamber 10 in flange at 7 in.STEP  embedded=full3d
+  uni4         Union                  Chamber 2 Union
+  if3          If                     If 3
+  del3         Delete                 Delete Entities 3
+  endif3       EndIf                  End If 3
+  sel9         ExplicitSelection      Spherical Chamber 2
+  rt1          RigidTransform         rotate chamber 2
+  wp4          WorkPlane              chamber 2 input flange
+  uni5         Union                  add center flange point to chamber 2
+  mov6         Move                   Move Chamber 2 to position
+  wp5          WorkPlane              side flange plane for measuring
+  endif1       EndIf                  End spherical chamber
+  if2          If                     If tube chamber
+  imp4         Import                 Import Chamber 1 and rails  file=embedded:///tube chamber.step  embedded=full3d
+  sel8         ExplicitSelection      Tube Chamber 1
+  rot1         Rotate                 Rotate Chamber 1  [disabled]
+  wp3          WorkPlane              input plane chamber 1
+  mov1         Move                   Move Chamber 1
+  sel10        ExplicitSelection      meshing issue flange
+  del2         Delete                 Delete flange w/ meshing issue
+  endif2       EndIf                  End If 2
+  cyl2         Cylinder               Needle Tube
+  cone1        Cone                   Needle Cone
+  sel1         ExplicitSelection      dom_needle
+  cyl5         Cylinder               Lens Cylinder 1
+  cyl6         Cylinder               Lens Cylinder 2
+  dif2         Difference             Lens Difference 1
+  cyl7         Cylinder               Lens Cylinder 3
+  cyl8         Cylinder               Lens Cylinder 4
+  dif3         Difference             Lens Difference 2
+  dif4         Difference             Lens Difference 3
+  cyl9         Cylinder               Lens Cylinder 5
+  cyl10        Cylinder               Lens Cylinder 6
+  dif5         Difference             Lens Difference 4
+  uni1         Union                  Lens Union 1
+  boxsel1      BoxSelection           sel_lens_1
+  copy1        Copy                   Lens Copy 1
+  sel2         ExplicitSelection      dom_lens_2
+  mov2         Move                   Move Lens and Needles 1
+  imp5         Import                 Import Ultem MCP Holder 5  [disabled]  file=C:\Users\dvin\Downloads\mcp holder v2 STP.STEP  embedded=full3d
+  mov3         Move                   Move MCP Holder 3  [disabled]
+  imp6         Import                 import MCP model, do later  file=embedded:///mcp and in plane holder.STEP  embedded=full3d
+  wp1          WorkPlane              mcp front face
+  mov5         Move                   Move mcp
+  cyl16        Cylinder               MCP Cylinder 16  [disabled]
+  cyl17        Cylinder               MCP Cylinder 17  [disabled]
+  cyl18        Cylinder               MCP Cylinder 18  [disabled]
+  uni2         Union                  MCP Union 2  [disabled]
+  dif7         Difference             MCP Difference 7  [disabled]
+  mov4         Move                   MCP Move 4  [disabled]
+  sel3         ExplicitSelection      sel_mcp_front
+  sel4         ExplicitSelection      sel_mcp_back
+  sel7         ExplicitSelection      dom_mcp_and_holder
+  cyl19        Cylinder               Fix MCP Holder Intefernce Cylinder 19
+  arr3         Array                  Array Four Posts 3
+  dif8         Difference             Difference MCP Holder and Trapeze 8
+  cyl20        Cylinder               Test Mesh Screen Cylinder 20  [disabled]
+  wp2          WorkPlane              mcp post base
+  cyl21        Cylinder               Cylinder Screen Post 21
+  arr4         Array                  Post Array 4
+  blk1         Block                  Cross Block 1
+  blk2         Block                  Cross Block 2
+  uni3         Union                  Cross Union 3
+  cyl22        Cylinder               Cross Cylinder Hole 22
+  dif9         Difference             Cross Difference 9
+  cyl23        Cylinder               Mesh Disc Cylinder 23
+  sel5         ExplicitSelection      dom_mesh
+  sel6         ExplicitSelection      dom_mesh_cross
+  sph1         Sphere                 Sphere 1  [disabled]
+  cyl4         Cylinder               Full Boundary Cylinder
+  fin          Finalize               Form Union
+  geometry: 44 domains, 1521 boundaries
+
+== Physics ==
+  es: Electrostatics
+     ccn1       ChargeConservation     Charge Conservation 1
+     zc1        ZeroCharge             Zero Charge 1
+     init1      init                   Initial Values 1
+     gnd1       Ground                 ground chamber 1
+     gnd3       Ground                 Ground Chamber 2
+     gnd2       Ground                 Ground needle
+     pot3       ElectricPotential      Lens 1 Electric Potential
+     pot4       ElectricPotential      Lens 2 Electric Potential
+     pot5       ElectricPotential      MCP Front Electric Potential
+     pot6       ElectricPotential      MCP Back Electric Potential
+     pot7       ElectricPotential      Screen Mesh Cross Electric Potential
+     pot8       ElectricPotential      Screen Mesh Electric Potential 1
+     gnd4       Ground                 Ground 4
+  cpt: Charged Particle Tracing
+     wall1      Wall                   Wall 1
+     pp1        ParticleProperties     Particle Properties 1
+     ef1        ElectricForce          Electric Force 1
+     pbeam1     ParticleBeam           Particle Beam 1
+     wall2      Wall                   Lens Walls 1
+     wall4      Wall                   Lens Walls 2
+     wall5      Wall                   MCP and Holder Wall
+     wall6      Wall                   Mesh Holder
+     wall7      Wall                   Chamber 1 wall
+     wall8      Wall                   Chamber 2 wall
+
+== Mesh ==
+  mesh1: 1686179 elements, 306338 vertices
+
+== Studies ==
+  std1: Study 1
+     stat: Stationary  activate=['es', 'on', 'cpt', 'off', 'frame:spatial1', 'on', 'frame:material1', 'on']
+  std2: Study 2
+     time: Transient  tlist=['0', '5.0E-7', '1.0E-6', '1.5E-6', '2.0E-6', '2.4999999999999998E-6', '3.0E-6', '3.5E-6', '4.0E-6', '4.5E-6', '4.9999999999999996E-6', '5.5E-6', '6.0E-6', '6.5E-6', '7.0E-6', '7.499999999999999E-6', '8.0E-6', '8.5E-6', '9.0E-6', '9.499999999999999E-6', '9.999999999999999E-6', '1.05E-5', '1.1E-5', '1.15E-5', '1.2E-5', '1.2499999999999999E-5', '1.3E-5', '1.35E-5', '1.4E-5', '1.45E-5', '1.4999999999999999E-5', '1.55E-5', '1.6E-5', '1.6499999999999998E-5', '1.7E-5', '1.75E-5', '1.8E-5', '1.85E-5', '1.8999999999999998E-5', '1.95E-5', '1.9999999999999998E-5', '2.05E-5', '2.1E-5', '2.1499999999999997E-5', '2.2E-5', '2.2499999999999998E-5', '2.3E-5', '2.35E-5', '2.4E-5', '2.45E-5', '2.4999999999999998E-5', '2.55E-5', '2.6E-5', '2.65E-5', '2.7E-5', '2.7499999999999998E-5', '2.8E-5', '2.8499999999999998E-5', '2.9E-5', '2.95E-5', '2.9999999999999997E-5', '3.05E-5', '3.1E-5', '3.15E-5', '3.2E-5', '3.25E-5', '3.2999999999999996E-5', '3.35E-5', '3.4E-5', '3.45E-5', '3.5E-5', '3.5499999999999996E-5', '3.6E-5', '3.65E-5', '3.7E-5', '3.75E-5', '3.7999999999999995E-5', '3.85E-5', '3.9E-5', '3.95E-5', '3.9999999999999996E-5', '4.0499999999999995E-5', '4.1E-5', '4.15E-5', '4.2E-5', '4.2499999999999996E-5', '4.2999999999999995E-5', '4.35E-5', '4.4E-5', '4.45E-5', '4.4999999999999996E-5', '4.5499999999999995E-5', '4.6E-5', '4.65E-5', '4.7E-5', '4.7499999999999996E-5', '4.8E-5', '4.85E-5', '4.9E-5', '4.95E-5', '4.9999999999999996E-5', '5.05E-5', '5.1E-5', '5.15E-5', '5.2E-5', '5.2499999999999995E-5', '5.3E-5', '5.35E-5', '5.4E-5', '5.4499999999999997E-5', '5.4999999999999995E-5', '5.55E-5', '5.6E-5', '5.65E-5', '5.6999999999999996E-5', '5.7499999999999995E-5', '5.8E-5', '5.85E-5', '5.9E-5', '5.9499999999999996E-5', '5.9999999999999995E-5', '6.05E-5', '6.1E-5', '6.149999999999999E-5', '6.2E-5', '6.25E-5', '6.3E-5', '6.35E-5', '6.4E-5', '6.45E-5', '6.5E-5', '6.549999999999999E-5', '6.599999999999999E-5', '6.65E-5', '6.7E-5', '6.75E-5', '6.8E-5', '6.85E-5', '6.9E-5', '6.95E-5', '7.0E-5', '7.049999999999999E-5', '7.099999999999999E-5', '7.15E-5', '7.2E-5', '7.25E-5', '7.3E-5', '7.35E-5', '7.4E-5', '7.45E-5', '7.5E-5', '7.549999999999999E-5', '7.599999999999999E-5', '7.65E-5', '7.7E-5', '7.75E-5', '7.8E-5', '7.85E-5', '7.9E-5', '7.95E-5', '7.999999999999999E-5', '8.049999999999999E-5', '8.099999999999999E-5', '8.15E-5', '8.2E-5', '8.25E-5', '8.3E-5', '8.35E-5', '8.4E-5', '8.45E-5', '8.499999999999999E-5', '8.549999999999999E-5', '8.599999999999999E-5', '8.65E-5', '8.7E-5', '8.75E-5', '8.8E-5', '8.85E-5', '8.9E-5', '8.95E-5', '8.999999999999999E-5', '9.049999999999999E-5', '9.099999999999999E-5', '9.15E-5', '9.2E-5', '9.25E-5', '9.3E-5', '9.35E-5', '9.4E-5', '9.449999999999999E-5', '9.499999999999999E-5', '9.549999999999999E-5', '9.6E-5', '9.65E-5', '9.7E-5', '9.75E-5', '9.8E-5', '9.85E-5', '9.9E-5', '9.949999999999999E-5', '9.999999999999999E-5', '1.0049999999999999E-4', '1.01E-4', '1.015E-4', '1.02E-4', '1.025E-4', '1.03E-4', '1.035E-4', '1.04E-4', '1.0449999999999999E-4', '1.0499999999999999E-4', '1.0549999999999999E-4', '1.06E-4', '1.065E-4', '1.07E-4', '1.075E-4', '1.08E-4', '1.085E-4', '1.0899999999999999E-4', '1.0949999999999999E-4', '1.0999999999999999E-4', '1.1049999999999999E-4', '1.11E-4', '1.115E-4', '1.12E-4', '1.125E-4', '1.13E-4', '1.135E-4', '1.1399999999999999E-4', '1.1449999999999999E-4', '1.1499999999999999E-4', '1.1549999999999999E-4', '1.16E-4', '1.165E-4', '1.17E-4', '1.175E-4', '1.18E-4', '1.185E-4', '1.1899999999999999E-4', '1.1949999999999999E-4', '1.1999999999999999E-4', '1.2049999999999999E-4', '1.21E-4', '1.215E-4', '1.22E-4', '1.225E-4', '1.2299999999999998E-4', '1.235E-4', '1.24E-4', '1.245E-4', '1.25E-4', '1.255E-4', '1.26E-4', '1.2649999999999998E-4', '1.27E-4', '1.2749999999999998E-4', '1.28E-4', '1.285E-4', '1.29E-4', '1.295E-4', '1.3E-4', '1.305E-4', '1.3099999999999999E-4', '1.315E-4', '1.3199999999999998E-4', '1.325E-4', '1.33E-4', '1.335E-4', '1.34E-4', '1.345E-4', '1.35E-4', '1.355E-4', '1.36E-4', '1.3649999999999998E-4', '1.37E-4', '1.3749999999999998E-4', '1.38E-4', '1.385E-4', '1.39E-4', '1.395E-4', '1.4E-4', '1.405E-4', '1.4099999999999998E-4', '1.415E-4', '1.4199999999999998E-4', '1.425E-4', '1.43E-4', '1.435E-4', '1.44E-4', '1.445E-4', '1.45E-4', '1.4549999999999999E-4', '1.46E-4', '1.4649999999999998E-4', '1.47E-4', '1.4749999999999998E-4', '1.48E-4', '1.485E-4', '1.49E-4', '1.495E-4', '1.5E-4', '1.505E-4', '1.5099999999999998E-4', '1.515E-4', '1.5199999999999998E-4', '1.525E-4', '1.53E-4', '1.535E-4', '1.54E-4', '1.545E-4', '1.55E-4', '1.5549999999999999E-4', '1.56E-4', '1.5649999999999998E-4', '1.57E-4', '1.5749999999999998E-4', '1.58E-4', '1.585E-4', '1.59E-4', '1.595E-4', '1.5999999999999999E-4', '1.605E-4', '1.6099999999999998E-4', '1.615E-4', '1.6199999999999998E-4', '1.625E-4', '1.63E-4', '1.635E-4', '1.64E-4', '1.645E-4', '1.65E-4', '1.6549999999999998E-4', '1.66E-4', '1.6649999999999998E-4', '1.67E-4', '1.675E-4', '1.68E-4', '1.685E-4', '1.69E-4', '1.695E-4', '1.6999999999999999E-4', '1.705E-4', '1.7099999999999998E-4', '1.715E-4', '1.7199999999999998E-4', '1.725E-4', '1.73E-4', '1.735E-4', '1.74E-4', '1.7449999999999999E-4', '1.75E-4', '1.7549999999999998E-4', '1.76E-4', '1.7649999999999998E-4', '1.77E-4', '1.775E-4', '1.78E-4', '1.785E-4', '1.79E-4', '1.795E-4', '1.7999999999999998E-4', '1.805E-4', '1.8099999999999998E-4', '1.815E-4', '1.8199999999999998E-4', '1.825E-4', '1.83E-4', '1.835E-4', '1.84E-4', '1.8449999999999999E-4', '1.85E-4', '1.8549999999999998E-4', '1.86E-4', '1.8649999999999998E-4', '1.87E-4', '1.875E-4', '1.88E-4', '1.885E-4', '1.8899999999999999E-4', '1.895E-4', '1.8999999999999998E-4', '1.905E-4', '1.9099999999999998E-4', '1.915E-4', '1.92E-4', '1.925E-4', '1.93E-4', '1.935E-4', '1.94E-4', '1.9449999999999998E-4', '1.95E-4', '1.9549999999999998E-4', '1.96E-4', '1.9649999999999998E-4', '1.97E-4', '1.975E-4', '1.98E-4', '1.985E-4', '1.9899999999999999E-4', '1.995E-4', '1.9999999999999998E-4'] activate=['es', 'off', 'cpt', 'on', 'frame:spatial1', 'on', 'frame:material1', 'on']
+
+== Solutions / datasets ==
+  sol sol1: Solution 1  study=std1
+  sol sol2: Solution 2  study=std2
+  dset dset1: Study 1/Solution 1
+  dset dset2: Study 2/Solution 2
+  dset part1: Particle 1
+  dset cpl1: in front of tip
+  dset cpl2: right before mcp
+
+== Plot groups / exports ==
+  pg1: Electric Potential (es)
+  pg3: Particle Trajectories (cpt)
+  pg4: 3D Plot Group 4
+  pg5: initial beam profile
+  pg6: final beam profile
+  export anim1: Animation 1
+
+Total 79.1 s

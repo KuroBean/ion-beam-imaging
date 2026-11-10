@@ -1,0 +1,16 @@
+﻿COMSOL 5.5 started in 8.7 s
+Loaded lens8_axisym_asm.mph in 6.7 s
+Loaded lens8newMCP_ks_v4_lens_voltages.mph in 3.0 s
+3D r=0.0 a=0 done
+3D r=10.0 a=0 done
+3D r=10.0 a=45 done
+3D r=10.0 a=90 done
+3D r=10.0 a=135 done
+3D r=30.0 a=0 done
+3D r=30.0 a=45 done
+3D r=30.0 a=90 done
+3D r=30.0 a=135 done
+r=0 mm: max |V2D - V3D| = 368.9 V, median = 4.26 V over 3807 points
+r=10 mm: max |V2D - V3D| = 409.2 V, median = 4.98 V over 3699 points
+r=30 mm: max |V2D - V3D| = 931.4 V, median = 6.45 V over 3497 points
+wrote compare_axis.png

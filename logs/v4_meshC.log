@@ -1,0 +1,8 @@
+﻿COMSOL 5.5 started in 10.3 s
+Loaded lens8newMCP_ks_v4_lens_voltages.mph in 10.4 s
+sel_apertures: 30 boundaries
+sel_needle_tip: 5 boundaries
+geom1_sel3: 1 boundaries
+size nodes: ['size1', 'size2', 'size3', 'size4', 'size5', 'size6', 'size7', 'size_asm', 'size_ap', 'size_needle', 'size_tip', 'size_mcp']
+mesh: 2056518 elements, 353648 vertices (224 s)
+saved lens8newMCP_ks_v4_lens_voltages.mph

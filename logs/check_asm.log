@@ -1,0 +1,12 @@
+﻿COMSOL 5.5 started in 8.7 s
+Loaded lens8_axisym_asm.mph in 7.3 s
+  KE finite: start 999, end 999; E0 range 1.000..1.000 eV
+particles: 999; stopped on MCP front (z=515.90): 12  elsewhere: 987
+  MCP spot: rms r = 0.782 mm, max r = 1.316 mm
+  stopped elsewhere by z bin: {'0-106': np.int64(0), '106-115': np.int64(0), '115-215': np.int64(618), '215-257': np.int64(369), '257-515': np.int64(0), '515-10000': np.int64(0)}
+  energy error KE+qV-E0: median -0.280 eV, 95th pct |.| 0.413 eV, max 9094.205 eV
+  arrival time (last output with finite z): max 800 steps
+cfg 1: 16 domains, deflector D1 domains=0; mcp_z=250.0 mm, screen hub front at 234.4 mm, L9 lip end at 227.3 mm, D2 end at 255.4 mm
+cfg 2: 21 domains, deflector D1 domains=0; mcp_z=215.9 mm, screen hub front at 200.3 mm, L9 lip end at 227.3 mm, D2 end at 255.4 mm
+cfg 3: 19 domains, deflector D1 domains=1; mcp_z=515.9 mm, screen hub front at 500.3 mm, L9 lip end at 227.3 mm, D2 end at 255.4 mm
+wrote logs/axisym_asm_geometry.png, logs/axisym_asm_axis_traj.png

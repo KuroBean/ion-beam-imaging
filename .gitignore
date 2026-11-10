@@ -7,8 +7,8 @@
 # Python virtual environment
 .venv/
 
-# Script output
-logs/
+# Script output: logs/ is committed, except large regenerable dumps
+logs/mesh_stats_3d.npz
 __pycache__/
 
 # ionopt run artifacts

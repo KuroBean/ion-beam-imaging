@@ -1,0 +1,24 @@
+﻿COMSOL 5.5 started in 9.4 s
+Loaded lens8newMCP_ks_v4_lens_voltages.mph in 9.7 s
+
+total 3952525 tets
+vacuum domain = 2
+  lens assembly (incl. rods, bracket)      1488690 tets  (18 domains, median h 0.72 mm)
+  chamber 2 sphere                          167668 tets  (11 domains, median h 5.10 mm)
+  needle                                      9401 tets  (2 domains, median h 0.15 mm)
+  MCP + surround + ring                      34051 tets  (7 domains, median h 1.41 mm)
+  screen cross                                5041 tets  (14 domains, median h 1.09 mm)
+  screen mesh disc                            1372 tets  (6 domains, median h 0.48 mm)
+  other solids (chamber 1, posts, ...)         893 tets  (median h 2.32 mm)
+
+vacuum: 2246236 tets
+  needle shank/cone (z < tip, r < 5)                       40869  median h   0.44 mm  min h 0.089
+  tip..assembly end, r < 7 (beam)                         139734  median h   0.73 mm  min h 0.117
+  tip..assembly end, 7 <= r < 33 (inside electrodes)     1470554  median h   0.69 mm  min h 0.246
+  tip..assembly end, r >= 33 (outside electrodes)         192973  median h   2.46 mm  min h 0.489
+  drift, assembly end..MCP-20, r < 20                      18929  median h   1.28 mm  min h 0.482
+  drift, assembly end..MCP-20, r >= 20                    181460  median h   6.46 mm  min h 0.233
+  MCP/screen region MCP-20..MCP+20                         54040  median h   2.72 mm  min h 0.347
+  behind MCP (z > MCP+20)                                 128952  median h   8.11 mm  min h 0.255
+  before needle (z < tip, r >= 5)                          18725  median h  10.67 mm  min h 1.600
+  (of these) r > 102 mm, outside chamber 1 flanges        203128  median h   8.20 mm

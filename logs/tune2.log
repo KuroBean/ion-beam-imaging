@@ -1,0 +1,8 @@
+COMSOL 5.5 started in 10.4 s
+Loaded lens8_axisym.mph in 6.3 s
+R_cross= 18.00 mm  RMS dV (z 300-515):  r=0:    45.3 V   r=10:    51.7 V   r=30:   139.6 V   (24.8 s)
+R_cross= 19.00 mm  RMS dV (z 300-515):  r=0:    29.8 V   r=10:    39.0 V   r=30:   112.6 V   (21.4 s)
+R_cross= 20.00 mm  RMS dV (z 300-515):  r=0:    17.1 V   r=10:    31.6 V   r=30:    86.8 V   (20.9 s)
+R_cross= 21.00 mm  RMS dV (z 300-515):  r=0:    10.4 V   r=10:    30.2 V   r=30:    62.7 V   (20.6 s)
+R_cross= 22.00 mm  RMS dV (z 300-515):  r=0:    14.8 V   r=10:    33.7 V   r=30:    41.5 V   (20.3 s)
+best (r=0 + r=10): R_cross = 21.0 mm

@@ -1,0 +1,9 @@
+COMSOL 5.5 started in 11.8 s
+geometry: 10 domains, 96 boundaries
+E_src options: ['root.comp1.es.Er', 'userdef', 'fromCommonDef']
+release: data file release_from_3d.txt
+mesh: 149364 elements, 76004 vertices (15.5 s)
+saved D:\Users\kshimojo\projects\ion_beam_measurement\lens8_axisym.mph
+std1 solved in 7.7 s
+std2 solved in 7.1 s
+saved D:\Users\kshimojo\projects\ion_beam_measurement\lens8_axisym.mph

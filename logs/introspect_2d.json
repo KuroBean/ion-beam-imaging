@@ -1,0 +1,6797 @@
+{
+ "key": "2d",
+ "file": "lens8_axisym_asm.mph",
+ "size_MB": 55.759078,
+ "load_s": 7.496103286743164,
+ "comsol_version": "5.5",
+ "tree": "lens8_axisym_asm\n\u251c\u2500 parameters\n\u251c\u2500 functions\n\u251c\u2500 components\n\u251c\u2500 geometries\n\u251c\u2500 views\n\u251c\u2500 selections\n\u251c\u2500 coordinates\n\u251c\u2500 variables\n\u251c\u2500 couplings\n\u251c\u2500 physics\n\u251c\u2500 multiphysics\n\u251c\u2500 materials\n\u251c\u2500 meshes\n\u251c\u2500 studies\n\u251c\u2500 solutions\n\u251c\u2500 batches\n\u251c\u2500 datasets\n\u251c\u2500 evaluations\n\u251c\u2500 tables\n\u251c\u2500 plots\n\u2514\u2500 exports\n",
+ "parameters": [
+  {
+   "name": "cfg",
+   "expr": "3",
+   "value_SI": 3.0,
+   "descr": "1: tube chamber only, 2: sphere chamber only, 3: tube + sphere"
+  },
+  {
+   "name": "L_c1",
+   "expr": "300[mm]",
+   "value_SI": 0.3,
+   "descr": "chamber 1 (tube) reference length"
+  },
+  {
+   "name": "z_c2",
+   "expr": "if(cfg==3,L_c1,0[mm])",
+   "value_SI": 0.3,
+   "descr": "z of chamber 2 input flange face"
+  },
+  {
+   "name": "z_c2_center",
+   "expr": "215.9[mm]",
+   "value_SI": 0.2159,
+   "descr": "chamber 2 sphere centre, relative to its flange face"
+  },
+  {
+   "name": "z_mcp_c1",
+   "expr": "250[mm]",
+   "value_SI": 0.25,
+   "descr": "MCP face z for cfg 1"
+  },
+  {
+   "name": "mcp_z",
+   "expr": "if(cfg==1,z_mcp_c1,z_c2+z_c2_center)",
+   "value_SI": 0.5159,
+   "descr": "z coord of MCP front face"
+  },
+  {
+   "name": "z_end",
+   "expr": "if(cfg==1,L_c1,z_c2+2*z_c2_center)",
+   "value_SI": 0.7318,
+   "descr": "z of last chamber flange face"
+  },
+  {
+   "name": "z_dom0",
+   "expr": "-50[mm]",
+   "value_SI": -0.05,
+   "descr": "domain start z"
+  },
+  {
+   "name": "z_dom1",
+   "expr": "z_end+50[mm]",
+   "value_SI": 0.7818,
+   "descr": "domain end z"
+  },
+  {
+   "name": "r_dom",
+   "expr": "175[mm]",
+   "value_SI": 0.17500000000000002,
+   "descr": "domain radius (3D bounding cylinder)"
+  },
+  {
+   "name": "tip_z",
+   "expr": "105[mm]",
+   "value_SI": 0.105,
+   "descr": "needle tip z (particle release)"
+  },
+  {
+   "name": "tip_base_z",
+   "expr": "65[mm]",
+   "value_SI": 0.065,
+   "descr": "needle base z"
+  },
+  {
+   "name": "r_needle",
+   "expr": "0.5[mm]",
+   "value_SI": 0.0005,
+   "descr": "needle shank radius"
+  },
+  {
+   "name": "r_tip",
+   "expr": "0.1[mm]",
+   "value_SI": 0.0001,
+   "descr": "needle tip flat radius"
+  },
+  {
+   "name": "L_cone",
+   "expr": "10[mm]",
+   "value_SI": 0.01,
+   "descr": "needle cone length"
+  },
+  {
+   "name": "lens_gap",
+   "expr": "13.482[mm]",
+   "value_SI": 0.013482,
+   "descr": "needle tip to L1 entrance face (front plane closest to the tip)"
+  },
+  {
+   "name": "z_asm",
+   "expr": "tip_z+lens_gap+136.165[mm]",
+   "value_SI": 0.254647,
+   "descr": "model z of the assembly CAD origin (L1 front is at CAD z = -136.165 mm)"
+  },
+  {
+   "name": "L1_v",
+   "expr": "-120[V]",
+   "value_SI": -120.0,
+   "descr": "L1 potential"
+  },
+  {
+   "name": "L2_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L2 potential"
+  },
+  {
+   "name": "L3_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L3 potential"
+  },
+  {
+   "name": "L4_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L4 potential"
+  },
+  {
+   "name": "L5_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L5 potential"
+  },
+  {
+   "name": "L6_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L6 potential"
+  },
+  {
+   "name": "L7_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L7 potential"
+  },
+  {
+   "name": "L8_v",
+   "expr": "-40[V]",
+   "value_SI": -40.0,
+   "descr": "L8 potential"
+  },
+  {
+   "name": "L9_v",
+   "expr": "0[V]",
+   "value_SI": 0.0,
+   "descr": "L9 potential"
+  },
+  {
+   "name": "D1a_v",
+   "expr": "0[V]",
+   "value_SI": 0.0,
+   "descr": "deflector 1 half a potential (2D uses the mean of a and b)"
+  },
+  {
+   "name": "D1b_v",
+   "expr": "0[V]",
+   "value_SI": 0.0,
+   "descr": "deflector 1 half b potential"
+  },
+  {
+   "name": "D2a_v",
+   "expr": "0[V]",
+   "value_SI": 0.0,
+   "descr": "deflector 2 half a potential (2D uses the mean of a and b)"
+  },
+  {
+   "name": "D2b_v",
+   "expr": "0[V]",
+   "value_SI": 0.0,
+   "descr": "deflector 2 half b potential"
+  },
+  {
+   "name": "V_mcp_front",
+   "expr": "-10000[V]",
+   "value_SI": -10000.0,
+   "descr": "MCP front potential"
+  },
+  {
+   "name": "V_mcp_back",
+   "expr": "-5000[V]",
+   "value_SI": -5000.0,
+   "descr": "MCP back potential"
+  },
+  {
+   "name": "V_screen",
+   "expr": "-1000[V]",
+   "value_SI": -1000.0,
+   "descr": "screen mesh potential"
+  },
+  {
+   "name": "R_cross",
+   "expr": "24.5[mm]",
+   "value_SI": 0.0245,
+   "descr": "effective -1 kV screen-cross ring outer radius, fitted to the 3D potential on r = 0 and 10 mm (calibrate_2d.py; 8.485 = hub only; 3D arms reach 45.4)"
+  },
+  {
+   "name": "eps_holder",
+   "expr": "3.15",
+   "value_SI": 3.15,
+   "descr": "rel. permittivity of the MCP holder ring (Ultem 1000 polyetherimide)"
+  },
+  {
+   "name": "eps_surround",
+   "expr": "9.4",
+   "value_SI": 9.4,
+   "descr": "rel. permittivity of the MCP surround around the active area (Al2O3 ceramic)"
+  },
+  {
+   "name": "m_ion",
+   "expr": "1.7e-24[kg]",
+   "value_SI": 1.7e-24,
+   "descr": "particle mass"
+  },
+  {
+   "name": "Z_ion",
+   "expr": "1",
+   "value_SI": 1.0,
+   "descr": "charge number"
+  },
+  {
+   "name": "E_ion",
+   "expr": "1[eV]",
+   "value_SI": 1.6021766208e-19,
+   "descr": "initial kinetic energy"
+  },
+  {
+   "name": "N_ion",
+   "expr": "1000",
+   "value_SI": 1000.0,
+   "descr": "number of particles released (Particle Beam release only)"
+  },
+  {
+   "name": "t_end",
+   "expr": "800[us]",
+   "value_SI": 0.0007999999999999999,
+   "descr": "particle tracing end time (3D model used 200 us)"
+  },
+  {
+   "name": "dt_out",
+   "expr": "1[us]",
+   "value_SI": 1e-06,
+   "descr": "particle tracing output interval"
+  }
+ ],
+ "components": [
+  {
+   "tag": "comp1",
+   "geometry": [
+    {
+     "tag": "geom1",
+     "sdim": 2,
+     "n_dom": 19,
+     "n_bnd": 194,
+     "features": [
+      {
+       "tag": "dom",
+       "type": "Rectangle",
+       "label": "Vacuum domain",
+       "active": true,
+       "props": {
+        "contributeto": "none",
+        "selresult": "off",
+        "selresultshow": "dom",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "posconstr": [
+         "off",
+         "off"
+        ],
+        "pos": [
+         "0",
+         "z_dom0"
+        ],
+        "x": "0",
+        "y": "z_dom0",
+        "rotconstr": "off",
+        "rot": "0",
+        "type": "solid",
+        "base": "corner",
+        "layerold": [],
+        "layername": [],
+        "layer": [],
+        "layerleft": "off",
+        "layerright": "off",
+        "layerbottom": "on",
+        "layertop": "off",
+        "lx": "r_dom",
+        "ly": "z_dom1-z_dom0",
+        "sizeconstr": [
+         "off",
+         "off"
+        ],
+        "size": [
+         "r_dom",
+         "z_dom1-z_dom0"
+        ],
+        "arrowdispl": [
+         "NaN",
+         "NaN"
+        ],
+        "labelpos": [
+         "0.5",
+         "0.5"
+        ],
+        "arrowint": [
+         "on",
+         "on"
+        ]
+       }
+      },
+      {
+       "tag": "if1",
+       "type": "If",
+       "label": "If tube chamber 1",
+       "active": true,
+       "props": {
+        "active": "on",
+        "condition": "cfg==1||cfg==3",
+        "branches": "if1",
+        "if": "if1"
+       }
+      },
+      {
+       "tag": "ch1",
+       "type": "Polygon",
+       "label": "Chamber 1 tube + flanges (gnd)",
+       "active": true
+      },
+      {
+       "tag": "endif1",
+       "type": "EndIf",
+       "label": "End If 1",
+       "active": true,
+       "props": {
+        "if": "if1"
+       }
+      },
+      {
+       "tag": "if2",
+       "type": "If",
+       "label": "If sphere chamber 2",
+       "active": true,
+       "props": {
+        "active": "on",
+        "condition": "cfg==2||cfg==3",
+        "branches": "if2",
+        "if": "if2"
+       }
+      },
+      {
+       "tag": "c2out",
+       "type": "Circle",
+       "label": "Circle",
+       "active": true
+      },
+      {
+       "tag": "c2in",
+       "type": "Circle",
+       "label": "Circle 2",
+       "active": true
+      },
+      {
+       "tag": "c2shell",
+       "type": "Difference",
+       "label": "Difference",
+       "active": true,
+       "props": {
+        "contributeto": "none",
+        "selresult": "off",
+        "selresultshow": "dom",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "cumselkey": "0",
+        "input": "c2out",
+        "input2": "c2in",
+        "keep": "off",
+        "intbnd": "on",
+        "edge": "none",
+        "point": "none",
+        "repairtoltype": "auto",
+        "repairtol": "1.0E-6",
+        "absrepairtol": "6.7E-4",
+        "regularize": "on",
+        "geomrep": "comsol"
+       }
+      },
+      {
+       "tag": "c2bore",
+       "type": "Rectangle",
+       "label": "Rectangle",
+       "active": true,
+       "props": {
+        "contributeto": "none",
+        "selresult": "off",
+        "selresultshow": "dom",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "posconstr": [
+         "off",
+         "off"
+        ],
+        "pos": [
+         "0",
+         "z_c2"
+        ],
+        "x": "0",
+        "y": "z_c2",
+        "rotconstr": "off",
+        "rot": "0",
+        "type": "solid",
+        "base": "corner",
+        "layerold": [],
+        "layername": [],
+        "layer": [],
+        "layerleft": "off",
+        "layerright": "off",
+        "layerbottom": "on",
+        "layertop": "off",
+        "lx": "74.09",
+        "ly": "2*z_c2_center",
+        "sizeconstr": [
+         "off",
+         "off"
+        ],
+        "size": [
+         "74.09",
+         "2*z_c2_center"
+        ],
+        "arrowdispl": [
+         "NaN",
+         "NaN"
+        ],
+        "labelpos": [
+         "0.5",
+         "0.5"
+        ],
+        "arrowint": [
+         "on",
+         "on"
+        ]
+       }
+      },
+      {
+       "tag": "c2cut",
+       "type": "Difference",
+       "label": "Difference 2",
+       "active": true,
+       "props": {
+        "contributeto": "none",
+        "selresult": "off",
+        "selresultshow": "dom",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "cumselkey": "0",
+        "input": "c2shell",
+        "input2": "c2bore",
+        "keep": "off",
+        "intbnd": "on",
+        "edge": "none",
+        "point": "none",
+        "repairtoltype": "auto",
+        "repairtol": "1.0E-6",
+        "absrepairtol": "7.3E-4",
+        "regularize": "on",
+        "geomrep": "comsol"
+       }
+      },
+      {
+       "tag": "c2fl1",
+       "type": "Polygon",
+       "label": "Chamber 2 input flange",
+       "active": true
+      },
+      {
+       "tag": "c2fl2",
+       "type": "Polygon",
+       "label": "Chamber 2 output flange",
+       "active": true
+      },
+      {
+       "tag": "ch2",
+       "type": "Union",
+       "label": "Chamber 2 (gnd)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "cumselkey": "0",
+        "input": [
+         "c2cut",
+         "c2fl1",
+         "c2fl2"
+        ],
+        "keep": "off",
+        "intbnd": "off",
+        "edge": "all",
+        "point": "none",
+        "repairtoltype": "auto",
+        "repairtol": "1.0E-6",
+        "absrepairtol": "7.3E-4",
+        "regularize": "on",
+        "geomrep": "comsol"
+       }
+      },
+      {
+       "tag": "endif2",
+       "type": "EndIf",
+       "label": "End If 2",
+       "active": true,
+       "props": {
+        "if": "if2"
+       }
+      },
+      {
+       "tag": "needle",
+       "type": "Polygon",
+       "label": "Needle (gnd)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "0",
+          "tip_base_z"
+         ],
+         [
+          "r_needle",
+          "tip_base_z"
+         ],
+         [
+          "r_needle",
+          "tip_z-L_cone"
+         ],
+         [
+          "r_tip",
+          "tip_z"
+         ],
+         [
+          "0",
+          "tip_z"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5"
+        ],
+        "segvtxvalid": [
+         [
+          "0",
+          "65"
+         ],
+         [
+          "0.5",
+          "65"
+         ],
+         [
+          "0.5",
+          "95"
+         ],
+         [
+          "0.1",
+          "105"
+         ],
+         [
+          "0",
+          "105"
+         ],
+         [
+          "0",
+          "65"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L1",
+       "type": "Polygon",
+       "label": "L1 (lens)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-136.165+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-136.165+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-136.165+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-136.165+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-136.165+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-136.165+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-136.165+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-136.165+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-136.165+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-136.165+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-136.165+9)"
+         ],
+         [
+          "5",
+          "z_asm+(-136.165+9)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "118.48200000000003"
+         ],
+         [
+          "10",
+          "118.48200000000003"
+         ],
+         [
+          "10",
+          "123.48200000000003"
+         ],
+         [
+          "15",
+          "123.48200000000003"
+         ],
+         [
+          "15",
+          "118.48200000000003"
+         ],
+         [
+          "32.5",
+          "118.48200000000003"
+         ],
+         [
+          "32.5",
+          "127.48200000000003"
+         ],
+         [
+          "13",
+          "127.48200000000003"
+         ],
+         [
+          "13",
+          "132.48200000000003"
+         ],
+         [
+          "12",
+          "132.48200000000003"
+         ],
+         [
+          "12",
+          "127.48200000000003"
+         ],
+         [
+          "5",
+          "127.48200000000003"
+         ],
+         [
+          "5",
+          "118.48200000000003"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L2",
+       "type": "Polygon",
+       "label": "L2 (lens)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-124.935+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-124.935+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-124.935+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-124.935+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-124.935+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-124.935+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-124.935+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-124.935+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-124.935+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-124.935+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-124.935+9)"
+         ],
+         [
+          "5",
+          "z_asm+(-124.935+9)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "129.71200000000002"
+         ],
+         [
+          "10",
+          "129.71200000000002"
+         ],
+         [
+          "10",
+          "134.71200000000002"
+         ],
+         [
+          "15",
+          "134.71200000000002"
+         ],
+         [
+          "15",
+          "129.71200000000002"
+         ],
+         [
+          "32.5",
+          "129.71200000000002"
+         ],
+         [
+          "32.5",
+          "138.71200000000002"
+         ],
+         [
+          "13",
+          "138.71200000000002"
+         ],
+         [
+          "13",
+          "143.71200000000002"
+         ],
+         [
+          "12",
+          "143.71200000000002"
+         ],
+         [
+          "12",
+          "138.71200000000002"
+         ],
+         [
+          "5",
+          "138.71200000000002"
+         ],
+         [
+          "5",
+          "129.71200000000002"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L3",
+       "type": "Polygon",
+       "label": "L3 (lens)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-113.705+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-113.705+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-113.705+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-113.705+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-113.705+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-113.705+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-113.705+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-113.705+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-113.705+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-113.705+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-113.705+9)"
+         ],
+         [
+          "5",
+          "z_asm+(-113.705+9)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "140.942"
+         ],
+         [
+          "10",
+          "140.942"
+         ],
+         [
+          "10",
+          "145.942"
+         ],
+         [
+          "15",
+          "145.942"
+         ],
+         [
+          "15",
+          "140.942"
+         ],
+         [
+          "32.5",
+          "140.942"
+         ],
+         [
+          "32.5",
+          "149.942"
+         ],
+         [
+          "13",
+          "149.942"
+         ],
+         [
+          "13",
+          "154.942"
+         ],
+         [
+          "12",
+          "154.942"
+         ],
+         [
+          "12",
+          "149.942"
+         ],
+         [
+          "5",
+          "149.942"
+         ],
+         [
+          "5",
+          "140.942"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L4",
+       "type": "Polygon",
+       "label": "L4 (lens)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-102.475+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-102.475+0)"
+         ],
+         [
+          "10",
+          "z_asm+(-102.475+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-102.475+5)"
+         ],
+         [
+          "15",
+          "z_asm+(-102.475+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-102.475+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-102.475+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-102.475+9)"
+         ],
+         [
+          "13",
+          "z_asm+(-102.475+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-102.475+14)"
+         ],
+         [
+          "12",
+          "z_asm+(-102.475+9)"
+         ],
+         [
+          "5",
+          "z_asm+(-102.475+9)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "152.17200000000003"
+         ],
+         [
+          "10",
+          "152.17200000000003"
+         ],
+         [
+          "10",
+          "157.17200000000003"
+         ],
+         [
+          "15",
+          "157.17200000000003"
+         ],
+         [
+          "15",
+          "152.17200000000003"
+         ],
+         [
+          "32.5",
+          "152.17200000000003"
+         ],
+         [
+          "32.5",
+          "161.17200000000003"
+         ],
+         [
+          "13",
+          "161.17200000000003"
+         ],
+         [
+          "13",
+          "166.17200000000003"
+         ],
+         [
+          "12",
+          "166.17200000000003"
+         ],
+         [
+          "12",
+          "161.17200000000003"
+         ],
+         [
+          "5",
+          "161.17200000000003"
+         ],
+         [
+          "5",
+          "152.17200000000003"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L5",
+       "type": "Polygon",
+       "label": "L5 (accel)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-91.245+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-91.245+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-91.245+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-91.245+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-91.245+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-91.245+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-91.245+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-91.245+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-91.245+8)"
+         ],
+         [
+          "5",
+          "z_asm+(-91.245+8)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "170.40200000000002"
+         ],
+         [
+          "15",
+          "170.40200000000002"
+         ],
+         [
+          "15",
+          "163.40200000000002"
+         ],
+         [
+          "32.5",
+          "163.40200000000002"
+         ],
+         [
+          "32.5",
+          "173.40200000000002"
+         ],
+         [
+          "13",
+          "173.40200000000002"
+         ],
+         [
+          "13",
+          "178.40200000000002"
+         ],
+         [
+          "12",
+          "178.40200000000002"
+         ],
+         [
+          "12",
+          "171.40200000000002"
+         ],
+         [
+          "5",
+          "171.40200000000002"
+         ],
+         [
+          "5",
+          "170.40200000000002"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L6",
+       "type": "Polygon",
+       "label": "L6 (accel)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-79.015+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-79.015+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-79.015+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-79.015+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-79.015+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-79.015+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-79.015+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-79.015+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-79.015+8)"
+         ],
+         [
+          "5",
+          "z_asm+(-79.015+8)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "182.632"
+         ],
+         [
+          "15",
+          "182.632"
+         ],
+         [
+          "15",
+          "175.632"
+         ],
+         [
+          "32.5",
+          "175.632"
+         ],
+         [
+          "32.5",
+          "185.632"
+         ],
+         [
+          "13",
+          "185.632"
+         ],
+         [
+          "13",
+          "190.632"
+         ],
+         [
+          "12",
+          "190.632"
+         ],
+         [
+          "12",
+          "183.632"
+         ],
+         [
+          "5",
+          "183.632"
+         ],
+         [
+          "5",
+          "182.632"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L7",
+       "type": "Polygon",
+       "label": "L7 (accel)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-66.785+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-66.785+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-66.785+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-66.785+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-66.785+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-66.785+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-66.785+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-66.785+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-66.785+8)"
+         ],
+         [
+          "5",
+          "z_asm+(-66.785+8)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "194.86200000000002"
+         ],
+         [
+          "15",
+          "194.86200000000002"
+         ],
+         [
+          "15",
+          "187.86200000000002"
+         ],
+         [
+          "32.5",
+          "187.86200000000002"
+         ],
+         [
+          "32.5",
+          "197.86200000000002"
+         ],
+         [
+          "13",
+          "197.86200000000002"
+         ],
+         [
+          "13",
+          "202.86200000000002"
+         ],
+         [
+          "12",
+          "202.86200000000002"
+         ],
+         [
+          "12",
+          "195.86200000000002"
+         ],
+         [
+          "5",
+          "195.86200000000002"
+         ],
+         [
+          "5",
+          "194.86200000000002"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L8",
+       "type": "Polygon",
+       "label": "L8 (accel)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-54.555+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-54.555+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-54.555+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-54.555+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-54.555+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-54.555+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-54.555+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-54.555+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-54.555+8)"
+         ],
+         [
+          "5",
+          "z_asm+(-54.555+8)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "207.092"
+         ],
+         [
+          "15",
+          "207.092"
+         ],
+         [
+          "15",
+          "200.092"
+         ],
+         [
+          "32.5",
+          "200.092"
+         ],
+         [
+          "32.5",
+          "210.092"
+         ],
+         [
+          "13",
+          "210.092"
+         ],
+         [
+          "13",
+          "215.092"
+         ],
+         [
+          "12",
+          "215.092"
+         ],
+         [
+          "12",
+          "208.092"
+         ],
+         [
+          "5",
+          "208.092"
+         ],
+         [
+          "5",
+          "207.092"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "L9",
+       "type": "Polygon",
+       "label": "L9 (accel)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-42.325+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-42.325+7)"
+         ],
+         [
+          "15",
+          "z_asm+(-42.325+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-42.325+0)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-42.325+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-42.325+10)"
+         ],
+         [
+          "13",
+          "z_asm+(-42.325+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-42.325+15)"
+         ],
+         [
+          "12",
+          "z_asm+(-42.325+8)"
+         ],
+         [
+          "5",
+          "z_asm+(-42.325+8)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "219.322"
+         ],
+         [
+          "15",
+          "219.322"
+         ],
+         [
+          "15",
+          "212.322"
+         ],
+         [
+          "32.5",
+          "212.322"
+         ],
+         [
+          "32.5",
+          "222.322"
+         ],
+         [
+          "13",
+          "222.322"
+         ],
+         [
+          "13",
+          "227.322"
+         ],
+         [
+          "12",
+          "227.322"
+         ],
+         [
+          "12",
+          "220.322"
+         ],
+         [
+          "5",
+          "220.322"
+         ],
+         [
+          "5",
+          "219.322"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "if_defl",
+       "type": "If",
+       "label": "If keep deflectors (deleted for cfg 1 and 2)",
+       "active": true,
+       "props": {
+        "active": "on",
+        "condition": "cfg!=1&&cfg!=2",
+        "branches": "if_defl",
+        "if": "if_defl"
+       }
+      },
+      {
+       "tag": "D1",
+       "type": "Polygon",
+       "label": "D1 (deflector pair, axisymmetric)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-25.46)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-25.46)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-24.69)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-24.69)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-20.19)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-20.19)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-17.96)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-17.96)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-13.46)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-13.46)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-12.69)"
+         ],
+         [
+          "5",
+          "z_asm+(-12.69)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "229.187"
+         ],
+         [
+          "6.5",
+          "229.187"
+         ],
+         [
+          "6.5",
+          "229.95700000000002"
+         ],
+         [
+          "32.5",
+          "229.95700000000002"
+         ],
+         [
+          "32.5",
+          "234.45700000000002"
+         ],
+         [
+          "6.5",
+          "234.45700000000002"
+         ],
+         [
+          "6.5",
+          "236.687"
+         ],
+         [
+          "32.5",
+          "236.687"
+         ],
+         [
+          "32.5",
+          "241.187"
+         ],
+         [
+          "6.5",
+          "241.187"
+         ],
+         [
+          "6.5",
+          "241.95700000000002"
+         ],
+         [
+          "5",
+          "241.95700000000002"
+         ],
+         [
+          "5",
+          "229.187"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "D2",
+       "type": "Polygon",
+       "label": "D2 (deflector pair, axisymmetric)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "5",
+          "z_asm+(-12.0)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-12.0)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-11.23)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-11.23)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-6.73)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-6.73)"
+         ],
+         [
+          "6.5",
+          "z_asm+(-4.5)"
+         ],
+         [
+          "32.5",
+          "z_asm+(-4.5)"
+         ],
+         [
+          "32.5",
+          "z_asm+(0.0)"
+         ],
+         [
+          "6.5",
+          "z_asm+(0.0)"
+         ],
+         [
+          "6.5",
+          "z_asm+(0.77)"
+         ],
+         [
+          "5",
+          "z_asm+(0.77)"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10",
+         "11",
+         "12"
+        ],
+        "segvtxvalid": [
+         [
+          "5",
+          "242.64700000000002"
+         ],
+         [
+          "6.5",
+          "242.64700000000002"
+         ],
+         [
+          "6.5",
+          "243.41700000000003"
+         ],
+         [
+          "32.5",
+          "243.41700000000003"
+         ],
+         [
+          "32.5",
+          "247.91700000000003"
+         ],
+         [
+          "6.5",
+          "247.91700000000003"
+         ],
+         [
+          "6.5",
+          "250.14700000000002"
+         ],
+         [
+          "32.5",
+          "250.14700000000002"
+         ],
+         [
+          "32.5",
+          "254.64700000000002"
+         ],
+         [
+          "6.5",
+          "254.64700000000002"
+         ],
+         [
+          "6.5",
+          "255.41700000000003"
+         ],
+         [
+          "5",
+          "255.41700000000003"
+         ],
+         [
+          "5",
+          "242.64700000000002"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "endif_defl",
+       "type": "EndIf",
+       "label": "End If",
+       "active": true,
+       "props": {
+        "if": "if_defl"
+       }
+      },
+      {
+       "tag": "mcp",
+       "type": "Rectangle",
+       "label": "MCP plate",
+       "active": true,
+       "props": {
+        "contributeto": "csel_diel",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "posconstr": [
+         "off",
+         "off"
+        ],
+        "pos": [
+         "0",
+         "mcp_z"
+        ],
+        "x": "0",
+        "y": "mcp_z",
+        "rotconstr": "off",
+        "rot": "0",
+        "type": "solid",
+        "base": "corner",
+        "layerold": [],
+        "layername": [],
+        "layer": [],
+        "layerleft": "off",
+        "layerright": "off",
+        "layerbottom": "on",
+        "layertop": "off",
+        "lx": "20",
+        "ly": "5.9",
+        "sizeconstr": [
+         "off",
+         "off"
+        ],
+        "size": [
+         "20",
+         "5.9"
+        ],
+        "arrowdispl": [
+         "NaN",
+         "NaN"
+        ],
+        "labelpos": [
+         "0.5",
+         "0.5"
+        ],
+        "arrowint": [
+         "on",
+         "on"
+        ]
+       }
+      },
+      {
+       "tag": "surround",
+       "type": "Polygon",
+       "label": "MCP surround (Al2O3 ceramic)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_diel",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "solid",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "25",
+          "mcp_z-4"
+         ],
+         [
+          "33",
+          "mcp_z-4"
+         ],
+         [
+          "33",
+          "mcp_z+4.9"
+         ],
+         [
+          "43",
+          "mcp_z+4.9"
+         ],
+         [
+          "43",
+          "mcp_z+7.9"
+         ],
+         [
+          "25",
+          "mcp_z+7.9"
+         ],
+         [
+          "25",
+          "mcp_z+4.9"
+         ],
+         [
+          "20",
+          "mcp_z+4.9"
+         ],
+         [
+          "20",
+          "mcp_z-1"
+         ],
+         [
+          "25",
+          "mcp_z-1"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": [
+         "1",
+         "2",
+         "3",
+         "4",
+         "5",
+         "6",
+         "7",
+         "8",
+         "9",
+         "10"
+        ],
+        "segvtxvalid": [
+         [
+          "25",
+          "511.9"
+         ],
+         [
+          "33",
+          "511.9"
+         ],
+         [
+          "33",
+          "520.8"
+         ],
+         [
+          "43",
+          "520.8"
+         ],
+         [
+          "43",
+          "523.8"
+         ],
+         [
+          "25",
+          "523.8"
+         ],
+         [
+          "25",
+          "520.8"
+         ],
+         [
+          "20",
+          "520.8"
+         ],
+         [
+          "20",
+          "514.9"
+         ],
+         [
+          "25",
+          "514.9"
+         ],
+         [
+          "25",
+          "511.9"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "ring",
+       "type": "Rectangle",
+       "label": "MCP holder ring (Ultem 1000)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_diel",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "posconstr": [
+         "off",
+         "off"
+        ],
+        "pos": [
+         "27.5",
+         "mcp_z+7.9"
+        ],
+        "x": "27.5",
+        "y": "mcp_z+7.9",
+        "rotconstr": "off",
+        "rot": "0",
+        "type": "solid",
+        "base": "corner",
+        "layerold": [],
+        "layername": [],
+        "layer": [],
+        "layerleft": "off",
+        "layerright": "off",
+        "layerbottom": "on",
+        "layertop": "off",
+        "lx": "69.862-27.5",
+        "ly": "7.5",
+        "sizeconstr": [
+         "off",
+         "off"
+        ],
+        "size": [
+         "69.862-27.5",
+         "7.5"
+        ],
+        "arrowdispl": [
+         "NaN",
+         "NaN"
+        ],
+        "labelpos": [
+         "0.5",
+         "0.5"
+        ],
+        "arrowint": [
+         "on",
+         "on"
+        ]
+       }
+      },
+      {
+       "tag": "hub",
+       "type": "Rectangle",
+       "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)",
+       "active": true,
+       "props": {
+        "contributeto": "csel_cond",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "posconstr": [
+         "off",
+         "off"
+        ],
+        "pos": [
+         "5.5",
+         "mcp_z-15.6"
+        ],
+        "x": "5.5",
+        "y": "mcp_z-15.6",
+        "rotconstr": "off",
+        "rot": "0",
+        "type": "solid",
+        "base": "corner",
+        "layerold": [],
+        "layername": [],
+        "layer": [],
+        "layerleft": "off",
+        "layerright": "off",
+        "layerbottom": "on",
+        "layertop": "off",
+        "lx": "max(R_cross,8.485[mm])-5.5[mm]",
+        "ly": "3",
+        "sizeconstr": [
+         "off",
+         "off"
+        ],
+        "size": [
+         "max(R_cross,8.485[mm])-5.5[mm]",
+         "3"
+        ],
+        "arrowdispl": [
+         "NaN",
+         "NaN"
+        ],
+        "labelpos": [
+         "0.5",
+         "0.5"
+        ],
+        "arrowint": [
+         "on",
+         "on"
+        ]
+       }
+      },
+      {
+       "tag": "meshline",
+       "type": "Polygon",
+       "label": "Screen mesh (transparent, -1 kV)",
+       "active": true,
+       "props": {
+        "contributeto": "none",
+        "selresult": "on",
+        "selresultshow": "all",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ],
+        "type": "open",
+        "tableconstr": [],
+        "source": "table",
+        "filename": "",
+        "rebuild": "<?>",
+        "table": [
+         [
+          "0",
+          "mcp_z-12.7"
+         ],
+         [
+          "5.5",
+          "mcp_z-12.7"
+         ]
+        ],
+        "tableexcelfilename": "",
+        "tableexcelsheet": "",
+        "tableexcelrange": "",
+        "tableexcelincludeheaders": "off",
+        "tableexcelseparateunits": "off",
+        "tableexceloverwrite": "on",
+        "tableexcelcalculatedvalues": "off",
+        "x": [],
+        "x_vector_method": "step",
+        "x_vector_start": "",
+        "x_vector_stop": "",
+        "x_vector_step": "",
+        "x_vector_numvalues": "",
+        "x_vector_function": "none",
+        "x_vector_interval": "octave",
+        "x_vector_freqperdec": "",
+        "y": [],
+        "y_vector_method": "step",
+        "y_vector_start": "",
+        "y_vector_stop": "",
+        "y_vector_step": "",
+        "y_vector_numvalues": "",
+        "y_vector_function": "none",
+        "y_vector_interval": "octave",
+        "y_vector_freqperdec": "",
+        "segid": "1",
+        "segvtxvalid": [
+         [
+          "0",
+          "503.2"
+         ],
+         [
+          "5.5",
+          "503.2"
+         ]
+        ],
+        "addedrowidx": "-1",
+        "addedrow": []
+       }
+      },
+      {
+       "tag": "fin",
+       "type": "Finalize",
+       "label": "Form Union",
+       "active": true,
+       "props": {
+        "action": "union",
+        "imprint": "off",
+        "createpairs": "on",
+        "splitpairs": "off",
+        "pairtype": "identity",
+        "repairtoltype": "auto",
+        "repairtol": "1.0E-6",
+        "absrepairtol": "7.8E-4",
+        "geomrep": "comsol"
+       }
+      },
+      {
+       "tag": "sel_es",
+       "type": "ComplementSelection",
+       "label": "es domains (not conductors)",
+       "active": true,
+       "props": {
+        "cumselkey": "-529884718653259183",
+        "entitydim": "2",
+        "input": "csel_cond",
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      },
+      {
+       "tag": "sel_solid",
+       "type": "UnionSelection",
+       "label": "All solids",
+       "active": true,
+       "props": {
+        "cumselkey": "1651919689538298019",
+        "entitydim": "2",
+        "input": [
+         "csel_cond",
+         "csel_diel"
+        ],
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      },
+      {
+       "tag": "sel_vac",
+       "type": "ComplementSelection",
+       "label": "Vacuum (particle domain)",
+       "active": true,
+       "props": {
+        "cumselkey": "-8194906586890646129",
+        "entitydim": "2",
+        "input": "sel_solid",
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      },
+      {
+       "tag": "sel_tip",
+       "type": "BoxSelection",
+       "label": "Needle tip face",
+       "active": true,
+       "props": {
+        "cumselkey": "0",
+        "entitydim": "1",
+        "showcontangoption": "on",
+        "groupcontang": "off",
+        "showangletol": "off",
+        "angletol": "5",
+        "inputent": "all",
+        "showinputsel": "off",
+        "input": [],
+        "showdimprops": "2",
+        "xmin": "-1e-3",
+        "xmax": "r_tip+1e-3",
+        "ymin": "tip_z-1e-3",
+        "ymax": "tip_z+1e-3",
+        "zmin": "-Inf",
+        "zmax": "Inf",
+        "condition": "inside",
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      },
+      {
+       "tag": "bnd_mcpfront",
+       "type": "BoxSelection",
+       "label": "MCP front face",
+       "active": true,
+       "props": {
+        "cumselkey": "0",
+        "entitydim": "1",
+        "showcontangoption": "on",
+        "groupcontang": "off",
+        "showangletol": "off",
+        "angletol": "5",
+        "inputent": "all",
+        "showinputsel": "off",
+        "input": [],
+        "showdimprops": "2",
+        "xmin": "0-1e-3",
+        "xmax": "20+1e-3",
+        "ymin": "mcp_z-1e-3",
+        "ymax": "mcp_z+1e-3",
+        "zmin": "-Inf",
+        "zmax": "Inf",
+        "condition": "inside",
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      },
+      {
+       "tag": "bnd_mcpback",
+       "type": "BoxSelection",
+       "label": "MCP back face",
+       "active": true,
+       "props": {
+        "cumselkey": "0",
+        "entitydim": "1",
+        "showcontangoption": "on",
+        "groupcontang": "off",
+        "showangletol": "off",
+        "angletol": "5",
+        "inputent": "all",
+        "showinputsel": "off",
+        "input": [],
+        "showdimprops": "2",
+        "xmin": "0-1e-3",
+        "xmax": "20+1e-3",
+        "ymin": "mcp_z+5.9-1e-3",
+        "ymax": "mcp_z+5.9+1e-3",
+        "zmin": "-Inf",
+        "zmax": "Inf",
+        "condition": "inside",
+        "selkeep": "on",
+        "selshow": "on",
+        "contributeto": "none",
+        "color": "none",
+        "customcolor": [
+         "0",
+         "0",
+         "0"
+        ]
+       }
+      }
+     ],
+     "selections": [
+      {
+       "tag": "csel_cond",
+       "type": "?",
+       "label": "Conductors (excluded)"
+      },
+      {
+       "tag": "csel_cond.dom",
+       "type": "?",
+       "label": "Conductors (excluded)"
+      },
+      {
+       "tag": "csel_cond.bnd",
+       "type": "?",
+       "label": "Conductors (excluded)"
+      },
+      {
+       "tag": "csel_cond.pnt",
+       "type": "?",
+       "label": "Conductors (excluded)"
+      },
+      {
+       "tag": "csel_diel",
+       "type": "?",
+       "label": "Dielectrics (MCP plate, MCP surround, holder ring)"
+      },
+      {
+       "tag": "csel_diel.dom",
+       "type": "?",
+       "label": "Dielectrics (MCP plate, MCP surround, holder ring)"
+      },
+      {
+       "tag": "csel_diel.bnd",
+       "type": "?",
+       "label": "Dielectrics (MCP plate, MCP surround, holder ring)"
+      },
+      {
+       "tag": "csel_diel.pnt",
+       "type": "?",
+       "label": "Dielectrics (MCP plate, MCP surround, holder ring)"
+      },
+      {
+       "tag": "ch1",
+       "type": "?",
+       "label": "Chamber 1 tube + flanges (gnd)"
+      },
+      {
+       "tag": "ch1.pnt",
+       "type": "?",
+       "label": "Chamber 1 tube + flanges (gnd)"
+      },
+      {
+       "tag": "ch1.bnd",
+       "type": "?",
+       "label": "Chamber 1 tube + flanges (gnd)"
+      },
+      {
+       "tag": "ch1.dom",
+       "type": "?",
+       "label": "Chamber 1 tube + flanges (gnd)"
+      },
+      {
+       "tag": "ch2",
+       "type": "?",
+       "label": "Chamber 2 (gnd)"
+      },
+      {
+       "tag": "ch2.pnt",
+       "type": "?",
+       "label": "Chamber 2 (gnd)"
+      },
+      {
+       "tag": "ch2.bnd",
+       "type": "?",
+       "label": "Chamber 2 (gnd)"
+      },
+      {
+       "tag": "ch2.dom",
+       "type": "?",
+       "label": "Chamber 2 (gnd)"
+      },
+      {
+       "tag": "needle",
+       "type": "?",
+       "label": "Needle (gnd)"
+      },
+      {
+       "tag": "needle.pnt",
+       "type": "?",
+       "label": "Needle (gnd)"
+      },
+      {
+       "tag": "needle.bnd",
+       "type": "?",
+       "label": "Needle (gnd)"
+      },
+      {
+       "tag": "needle.dom",
+       "type": "?",
+       "label": "Needle (gnd)"
+      },
+      {
+       "tag": "L1",
+       "type": "?",
+       "label": "L1 (lens)"
+      },
+      {
+       "tag": "L1.pnt",
+       "type": "?",
+       "label": "L1 (lens)"
+      },
+      {
+       "tag": "L1.bnd",
+       "type": "?",
+       "label": "L1 (lens)"
+      },
+      {
+       "tag": "L1.dom",
+       "type": "?",
+       "label": "L1 (lens)"
+      },
+      {
+       "tag": "L2",
+       "type": "?",
+       "label": "L2 (lens)"
+      },
+      {
+       "tag": "L2.pnt",
+       "type": "?",
+       "label": "L2 (lens)"
+      },
+      {
+       "tag": "L2.bnd",
+       "type": "?",
+       "label": "L2 (lens)"
+      },
+      {
+       "tag": "L2.dom",
+       "type": "?",
+       "label": "L2 (lens)"
+      },
+      {
+       "tag": "L3",
+       "type": "?",
+       "label": "L3 (lens)"
+      },
+      {
+       "tag": "L3.pnt",
+       "type": "?",
+       "label": "L3 (lens)"
+      },
+      {
+       "tag": "L3.bnd",
+       "type": "?",
+       "label": "L3 (lens)"
+      },
+      {
+       "tag": "L3.dom",
+       "type": "?",
+       "label": "L3 (lens)"
+      },
+      {
+       "tag": "L4",
+       "type": "?",
+       "label": "L4 (lens)"
+      },
+      {
+       "tag": "L4.pnt",
+       "type": "?",
+       "label": "L4 (lens)"
+      },
+      {
+       "tag": "L4.bnd",
+       "type": "?",
+       "label": "L4 (lens)"
+      },
+      {
+       "tag": "L4.dom",
+       "type": "?",
+       "label": "L4 (lens)"
+      },
+      {
+       "tag": "L5",
+       "type": "?",
+       "label": "L5 (accel)"
+      },
+      {
+       "tag": "L5.pnt",
+       "type": "?",
+       "label": "L5 (accel)"
+      },
+      {
+       "tag": "L5.bnd",
+       "type": "?",
+       "label": "L5 (accel)"
+      },
+      {
+       "tag": "L5.dom",
+       "type": "?",
+       "label": "L5 (accel)"
+      },
+      {
+       "tag": "L6",
+       "type": "?",
+       "label": "L6 (accel)"
+      },
+      {
+       "tag": "L6.pnt",
+       "type": "?",
+       "label": "L6 (accel)"
+      },
+      {
+       "tag": "L6.bnd",
+       "type": "?",
+       "label": "L6 (accel)"
+      },
+      {
+       "tag": "L6.dom",
+       "type": "?",
+       "label": "L6 (accel)"
+      },
+      {
+       "tag": "L7",
+       "type": "?",
+       "label": "L7 (accel)"
+      },
+      {
+       "tag": "L7.pnt",
+       "type": "?",
+       "label": "L7 (accel)"
+      },
+      {
+       "tag": "L7.bnd",
+       "type": "?",
+       "label": "L7 (accel)"
+      },
+      {
+       "tag": "L7.dom",
+       "type": "?",
+       "label": "L7 (accel)"
+      },
+      {
+       "tag": "L8",
+       "type": "?",
+       "label": "L8 (accel)"
+      },
+      {
+       "tag": "L8.pnt",
+       "type": "?",
+       "label": "L8 (accel)"
+      },
+      {
+       "tag": "L8.bnd",
+       "type": "?",
+       "label": "L8 (accel)"
+      },
+      {
+       "tag": "L8.dom",
+       "type": "?",
+       "label": "L8 (accel)"
+      },
+      {
+       "tag": "L9",
+       "type": "?",
+       "label": "L9 (accel)"
+      },
+      {
+       "tag": "L9.pnt",
+       "type": "?",
+       "label": "L9 (accel)"
+      },
+      {
+       "tag": "L9.bnd",
+       "type": "?",
+       "label": "L9 (accel)"
+      },
+      {
+       "tag": "L9.dom",
+       "type": "?",
+       "label": "L9 (accel)"
+      },
+      {
+       "tag": "D1",
+       "type": "?",
+       "label": "D1 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D1.pnt",
+       "type": "?",
+       "label": "D1 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D1.bnd",
+       "type": "?",
+       "label": "D1 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D1.dom",
+       "type": "?",
+       "label": "D1 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D2",
+       "type": "?",
+       "label": "D2 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D2.pnt",
+       "type": "?",
+       "label": "D2 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D2.bnd",
+       "type": "?",
+       "label": "D2 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "D2.dom",
+       "type": "?",
+       "label": "D2 (deflector pair, axisymmetric)"
+      },
+      {
+       "tag": "mcp",
+       "type": "?",
+       "label": "MCP plate"
+      },
+      {
+       "tag": "mcp.pnt",
+       "type": "?",
+       "label": "MCP plate"
+      },
+      {
+       "tag": "mcp.bnd",
+       "type": "?",
+       "label": "MCP plate"
+      },
+      {
+       "tag": "mcp.dom",
+       "type": "?",
+       "label": "MCP plate"
+      },
+      {
+       "tag": "surround",
+       "type": "?",
+       "label": "MCP surround (Al2O3 ceramic)"
+      },
+      {
+       "tag": "surround.pnt",
+       "type": "?",
+       "label": "MCP surround (Al2O3 ceramic)"
+      },
+      {
+       "tag": "surround.bnd",
+       "type": "?",
+       "label": "MCP surround (Al2O3 ceramic)"
+      },
+      {
+       "tag": "surround.dom",
+       "type": "?",
+       "label": "MCP surround (Al2O3 ceramic)"
+      },
+      {
+       "tag": "ring",
+       "type": "?",
+       "label": "MCP holder ring (Ultem 1000)"
+      },
+      {
+       "tag": "ring.pnt",
+       "type": "?",
+       "label": "MCP holder ring (Ultem 1000)"
+      },
+      {
+       "tag": "ring.bnd",
+       "type": "?",
+       "label": "MCP holder ring (Ultem 1000)"
+      },
+      {
+       "tag": "ring.dom",
+       "type": "?",
+       "label": "MCP holder ring (Ultem 1000)"
+      },
+      {
+       "tag": "hub",
+       "type": "?",
+       "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)"
+      },
+      {
+       "tag": "hub.pnt",
+       "type": "?",
+       "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)"
+      },
+      {
+       "tag": "hub.bnd",
+       "type": "?",
+       "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)"
+      },
+      {
+       "tag": "hub.dom",
+       "type": "?",
+       "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)"
+      },
+      {
+       "tag": "meshline",
+       "type": "?",
+       "label": "Screen mesh (transparent, -1 kV)"
+      },
+      {
+       "tag": "meshline.pnt",
+       "type": "?",
+       "label": "Screen mesh (transparent, -1 kV)"
+      },
+      {
+       "tag": "meshline.bnd",
+       "type": "?",
+       "label": "Screen mesh (transparent, -1 kV)"
+      },
+      {
+       "tag": "meshline.dom",
+       "type": "?",
+       "label": "Screen mesh (transparent, -1 kV)"
+      },
+      {
+       "tag": "sel_es",
+       "type": "?",
+       "label": "es domains (not conductors)"
+      },
+      {
+       "tag": "sel_solid",
+       "type": "?",
+       "label": "All solids"
+      },
+      {
+       "tag": "sel_vac",
+       "type": "?",
+       "label": "Vacuum (particle domain)"
+      },
+      {
+       "tag": "sel_tip",
+       "type": "?",
+       "label": "Needle tip face"
+      },
+      {
+       "tag": "bnd_mcpfront",
+       "type": "?",
+       "label": "MCP front face"
+      },
+      {
+       "tag": "bnd_mcpback",
+       "type": "?",
+       "label": "MCP back face"
+      }
+     ]
+    },
+    {
+     "tag": "pgeom_cpt",
+     "sdim": 1,
+     "n_dom": 0,
+     "n_bnd": 1,
+     "features": [
+      {
+       "tag": "pt1",
+       "type": "Point",
+       "label": "Point 1",
+       "active": true
+      }
+     ],
+     "selections": []
+    }
+   ],
+   "selections": [
+    {
+     "tag": "geom1_csel_cond_pnt",
+     "label": "Conductors (excluded)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 165,
+     "entities": [
+      2,
+      3,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      "..."
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_csel_cond_bnd",
+     "label": "Conductors (excluded)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 166,
+     "entities": [
+      3,
+      4,
+      6,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      "..."
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_csel_cond_dom",
+     "label": "Conductors (excluded)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 15,
+     "entities": [
+      2,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      18,
+      19
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_csel_diel_pnt",
+     "label": "Dielectrics (MCP plate, MCP surround, holder ring)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 18,
+     "entities": [
+      5,
+      6,
+      110,
+      111,
+      112,
+      113,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      148,
+      149,
+      150,
+      151,
+      152,
+      153
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_csel_diel_bnd",
+     "label": "Dielectrics (MCP plate, MCP surround, holder ring)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 20,
+     "entities": [
+      9,
+      10,
+      12,
+      129,
+      130,
+      131,
+      132,
+      133,
+      135,
+      136,
+      137,
+      138,
+      139,
+      140,
+      141,
+      155,
+      156,
+      157,
+      158,
+      159
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_csel_diel_dom",
+     "label": "Dielectrics (MCP plate, MCP surround, holder ring)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 3,
+     "entities": [
+      3,
+      16,
+      17
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch1_pnt",
+     "label": "Chamber 1 tube + flanges (gnd)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 8,
+     "entities": [
+      162,
+      163,
+      168,
+      169,
+      182,
+      183,
+      184,
+      185
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch1_bnd",
+     "label": "Chamber 1 tube + flanges (gnd)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 8,
+     "entities": [
+      168,
+      169,
+      170,
+      175,
+      176,
+      177,
+      188,
+      189
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch1_dom",
+     "label": "Chamber 1 tube + flanges (gnd)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      19
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch2_pnt",
+     "label": "Chamber 2 (gnd)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 26,
+     "entities": [
+      154,
+      155,
+      156,
+      157,
+      158,
+      159,
+      160,
+      161,
+      164,
+      165,
+      166,
+      167,
+      170,
+      171,
+      172,
+      173,
+      174,
+      175,
+      176,
+      177,
+      178,
+      179,
+      180,
+      181,
+      186,
+      187
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch2_bnd",
+     "label": "Chamber 2 (gnd)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 26,
+     "entities": [
+      160,
+      161,
+      162,
+      163,
+      164,
+      165,
+      166,
+      167,
+      171,
+      172,
+      173,
+      174,
+      178,
+      179,
+      180,
+      181,
+      182,
+      183,
+      184,
+      185,
+      186,
+      187,
+      191,
+      192,
+      193,
+      194
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ch2_dom",
+     "label": "Chamber 2 (gnd)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      18
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_needle_pnt",
+     "label": "Needle (gnd)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 5,
+     "entities": [
+      2,
+      3,
+      8,
+      9,
+      10
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_needle_bnd",
+     "label": "Needle (gnd)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 5,
+     "entities": [
+      3,
+      4,
+      6,
+      14,
+      15
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_needle_dom",
+     "label": "Needle (gnd)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      2
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L1_pnt",
+     "label": "L1 (lens)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      11,
+      12,
+      48,
+      49,
+      56,
+      57,
+      74,
+      75,
+      92,
+      93,
+      122,
+      123
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L1_bnd",
+     "label": "L1 (lens)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      16,
+      17,
+      18,
+      67,
+      68,
+      75,
+      76,
+      93,
+      94,
+      111,
+      112,
+      142
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L1_dom",
+     "label": "L1 (lens)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      4
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L2_pnt",
+     "label": "L2 (lens)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      13,
+      14,
+      50,
+      51,
+      58,
+      59,
+      76,
+      77,
+      94,
+      95,
+      124,
+      125
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L2_bnd",
+     "label": "L2 (lens)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      19,
+      20,
+      21,
+      69,
+      70,
+      77,
+      78,
+      95,
+      96,
+      113,
+      114,
+      143
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L2_dom",
+     "label": "L2 (lens)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      5
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L3_pnt",
+     "label": "L3 (lens)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      15,
+      16,
+      52,
+      53,
+      60,
+      61,
+      78,
+      79,
+      96,
+      97,
+      126,
+      127
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L3_bnd",
+     "label": "L3 (lens)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      22,
+      23,
+      24,
+      71,
+      72,
+      79,
+      80,
+      97,
+      98,
+      115,
+      116,
+      144
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L3_dom",
+     "label": "L3 (lens)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      6
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L4_pnt",
+     "label": "L4 (lens)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      17,
+      18,
+      54,
+      55,
+      62,
+      63,
+      80,
+      81,
+      98,
+      99,
+      128,
+      129
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L4_bnd",
+     "label": "L4 (lens)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      25,
+      26,
+      27,
+      73,
+      74,
+      81,
+      82,
+      99,
+      100,
+      117,
+      118,
+      145
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L4_dom",
+     "label": "L4 (lens)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      7
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L5_pnt",
+     "label": "L5 (accel)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      19,
+      20,
+      64,
+      65,
+      82,
+      83,
+      100,
+      101,
+      130,
+      131
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L5_bnd",
+     "label": "L5 (accel)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 10,
+     "entities": [
+      28,
+      29,
+      30,
+      83,
+      84,
+      101,
+      102,
+      119,
+      120,
+      146
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L5_dom",
+     "label": "L5 (accel)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      8
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L6_pnt",
+     "label": "L6 (accel)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      21,
+      22,
+      66,
+      67,
+      84,
+      85,
+      102,
+      103,
+      132,
+      133
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L6_bnd",
+     "label": "L6 (accel)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 10,
+     "entities": [
+      31,
+      32,
+      33,
+      85,
+      86,
+      103,
+      104,
+      121,
+      122,
+      147
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L6_dom",
+     "label": "L6 (accel)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      9
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L7_pnt",
+     "label": "L7 (accel)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      23,
+      24,
+      68,
+      69,
+      86,
+      87,
+      104,
+      105,
+      134,
+      135
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L7_bnd",
+     "label": "L7 (accel)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 10,
+     "entities": [
+      34,
+      35,
+      36,
+      87,
+      88,
+      105,
+      106,
+      123,
+      124,
+      148
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L7_dom",
+     "label": "L7 (accel)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      10
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L8_pnt",
+     "label": "L8 (accel)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      25,
+      26,
+      70,
+      71,
+      88,
+      89,
+      106,
+      107,
+      136,
+      137
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L8_bnd",
+     "label": "L8 (accel)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 10,
+     "entities": [
+      37,
+      38,
+      39,
+      89,
+      90,
+      107,
+      108,
+      125,
+      126,
+      149
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L8_dom",
+     "label": "L8 (accel)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      11
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L9_pnt",
+     "label": "L9 (accel)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      27,
+      28,
+      72,
+      73,
+      90,
+      91,
+      108,
+      109,
+      138,
+      139
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L9_bnd",
+     "label": "L9 (accel)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 10,
+     "entities": [
+      40,
+      41,
+      42,
+      91,
+      92,
+      109,
+      110,
+      127,
+      128,
+      150
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_L9_dom",
+     "label": "L9 (accel)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      12
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D1_pnt",
+     "label": "D1 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      29,
+      30,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      140,
+      141,
+      142,
+      143
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D1_bnd",
+     "label": "D1 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      43,
+      44,
+      45,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      151,
+      152
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D1_dom",
+     "label": "D1 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      13
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D2_pnt",
+     "label": "D2 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 12,
+     "entities": [
+      31,
+      32,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      144,
+      145,
+      146,
+      147
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D2_bnd",
+     "label": "D2 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      46,
+      47,
+      48,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      153,
+      154
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_D2_dom",
+     "label": "D2 (deflector pair, axisymmetric)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      14
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_mcp_pnt",
+     "label": "MCP plate",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 4,
+     "entities": [
+      5,
+      6,
+      111,
+      113
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_mcp_bnd",
+     "label": "MCP plate",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 5,
+     "entities": [
+      9,
+      10,
+      12,
+      131,
+      132
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_mcp_dom",
+     "label": "MCP plate",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      3
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_surround_pnt",
+     "label": "MCP surround (Al2O3 ceramic)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 10,
+     "entities": [
+      110,
+      112,
+      116,
+      117,
+      118,
+      119,
+      148,
+      149,
+      150,
+      151
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_surround_bnd",
+     "label": "MCP surround (Al2O3 ceramic)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 12,
+     "entities": [
+      129,
+      130,
+      131,
+      133,
+      135,
+      136,
+      137,
+      138,
+      140,
+      155,
+      156,
+      157
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_surround_dom",
+     "label": "MCP surround (Al2O3 ceramic)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      16
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ring_pnt",
+     "label": "MCP holder ring (Ultem 1000)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 4,
+     "entities": [
+      120,
+      121,
+      152,
+      153
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ring_bnd",
+     "label": "MCP holder ring (Ultem 1000)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 5,
+     "entities": [
+      139,
+      140,
+      141,
+      158,
+      159
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_ring_dom",
+     "label": "MCP holder ring (Ultem 1000)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      17
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_hub_pnt",
+     "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 4,
+     "entities": [
+      33,
+      35,
+      114,
+      115
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_hub_bnd",
+     "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 5,
+     "entities": [
+      49,
+      50,
+      51,
+      52,
+      134
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_hub_dom",
+     "label": "Screen cross hub / effective cross ring (r 5.5..R_cross)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      15
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_meshline_pnt",
+     "label": "Screen mesh (transparent, -1 kV)",
+     "type": "FromGeom",
+     "dim": 0,
+     "n": 2,
+     "entities": [
+      4,
+      34
+     ],
+     "props": {
+      "entitydim": "0",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_meshline_bnd",
+     "label": "Screen mesh (transparent, -1 kV)",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 1,
+     "entities": [
+      8
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_meshline_dom",
+     "label": "Screen mesh (transparent, -1 kV)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 0,
+     "entities": [],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_sel_es",
+     "label": "es domains (not conductors)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 4,
+     "entities": [
+      1,
+      3,
+      16,
+      17
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_sel_solid",
+     "label": "All solids",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 18,
+     "entities": [
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_sel_vac",
+     "label": "Vacuum (particle domain)",
+     "type": "FromGeom",
+     "dim": 2,
+     "n": 1,
+     "entities": [
+      1
+     ],
+     "props": {
+      "entitydim": "2",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_sel_tip",
+     "label": "Needle tip face",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 1,
+     "entities": [
+      6
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_bnd_mcpfront",
+     "label": "MCP front face",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 1,
+     "entities": [
+      10
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    },
+    {
+     "tag": "geom1_bnd_mcpback",
+     "label": "MCP back face",
+     "type": "FromGeom",
+     "dim": 1,
+     "n": 1,
+     "entities": [
+      12
+     ],
+     "props": {
+      "entitydim": "1",
+      "color": "none",
+      "customcolor": [
+       "0",
+       "0",
+       "0"
+      ]
+     }
+    }
+   ],
+   "materials": [],
+   "physics": [
+    {
+     "tag": "es",
+     "type": "Electrostatics",
+     "label": "Electrostatics",
+     "props": {},
+     "features": [
+      {
+       "tag": "ccn1",
+       "type": "ChargeConservation",
+       "label": "Charge Conservation 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 2,
+        "n": 2,
+        "entities": [
+         1,
+         3
+        ]
+       },
+       "props": {
+        "epsilonr_mat": "userdef",
+        "epsilonr": "1"
+       }
+      },
+      {
+       "tag": "axi1",
+       "type": "AxialSymmetry",
+       "label": "Axial Symmetry 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 1,
+        "n": 5,
+        "entities": [
+         1,
+         5,
+         7,
+         9,
+         11
+        ]
+       },
+       "props": {
+        "StudyStep": "std1/stat"
+       }
+      },
+      {
+       "tag": "zc1",
+       "type": "ZeroCharge",
+       "label": "Zero Charge 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 1,
+        "n": 3,
+        "entities": [
+         2,
+         13,
+         190
+        ]
+       },
+       "props": {}
+      },
+      {
+       "tag": "init1",
+       "type": "init",
+       "label": "Initial Values 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 2,
+        "n": 4,
+        "entities": [
+         1,
+         3,
+         16,
+         17
+        ]
+       },
+       "props": {}
+      },
+      {
+       "tag": "ccn2",
+       "type": "ChargeConservation",
+       "label": "MCP holder ring (Ultem 1000)",
+       "active": true,
+       "selection": {
+        "named": "geom1_ring_dom",
+        "dim": 2,
+        "n": 1,
+        "entities": [
+         17
+        ]
+       },
+       "props": {
+        "epsilonr_mat": "userdef",
+        "epsilonr": "eps_holder"
+       }
+      },
+      {
+       "tag": "ccn3",
+       "type": "ChargeConservation",
+       "label": "MCP surround (Al2O3)",
+       "active": true,
+       "selection": {
+        "named": "geom1_surround_dom",
+        "dim": 2,
+        "n": 1,
+        "entities": [
+         16
+        ]
+       },
+       "props": {
+        "epsilonr_mat": "userdef",
+        "epsilonr": "eps_surround"
+       }
+      },
+      {
+       "tag": "gnd_needle",
+       "type": "Ground",
+       "label": "Ground needle",
+       "active": true,
+       "selection": {
+        "named": "geom1_needle_bnd",
+        "dim": 1,
+        "n": 4,
+        "entities": [
+         4,
+         6,
+         14,
+         15
+        ]
+       },
+       "props": {
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "gnd_ch1",
+       "type": "Ground",
+       "label": "Ground chamber 1",
+       "active": true,
+       "selection": {
+        "named": "geom1_ch1_bnd",
+        "dim": 1,
+        "n": 8,
+        "entities": [
+         168,
+         169,
+         170,
+         175,
+         176,
+         177,
+         188,
+         189
+        ]
+       },
+       "props": {
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "gnd_ch2",
+       "type": "Ground",
+       "label": "Ground chamber 2",
+       "active": true,
+       "selection": {
+        "named": "geom1_ch2_bnd",
+        "dim": 1,
+        "n": 26,
+        "entities": [
+         160,
+         161,
+         162,
+         163,
+         164,
+         165,
+         166,
+         167,
+         171,
+         172,
+         173,
+         174,
+         178,
+         179,
+         180,
+         181,
+         182,
+         183,
+         184,
+         185,
+         186,
+         187,
+         191,
+         192,
+         193,
+         194
+        ]
+       },
+       "props": {
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L1",
+       "type": "ElectricPotential",
+       "label": "L1 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L1_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         16,
+         17,
+         18,
+         67,
+         68,
+         75,
+         76,
+         93,
+         94,
+         111,
+         112,
+         142
+        ]
+       },
+       "props": {
+        "V0": "L1_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L2",
+       "type": "ElectricPotential",
+       "label": "L2 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L2_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         19,
+         20,
+         21,
+         69,
+         70,
+         77,
+         78,
+         95,
+         96,
+         113,
+         114,
+         143
+        ]
+       },
+       "props": {
+        "V0": "L2_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L3",
+       "type": "ElectricPotential",
+       "label": "L3 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L3_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         22,
+         23,
+         24,
+         71,
+         72,
+         79,
+         80,
+         97,
+         98,
+         115,
+         116,
+         144
+        ]
+       },
+       "props": {
+        "V0": "L3_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L4",
+       "type": "ElectricPotential",
+       "label": "L4 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L4_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         25,
+         26,
+         27,
+         73,
+         74,
+         81,
+         82,
+         99,
+         100,
+         117,
+         118,
+         145
+        ]
+       },
+       "props": {
+        "V0": "L4_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L5",
+       "type": "ElectricPotential",
+       "label": "L5 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L5_bnd",
+        "dim": 1,
+        "n": 10,
+        "entities": [
+         28,
+         29,
+         30,
+         83,
+         84,
+         101,
+         102,
+         119,
+         120,
+         146
+        ]
+       },
+       "props": {
+        "V0": "L5_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L6",
+       "type": "ElectricPotential",
+       "label": "L6 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L6_bnd",
+        "dim": 1,
+        "n": 10,
+        "entities": [
+         31,
+         32,
+         33,
+         85,
+         86,
+         103,
+         104,
+         121,
+         122,
+         147
+        ]
+       },
+       "props": {
+        "V0": "L6_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L7",
+       "type": "ElectricPotential",
+       "label": "L7 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L7_bnd",
+        "dim": 1,
+        "n": 10,
+        "entities": [
+         34,
+         35,
+         36,
+         87,
+         88,
+         105,
+         106,
+         123,
+         124,
+         148
+        ]
+       },
+       "props": {
+        "V0": "L7_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L8",
+       "type": "ElectricPotential",
+       "label": "L8 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L8_bnd",
+        "dim": 1,
+        "n": 10,
+        "entities": [
+         37,
+         38,
+         39,
+         89,
+         90,
+         107,
+         108,
+         125,
+         126,
+         149
+        ]
+       },
+       "props": {
+        "V0": "L8_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_L9",
+       "type": "ElectricPotential",
+       "label": "L9 potential",
+       "active": true,
+       "selection": {
+        "named": "geom1_L9_bnd",
+        "dim": 1,
+        "n": 10,
+        "entities": [
+         40,
+         41,
+         42,
+         91,
+         92,
+         109,
+         110,
+         127,
+         128,
+         150
+        ]
+       },
+       "props": {
+        "V0": "L9_v",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_D1",
+       "type": "ElectricPotential",
+       "label": "D1 potential (mean of halves)",
+       "active": true,
+       "selection": {
+        "named": "geom1_D1_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         43,
+         44,
+         45,
+         53,
+         54,
+         55,
+         56,
+         57,
+         58,
+         59,
+         151,
+         152
+        ]
+       },
+       "props": {
+        "V0": "(D1a_v+D1b_v)/2",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_D2",
+       "type": "ElectricPotential",
+       "label": "D2 potential (mean of halves)",
+       "active": true,
+       "selection": {
+        "named": "geom1_D2_bnd",
+        "dim": 1,
+        "n": 12,
+        "entities": [
+         46,
+         47,
+         48,
+         60,
+         61,
+         62,
+         63,
+         64,
+         65,
+         66,
+         153,
+         154
+        ]
+       },
+       "props": {
+        "V0": "(D2a_v+D2b_v)/2",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_mcpf",
+       "type": "ElectricPotential",
+       "label": "MCP front",
+       "active": true,
+       "selection": {
+        "named": "geom1_bnd_mcpfront",
+        "dim": 1,
+        "n": 1,
+        "entities": [
+         10
+        ]
+       },
+       "props": {
+        "V0": "V_mcp_front",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_mcpb",
+       "type": "ElectricPotential",
+       "label": "MCP back",
+       "active": true,
+       "selection": {
+        "named": "geom1_bnd_mcpback",
+        "dim": 1,
+        "n": 1,
+        "entities": [
+         12
+        ]
+       },
+       "props": {
+        "V0": "V_mcp_back",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_hub",
+       "type": "ElectricPotential",
+       "label": "Screen hub",
+       "active": true,
+       "selection": {
+        "named": "geom1_hub_bnd",
+        "dim": 1,
+        "n": 5,
+        "entities": [
+         49,
+         50,
+         51,
+         52,
+         134
+        ]
+       },
+       "props": {
+        "V0": "V_screen",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      },
+      {
+       "tag": "pot_mesh",
+       "type": "ElectricPotential",
+       "label": "Screen mesh",
+       "active": true,
+       "selection": {
+        "named": "geom1_meshline_bnd",
+        "dim": 1,
+        "n": 1,
+        "entities": [
+         8
+        ]
+       },
+       "props": {
+        "V0": "V_screen",
+        "constraintType": "symmetricConstraint",
+        "weakConstraints": "0",
+        "constraintMethod": "elemental",
+        "StudyStep": "std1/stat",
+        "showPhysicsSymbols": "1"
+       }
+      }
+     ]
+    },
+    {
+     "tag": "cpt",
+     "type": "ChargedParticleTracing",
+     "label": "Charged Particle Tracing",
+     "props": {},
+     "features": [
+      {
+       "tag": "axi1",
+       "type": "AxialSymmetry",
+       "label": "Axial Symmetry 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 1,
+        "n": 4,
+        "entities": [
+         1,
+         5,
+         7,
+         11
+        ]
+       },
+       "props": {
+        "WallCondition": "Bounce",
+        "WallContactCondition": "UseWallCond",
+        "gammas": "0",
+        "vprim": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "SpecifyPrimaryTangentialNormal": "0",
+        "PrimaryParticleCondition": "None",
+        "gamma": "0",
+        "e": "1",
+        "Otherwise": "Freeze",
+        "i": "1",
+        "StudyStep": "std1/stat"
+       }
+      },
+      {
+       "tag": "wall1",
+       "type": "Wall",
+       "label": "Wall 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": 1,
+        "n": 185,
+        "entities": [
+         2,
+         4,
+         6,
+         10,
+         12,
+         13,
+         14,
+         15,
+         16,
+         17,
+         18,
+         19,
+         20,
+         21,
+         22,
+         23,
+         24,
+         25,
+         26,
+         27,
+         28,
+         29,
+         30,
+         31,
+         32,
+         33,
+         34,
+         35,
+         36,
+         37,
+         38,
+         39,
+         40,
+         41,
+         42,
+         43,
+         44,
+         45,
+         46,
+         47,
+         "..."
+        ]
+       },
+       "props": {
+        "WallCondition": "Freeze",
+        "WallContactCondition": "UseWallCond",
+        "gammas": "0",
+        "vprim": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "SpecifyPrimaryTangentialNormal": "0",
+        "PrimaryParticleCondition": "None",
+        "gamma": "0",
+        "e": "1",
+        "Otherwise": "Freeze",
+        "i": "1",
+        "StudyStep": "std1/stat"
+       }
+      },
+      {
+       "tag": "pp1",
+       "type": "ParticleProperties",
+       "label": "Particle Properties 1",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": []
+       },
+       "props": {
+        "SpecifyHamiltonian": "Directly",
+        "H": "0",
+        "Fh": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "vh": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "L": "0",
+        "v": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "ParticleSpecies": "UserDefined",
+        "mp": "m_ion",
+        "mprest": "me_const",
+        "Z": "Z_ion",
+        "StudyStep": "std1/stat"
+       }
+      },
+      {
+       "tag": "ef1",
+       "type": "ElectricForce",
+       "label": "Electric Force 1",
+       "active": true,
+       "selection": {
+        "named": "geom1_sel_vac",
+        "dim": 2,
+        "n": 1,
+        "entities": [
+         1
+        ]
+       },
+       "props": {
+        "SpecifyForceUsing": "ElectricField",
+        "TimeDependenceOfField": "StationaryOrTimeDependent",
+        "FrequencySpecification": "FromSolution",
+        "UsePPR": "0",
+        "omega": "1[MHz]",
+        "Tper": "1[us]",
+        "phi0": "0",
+        "dtper": "0",
+        "E_src": "root.comp1.es.Er",
+        "E": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "V_src": "userdef",
+        "V": "0",
+        "ParticlesToAffect": "All",
+        "AffectedParticleProperties": "pp1",
+        "ei": "1",
+        "coordinateSystem": "GlobalSystem",
+        "StudyStep": "std1/stat"
+       }
+      },
+      {
+       "tag": "relf1",
+       "type": "ReleaseFromDataFile",
+       "label": "Release: 3D beam initial conditions",
+       "active": true,
+       "selection": {
+        "named": "",
+        "dim": []
+       },
+       "props": {
+        "rc": "1[nA]",
+        "TimeDistributionFunction": "ListOfValues",
+        "SamplingFromTimeDistribution": "Deterministic",
+        "rt": "0",
+        "Nvalt": "10",
+        "meant": "0.5",
+        "stdevt": "0.2",
+        "tstart": "0",
+        "tlast": "1",
+        "Filename": "D:\\Users\\kshimojo\\projects\\ion_beam_measurement\\data\\release_from_3d.txt",
+        "ModelRes": "res1",
+        "FilenameShort": "release_from_3d.txt",
+        "FileDiscard": "0",
+        "icolp": "0",
+        "InitialVelocity": "FromFile",
+        "SamplingFromDistribution": "Deterministic",
+        "AllowNonuniformSpeedsInDistributon": "0",
+        "v0": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "Us": "1",
+        "Nvel": "200",
+        "rax": [
+         [
+          "1"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "cax": [
+         [
+          "1"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "alphac": "pi/3",
+        "L0": [
+         [
+          "1"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "Ep0": "1[keV]",
+        "T0": "293.15[K]",
+        "M": "50",
+        "icolv": "2",
+        "ReleasedParticleProperties": "pp1",
+        "SubtractMovingFrameVelocity": "0",
+        "BackgroundVelocity": "FromRotatingFrame",
+        "vb": [
+         [
+          "0"
+         ],
+         [
+          "0"
+         ],
+         [
+          "0"
+         ]
+        ],
+        "StudyStep": "std1/stat"
+       }
+      }
+     ],
+     "prop_groups": {
+      "ParticleReleaseSpecification": {
+       "ParticleReleaseSpecification": "SpecifyReleaseTimes"
+      },
+      "ParticleProperties": {},
+      "PhysicsVariables": {},
+      "AdvancedSettings": {}
+     }
+    }
+   ],
+   "meshes": [
+    {
+     "tag": "mesh1",
+     "label": "Mesh 1",
+     "n_elem": 211688,
+     "features": [
+      {
+       "tag": "size",
+       "type": "MeshSizeDefault",
+       "label": "Size",
+       "selection": null
+      },
+      {
+       "tag": "ftri1",
+       "type": "FreeTri",
+       "label": "Free Triangular 1",
+       "selection": {
+        "named": "",
+        "dim": [
+         0,
+         1,
+         2
+        ]
+       },
+       "subfeatures": [
+        {
+         "tag": "s_tip",
+         "type": "Size",
+         "label": "Size",
+         "selection": {
+          "named": "geom1_needle_bnd",
+          "dim": 1,
+          "n": 5,
+          "entities": [
+           3,
+           4,
+           6,
+           14,
+           15
+          ]
+         }
+        },
+        {
+         "tag": "s_L1",
+         "type": "Size",
+         "label": "Size 1",
+         "selection": {
+          "named": "geom1_L1_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           16,
+           17,
+           18,
+           67,
+           68,
+           75,
+           76,
+           93,
+           94,
+           111,
+           112,
+           142
+          ]
+         }
+        },
+        {
+         "tag": "s_L2",
+         "type": "Size",
+         "label": "Size 2",
+         "selection": {
+          "named": "geom1_L2_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           19,
+           20,
+           21,
+           69,
+           70,
+           77,
+           78,
+           95,
+           96,
+           113,
+           114,
+           143
+          ]
+         }
+        },
+        {
+         "tag": "s_L3",
+         "type": "Size",
+         "label": "Size 3",
+         "selection": {
+          "named": "geom1_L3_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           22,
+           23,
+           24,
+           71,
+           72,
+           79,
+           80,
+           97,
+           98,
+           115,
+           116,
+           144
+          ]
+         }
+        },
+        {
+         "tag": "s_L4",
+         "type": "Size",
+         "label": "Size 4",
+         "selection": {
+          "named": "geom1_L4_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           25,
+           26,
+           27,
+           73,
+           74,
+           81,
+           82,
+           99,
+           100,
+           117,
+           118,
+           145
+          ]
+         }
+        },
+        {
+         "tag": "s_L5",
+         "type": "Size",
+         "label": "Size 5",
+         "selection": {
+          "named": "geom1_L5_bnd",
+          "dim": 1,
+          "n": 10,
+          "entities": [
+           28,
+           29,
+           30,
+           83,
+           84,
+           101,
+           102,
+           119,
+           120,
+           146
+          ]
+         }
+        },
+        {
+         "tag": "s_L6",
+         "type": "Size",
+         "label": "Size 6",
+         "selection": {
+          "named": "geom1_L6_bnd",
+          "dim": 1,
+          "n": 10,
+          "entities": [
+           31,
+           32,
+           33,
+           85,
+           86,
+           103,
+           104,
+           121,
+           122,
+           147
+          ]
+         }
+        },
+        {
+         "tag": "s_L7",
+         "type": "Size",
+         "label": "Size 7",
+         "selection": {
+          "named": "geom1_L7_bnd",
+          "dim": 1,
+          "n": 10,
+          "entities": [
+           34,
+           35,
+           36,
+           87,
+           88,
+           105,
+           106,
+           123,
+           124,
+           148
+          ]
+         }
+        },
+        {
+         "tag": "s_L8",
+         "type": "Size",
+         "label": "Size 8",
+         "selection": {
+          "named": "geom1_L8_bnd",
+          "dim": 1,
+          "n": 10,
+          "entities": [
+           37,
+           38,
+           39,
+           89,
+           90,
+           107,
+           108,
+           125,
+           126,
+           149
+          ]
+         }
+        },
+        {
+         "tag": "s_L9",
+         "type": "Size",
+         "label": "Size 9",
+         "selection": {
+          "named": "geom1_L9_bnd",
+          "dim": 1,
+          "n": 10,
+          "entities": [
+           40,
+           41,
+           42,
+           91,
+           92,
+           109,
+           110,
+           127,
+           128,
+           150
+          ]
+         }
+        },
+        {
+         "tag": "s_D1",
+         "type": "Size",
+         "label": "Size 1a",
+         "selection": {
+          "named": "geom1_D1_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           43,
+           44,
+           45,
+           53,
+           54,
+           55,
+           56,
+           57,
+           58,
+           59,
+           151,
+           152
+          ]
+         }
+        },
+        {
+         "tag": "s_D2",
+         "type": "Size",
+         "label": "Size 2a",
+         "selection": {
+          "named": "geom1_D2_bnd",
+          "dim": 1,
+          "n": 12,
+          "entities": [
+           46,
+           47,
+           48,
+           60,
+           61,
+           62,
+           63,
+           64,
+           65,
+           66,
+           153,
+           154
+          ]
+         }
+        },
+        {
+         "tag": "s_mesh",
+         "type": "Size",
+         "label": "Size 10",
+         "selection": {
+          "named": "geom1_meshline_bnd",
+          "dim": 1,
+          "n": 1,
+          "entities": [
+           8
+          ]
+         }
+        },
+        {
+         "tag": "s_hub",
+         "type": "Size",
+         "label": "Size 11",
+         "selection": {
+          "named": "geom1_hub_bnd",
+          "dim": 1,
+          "n": 5,
+          "entities": [
+           49,
+           50,
+           51,
+           52,
+           134
+          ]
+         }
+        },
+        {
+         "tag": "s_mcp",
+         "type": "Size",
+         "label": "Size 12",
+         "selection": {
+          "named": "geom1_bnd_mcpfront",
+          "dim": 1,
+          "n": 1,
+          "entities": [
+           10
+          ]
+         }
+        },
+        {
+         "tag": "s_axis",
+         "type": "Size",
+         "label": "Size 13",
+         "selection": {
+          "named": "geom1_sel_vac",
+          "dim": 2,
+          "n": 1,
+          "entities": [
+           1
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "studies": [
+  {
+   "tag": "std1",
+   "label": "Study 1 - electrostatics",
+   "steps": [
+    {
+     "tag": "stat",
+     "type": "Stationary",
+     "props": {
+      "geometricNonlinearity": "off",
+      "plot": "off",
+      "activate": [
+       "es",
+       "on",
+       "cpt",
+       "off",
+       "frame:spatial1",
+       "on",
+       "frame:material1",
+       "on"
+      ],
+      "useadvanceddisable": "off",
+      "disabledvariables": [],
+      "disabledphysics": [],
+      "useinitsol": "off",
+      "initmethod": "init",
+      "initstudy": "zero",
+      "solnum": "1",
+      "usesol": "off",
+      "notsolmethod": "init",
+      "notstudy": "zero",
+      "notsol": "current"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "std2",
+   "label": "Study 2 - particle tracing",
+   "steps": [
+    {
+     "tag": "time",
+     "type": "Transient",
+     "props": {
+      "tlist": "range(0,dt_out,t_end)",
+      "geometricNonlinearity": "off",
+      "plot": "off",
+      "activate": [
+       "es",
+       "off",
+       "cpt",
+       "on",
+       "frame:spatial1",
+       "on",
+       "frame:material1",
+       "on"
+      ],
+      "useadvanceddisable": "off",
+      "disabledvariables": [],
+      "disabledphysics": [],
+      "useinitsol": "off",
+      "initmethod": "init",
+      "initstudy": "zero",
+      "solnum": "1",
+      "usesol": "on",
+      "notsolmethod": "sol",
+      "notstudy": "std1",
+      "notsol": "current"
+     }
+    }
+   ]
+  }
+ ],
+ "solutions": [
+  {
+   "tag": "sol1",
+   "label": "Solution 1",
+   "study": "std1",
+   "features": [
+    {
+     "tag": "st1",
+     "type": "StudyStep",
+     "props": {
+      "studystep": "stat"
+     }
+    },
+    {
+     "tag": "v1",
+     "type": "Variables",
+     "props": {
+      "initmethod": "init",
+      "initsol": "zero",
+      "initsoluse": "current",
+      "solnum": "1",
+      "notsolmethod": "init",
+      "notsol": "zero",
+      "notsoluse": "current"
+     }
+    },
+    {
+     "tag": "s1",
+     "type": "Stationary",
+     "props": {
+      "solnum": "1"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "sol2",
+   "label": "Solution 2",
+   "study": "std2",
+   "features": [
+    {
+     "tag": "st1",
+     "type": "StudyStep",
+     "props": {
+      "studystep": "time"
+     }
+    },
+    {
+     "tag": "v1",
+     "type": "Variables",
+     "props": {
+      "initmethod": "init",
+      "initsol": "zero",
+      "initsoluse": "current",
+      "solnum": "1",
+      "notsolmethod": "sol",
+      "notsol": "sol1",
+      "notsoluse": "current"
+     }
+    },
+    {
+     "tag": "t1",
+     "type": "Time",
+     "props": {
+      "tlist": "range(0,dt_out,t_end)",
+      "rtol": "1.0E-5",
+      "atolglobal": "0.001",
+      "timemethod": "genalpha",
+      "tstepsbdf": "free",
+      "storeudot": "on"
+     }
+    }
+   ]
+  }
+ ],
+ "results": {
+  "datasets": [
+   {
+    "tag": "dset1",
+    "type": "Solution",
+    "label": "Study 1 - electrostatics/Solution 1",
+    "props": {
+     "solution": "sol1",
+     "geom": "geom1"
+    }
+   },
+   {
+    "tag": "dset2",
+    "type": "Solution",
+    "label": "Study 2 - particle tracing/Solution 2",
+    "props": {
+     "solution": "sol2",
+     "geom": "geom1"
+    }
+   }
+  ],
+  "exports": [],
+  "numerical": [],
+  "plot_groups": []
+ }
+}

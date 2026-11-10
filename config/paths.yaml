@@ -1,11 +1,11 @@
-﻿# Paths. Relative paths are resolved against the repository root (the folder that
+# Paths. Relative paths are resolved against the repository root (the folder that
 # contains config/). Nothing in the code hard-codes a path; change it here.
 
 comsol_root: "C:/Program Files/COMSOL/COMSOL55/Multiphysics"   # COMSOL install (bundled JRE lives under java/win64/jre/bin)
 
 models:                      # base models, READ ONLY for all code
   2d: lens8_axisym_asm.mph                 # real lens assembly (scripts/build_axisym.py); TBD move to models/
-  3d: lens8newMCP_ks_v4_lens_voltages.mph  # real lens assembly, not yet meshed/solved; TBD move to models/
+  3d: lens8newMCP_ks_v5_params.mph         # v4 + V_mcp_front/back, V_screen, m_ion, Z_ion, t_end, dt_out (scripts/add_3d_params.py); TBD move to models/
 
 queue_dir: queue             # pending/ running/ done/ failed/ job folders (QueueBackend + worker)
 results_dir: results         # one folder per job_id

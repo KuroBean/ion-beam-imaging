@@ -1,0 +1,1416 @@
+# Introspection: lens8newMCP_ks_v4_lens_voltages.mph  (3d)
+COMSOL 5.5, loaded in 19.2 s, size 1101 MB
+MPh tree:
+lens8newMCP_ks_v4_lens_voltages
+├─ parameters
+├─ functions
+├─ components
+├─ geometries
+├─ views
+├─ selections
+├─ coordinates
+├─ variables
+├─ couplings
+├─ physics
+├─ multiphysics
+├─ materials
+├─ meshes
+├─ studies
+├─ solutions
+├─ batches
+├─ datasets
+├─ evaluations
+├─ tables
+├─ plots
+└─ exports
+
+
+== Parameters (expr -> SI value) ==
+  cfg              = 3                                                            -> 3.0   
+  tip_z            = 105[mm]                                                      -> 0.105   z coordinate of tip where ions get released
+  tip_base_z       = 65[mm]                                                       -> 0.065   z coord of tip base (for reference measurements)
+  z_c2_center      = 215.9[mm]                                                    -> 0.2159   
+  L_c1             = 300[mm]                                                      -> 0.3   
+  z_c2             = if(cfg==3,L_c1,0[mm])                                        -> 0.3   
+  z_mcp_c1         = 250[mm]                                                      -> 0.25   
+  mcp_z            = if(cfg==1,z_mcp_c1, if(cfg==2, z_c2_center, z_c2_center+L_c1)) -> 0.5159   z coord of mcp face
+  L_dom            = if(cfg==3,2*z_c2_center+L_c1+0.1[m],L_c1+0.1[m])             -> 0.8318000000000001   
+  L1_v             = -120[V]                                                      -> -120.0   L1 potential
+  lens_gap         = 13.482[mm]                                                   -> 0.013482   needle tip to L1 entrance face (front plane closest to the tip)
+  L2_v             = -40[V]                                                       -> -40.0   L2 potential
+  L3_v             = -40[V]                                                       -> -40.0   L3 potential
+  L4_v             = -40[V]                                                       -> -40.0   L4 potential
+  L5_v             = -40[V]                                                       -> -40.0   L5 potential
+  L6_v             = -40[V]                                                       -> -40.0   L6 potential
+  L7_v             = -40[V]                                                       -> -40.0   L7 potential
+  L8_v             = -40[V]                                                       -> -40.0   L8 potential
+  L9_v             = 0[V]                                                         -> 0.0   L9 potential
+  D1a_v            = 0[V]                                                         -> 0.0   D1a potential
+  D1b_v            = 0[V]                                                         -> 0.0   D1b potential
+  D2a_v            = 0[V]                                                         -> 0.0   D2a potential
+  D2b_v            = 0[V]                                                         -> 0.0   D2b potential
+
+######## component comp1 ########
+
+== Geometry geom1 (sdim 3): 58 domains, 2454 boundaries ==
+  cyl2             Cylinder                 'Needle Tube'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', 'tip_z-40']
+      x = 0
+      y = 0
+      z = tip_z-40
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 0.5
+      h = 30
+  cone1            Cone                     'Needle Cone'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', 'tip_z-10']
+      x = 0
+      y = 0
+      z = tip_z-10
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 0.5
+      h = 10
+  sel1             ExplicitSelection        'dom_needle'
+      contributeto = none
+  sel11            ExplicitSelection        'needle_tip'
+      contributeto = none
+  if1              If                       'If need spherical chamber 2'
+      condition = cfg==2||cfg==3
+  imp7             Import                   'Import Chamber 2'
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      filename = embedded:///sphere chamber 10 in flange at 7 in.STEP
+      importtype = full3d
+  uni4             Union                    'Chamber 2 Union'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = ['imp7.Port_A_Flange1', 'imp7.Port_B_Flange1', 'imp7.Port_C_Flange1', 'imp7.Port_D_Flange1', 'imp7.Port_E_Flange1', 'imp7.Port_G_Flange1', 'imp7.Port_H_Flange1', 'imp7.Port_I_Flange1', 'imp7.Port_J_Flange1', 'imp7.Port_K_Flange1', 'imp7.Port_L_Flange1', 'imp7.Port_M_Flange1', 'imp7.Port_N_Flange1', 'imp7.Port_O_Flange1', 'imp7.Port_P_Flange1', 'imp7.Sphere1']
+      keep = off
+      face = all
+  if3              If                       'If 3'
+      condition = cfg==3
+  del3             Delete                   'Delete Entities 3'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = imp7.Port_F_Flange1
+  endif3           EndIf                    'End If 3'
+  sel9             ExplicitSelection        'Spherical Chamber 2'
+      contributeto = none
+  rt1              RigidTransform           'rotate chamber 2'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = uni4
+      keep = off
+      workplane = xyplane
+      displ = ['0', '0', '0']
+      axis = ['0', '1', '0']
+      rot = 90
+  wp4              WorkPlane                'chamber 2 input flange'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = rt1(1)
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  uni5             Union                    'add center flange point to chamber 2'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = ['rt1', 'wp4']
+      keep = off
+      face = none
+  mov6             Move                     'Move Chamber 2 to position'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = uni5(1)
+      keep = off
+      workplane = xyplane
+      oldposvertex = uni5(1)
+      newposz = 1.1684+z_c2
+  wp5              WorkPlane                'side flange plane for measuring'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = mov6(1)
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  endif1           EndIf                    'End spherical chamber'
+  if2              If                       'If tube chamber'
+      condition = cfg==1||cfg==3
+  imp4             Import                   'Import Chamber 1 and rails'
+      contributeto = csel3
+      selresult = on
+      selresultshow = dom
+      filename = embedded:///tube chamber.step
+      importtype = full3d
+  sel8             ExplicitSelection        'Tube Chamber 1'
+      contributeto = csel2
+  rot1             Rotate                   'Rotate Chamber 1'  [DISABLED]
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      input = imp4.Body1
+      keep = off
+      workplane = xyplane
+      pos = ['0', '0', '0']
+      axis = ['0', '1', '0']
+      rot = 90
+  wp3              WorkPlane                'input plane chamber 1'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = imp4.Body1
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  mov1             Move                     'Move Chamber 1'
+      contributeto = csel4
+      selresult = on
+      selresultshow = all
+      input = ['imp4', 'wp3']
+      keep = off
+      workplane = xyplane
+      oldposvertex = wp3.pt1
+      newposz = 0
+  sel10            ExplicitSelection        'meshing issue flange'
+      contributeto = none
+  del2             Delete                   'Delete flange w/ meshing issue'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = mov1(1)
+  endif2           EndIf                    'End If 2'
+  imp8             Import                   'Import lens assembly'
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      filename = embedded:///lens assembly stripped with rods.STEP
+      importtype = full3d
+  wp6              WorkPlane                'Extractor lens entrance plane'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = imp8.Imported1(8)
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  uni6             Union                    'Union lens assembly midpoint'
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      input = ['imp8', 'wp6']
+      keep = off
+      face = none
+  mov7             Move                     'Move lens assembly'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = uni6(1)
+      keep = off
+      workplane = xyplane
+      oldposvertex = uni6(1)
+      newposz = tip_z+lens_gap
+  unisel1          UnionSelection           'Deflector Selection'
+      entitydim = 3
+      input = ['imp8_Imported1_14', 'imp8_Imported1_15', 'imp8_Imported1_16', 'imp8_Imported1_17']
+      contributeto = none
+  if4              If                       'If delete deflectors for space'
+      condition = cfg==1||cfg==2
+  del4             Delete                   'Delete deflectors'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = mov7(1)
+  endif4           EndIf                    'End If 4'
+  unisel2          UnionSelection           'Rods Selection'
+      entitydim = 3
+      input = ['imp8_Imported1_10', 'imp8_Imported1_11', 'imp8_Imported1_12', 'imp8_Imported1_13']
+      contributeto = none
+  cyl5             Cylinder                 'Lens Cylinder 1'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '95']
+      x = 0
+      y = 0
+      z = 95
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 32.5
+      h = 9
+  cyl6             Cylinder                 'Lens Cylinder 2'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '95']
+      x = 0
+      y = 0
+      z = 95
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 5
+      h = 9
+  dif2             Difference               'Lens Difference 1'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  cyl7             Cylinder                 'Lens Cylinder 3'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '95']
+      x = 0
+      y = 0
+      z = 95
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 10
+      h = 5
+  cyl8             Cylinder                 'Lens Cylinder 4'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '95']
+      x = 0
+      y = 0
+      z = 95
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 15
+      h = 5
+  dif3             Difference               'Lens Difference 2'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  dif4             Difference               'Lens Difference 3'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  cyl9             Cylinder                 'Lens Cylinder 5'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '104']
+      x = 0
+      y = 0
+      z = 104
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 12
+      h = 5
+  cyl10            Cylinder                 'Lens Cylinder 6'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '104']
+      x = 0
+      y = 0
+      z = 104
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 13
+      h = 5
+  dif5             Difference               'Lens Difference 4'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  uni1             Union                    'Lens Union 1'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  copy1            Copy                     'Lens Copy 1'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = on
+      workplane = xyplane
+      oldposvertex = []
+      newposz = 0
+  sel2             ExplicitSelection        'dom_lens_2'
+      contributeto = none
+  mov2             Move                     'Move Lens and Needles 1'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = ['cone1', 'cyl2']
+      keep = off
+      workplane = xyplane
+      oldposvertex = []
+      newposz = 0
+  imp5             Import                   'Import Ultem MCP Holder 5'  [DISABLED]
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      filename = C:\Users\dvin\Downloads\mcp holder v2 STP.STEP
+      importtype = full3d
+  mov3             Move                     'Move MCP Holder 3'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      workplane = xyplane
+      oldposvertex = []
+      newposz = 0
+  imp6             Import                   'import MCP model, do later'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      filename = embedded:///mcp and in plane holder.STEP
+      importtype = full3d
+  wp1              WorkPlane                'mcp front face'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = imp6.BossExtrude8
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  mov5             Move                     'Move mcp'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = ['imp6', 'wp1']
+      keep = off
+      workplane = xyplane
+      oldposvertex = wp1.pt1
+      newposz = mcp_z
+  cyl16            Cylinder                 'MCP Cylinder 16'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '200']
+      x = 0
+      y = 0
+      z = 200
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 37.5
+      h = 3
+  cyl17            Cylinder                 'MCP Cylinder 17'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '200-8.9']
+      x = 0
+      y = 0
+      z = 200-8.9
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 27.5
+      h = 8.9
+  cyl18            Cylinder                 'MCP Cylinder 18'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '200-8.9']
+      x = 0
+      y = 0
+      z = 200-8.9
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 42/2
+      h = 3.3
+  uni2             Union                    'MCP Union 2'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  dif7             Difference               'MCP Difference 7'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      face = none
+  mov4             Move                     'MCP Move 4'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = []
+      keep = off
+      workplane = xyplane
+      oldposvertex = []
+      newposz = 0
+  sel3             ExplicitSelection        'sel_mcp_front'
+      contributeto = none
+  sel4             ExplicitSelection        'sel_mcp_back'
+      contributeto = none
+  sel7             ExplicitSelection        'dom_mcp_and_holder'
+      contributeto = none
+  cyl19            Cylinder                 'Fix MCP Holder Intefernce Cylinder 19'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['44.45', '44.45', 'mcp_z']
+      x = 44.45
+      y = 44.45
+      z = mcp_z
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 5
+      h = 20
+  arr3             Array                    'Array Four Posts 3'
+  dif8             Difference               'Difference MCP Holder and Trapeze 8'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = mov5(3)
+      keep = off
+      face = none
+  cyl20            Cylinder                 'Test Mesh Screen Cylinder 20'  [DISABLED]
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '220']
+      x = 0
+      y = 0
+      z = 220
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 20
+      h = 1
+  wp2              WorkPlane                'mcp post base'
+      contributeto = none
+      selresult = off
+      selresultshow = bnd
+      face = mov5(1)
+      workplane = xyplane
+      displ = ['0', '0']
+      rot = 0
+  cyl21            Cylinder                 'Cylinder Screen Post 21'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = wp2
+      pos = ['28', '28', '0']
+      x = 28
+      y = 28
+      z = 0
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 3
+      h = 20
+  arr4             Array                    'Post Array 4'
+  blk1             Block                    'Cross Block 1'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = wp2
+      pos = ['0', '0', '20']
+      x = 0
+      y = 0
+      z = 20
+      rot = 45
+      axis = ['0', '0', '1']
+      size = ['12', '90', '3']
+  blk2             Block                    'Cross Block 2'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = wp2
+      pos = ['0', '0', '20']
+      x = 0
+      y = 0
+      z = 20
+      rot = -45
+      axis = ['0', '0', '1']
+      size = ['12', '90', '3']
+  uni3             Union                    'Cross Union 3'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = ['blk1', 'blk2']
+      keep = off
+      face = none
+  cyl22            Cylinder                 'Cross Cylinder Hole 22'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = wp2
+      pos = ['0', '0', '15']
+      x = 0
+      y = 0
+      z = 15
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 5.5
+      h = 10
+  dif9             Difference               'Cross Difference 9'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = uni3
+      keep = off
+      face = none
+  cyl23            Cylinder                 'Mesh Disc Cylinder 23'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = wp2
+      pos = ['0', '0', '18.5']
+      x = 0
+      y = 0
+      z = 18.5
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 7
+      h = 0.2
+  sel5             ExplicitSelection        'dom_mesh'
+      contributeto = none
+  sel6             ExplicitSelection        'dom_mesh_cross'
+      contributeto = none
+  sel12            ExplicitSelection        'dom_holder'
+      contributeto = none
+  sel13            ExplicitSelection        'dom_cross_posts'
+      contributeto = none
+  sel14            ExplicitSelection        'mcp_surrounding'
+      contributeto = none
+  cyl4             Cylinder                 'Full Boundary Cylinder'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      workplane = xyplane
+      pos = ['0', '0', '-50']
+      x = 0
+      y = 0
+      z = -50
+      rot = 0
+      axis = ['0', '0', '1']
+      r = 175
+      h = L_dom
+  fin              Finalize                 'Form Union'
+  -- geometry-level selections (named as <geom>_<tag>) --
+  imp4_Boundary_color_1.bnd ?                        'Boundary color 1 (Import Chamber 1 and rails)'
+  rot1             ?                        'Rotate Chamber 1'
+  rot1.pnt         ?                        'Rotate Chamber 1'
+  rot1.edg         ?                        'Rotate Chamber 1'
+  rot1.bnd         ?                        'Rotate Chamber 1'
+  rot1.dom         ?                        'Rotate Chamber 1'
+  imp4             ?                        'Import Chamber 1 and rails'
+  imp4.pnt         ?                        'Import Chamber 1 and rails'
+  imp4.edg         ?                        'Import Chamber 1 and rails'
+  imp4.bnd         ?                        'Import Chamber 1 and rails'
+  imp4.dom         ?                        'Import Chamber 1 and rails'
+  csel1            ?                        'Cumulative Selection 1'
+  csel1.dom        ?                        'Cumulative Selection 1'
+  csel1.bnd        ?                        'Cumulative Selection 1'
+  csel1.edg        ?                        'Cumulative Selection 1'
+  csel1.pnt        ?                        'Cumulative Selection 1'
+  imp5             ?                        'Import Ultem MCP Holder 5'
+  imp5.pnt         ?                        'Import Ultem MCP Holder 5'
+  imp5.edg         ?                        'Import Ultem MCP Holder 5'
+  imp5.bnd         ?                        'Import Ultem MCP Holder 5'
+  imp5.dom         ?                        'Import Ultem MCP Holder 5'
+  sel1             ?                        'dom_needle'
+  sel2             ?                        'dom_lens_2'
+  sel3             ?                        'sel_mcp_front'
+  sel4             ?                        'sel_mcp_back'
+  sel5             ?                        'dom_mesh'
+  sel6             ?                        'dom_mesh_cross'
+  sel7             ?                        'dom_mcp_and_holder'
+  sel8.dom         ?                        'Tube Chamber 1'
+  imp7             ?                        'Import Chamber 2'
+  imp7.pnt         ?                        'Import Chamber 2'
+  imp7.edg         ?                        'Import Chamber 2'
+  imp7.bnd         ?                        'Import Chamber 2'
+  imp7.dom         ?                        'Import Chamber 2'
+  sel9.dom         ?                        'Spherical Chamber 2'
+  sel9             ?                        'Spherical Chamber 2'
+  sel9.pnt         ?                        'Spherical Chamber 2'
+  sel9.edg         ?                        'Spherical Chamber 2'
+  sel9.bnd         ?                        'Spherical Chamber 2'
+  sel10            ?                        'meshing issue flange'
+  imp4_Body1       ?                        'Body1 (Import Chamber 1 and rails)'
+  imp4_Body1.pnt   ?                        'Body1 (Import Chamber 1 and rails)'
+  imp4_Body1.edg   ?                        'Body1 (Import Chamber 1 and rails)'
+  imp4_Body1.bnd   ?                        'Body1 (Import Chamber 1 and rails)'
+  imp4_Body1.dom   ?                        'Body1 (Import Chamber 1 and rails)'
+  csel2            ?                        'Cumulative Selection 2a'
+  csel2.dom        ?                        'Cumulative Selection 2a'
+  csel2.bnd        ?                        'Cumulative Selection 2a'
+  csel2.edg        ?                        'Cumulative Selection 2a'
+  csel2.pnt        ?                        'Cumulative Selection 2a'
+  csel3            ?                        'Cumulative Selection 3'
+  csel3.dom        ?                        'Cumulative Selection 3'
+  csel3.bnd        ?                        'Cumulative Selection 3'
+  csel3.edg        ?                        'Cumulative Selection 3'
+  csel3.pnt        ?                        'Cumulative Selection 3'
+  mov1             ?                        'Move Chamber 1'
+  mov1.pnt         ?                        'Move Chamber 1'
+  mov1.edg         ?                        'Move Chamber 1'
+  mov1.bnd         ?                        'Move Chamber 1'
+  mov1.dom         ?                        'Move Chamber 1'
+  csel4            ?                        'Cumulative Selection 4'
+  csel4.dom        ?                        'Cumulative Selection 4'
+  csel4.bnd        ?                        'Cumulative Selection 4'
+  csel4.edg        ?                        'Cumulative Selection 4'
+  csel4.pnt        ?                        'Cumulative Selection 4'
+  csel5            ?                        'Cumulative Selection 5'
+  csel5.dom        ?                        'Cumulative Selection 5'
+  csel5.bnd        ?                        'Cumulative Selection 5'
+  csel5.edg        ?                        'Cumulative Selection 5'
+  csel5.pnt        ?                        'Cumulative Selection 5'
+  sel8             ?                        'Tube Chamber 1'
+  sel8.pnt         ?                        'Tube Chamber 1'
+  sel8.edg         ?                        'Tube Chamber 1'
+  sel8.bnd         ?                        'Tube Chamber 1'
+  imp8             ?                        'Import lens assembly'
+  imp8.pnt         ?                        'Import lens assembly'
+  imp8.edg         ?                        'Import lens assembly'
+  imp8.bnd         ?                        'Import lens assembly'
+  imp8.dom         ?                        'Import lens assembly'
+  uni6             ?                        'Union lens assembly midpoint'
+  uni6.pnt         ?                        'Union lens assembly midpoint'
+  uni6.edg         ?                        'Union lens assembly midpoint'
+  uni6.bnd         ?                        'Union lens assembly midpoint'
+  uni6.dom         ?                        'Union lens assembly midpoint'
+  imp8_Imported1_1 ?                        'L5 (Import lens assembly)'
+  imp8_Imported1_1.pnt ?                        'L5 (Import lens assembly)'
+  imp8_Imported1_1.edg ?                        'L5 (Import lens assembly)'
+  imp8_Imported1_1.bnd ?                        'L5 (Import lens assembly)'
+  imp8_Imported1_1.dom ?                        'L5 (Import lens assembly)'
+  imp8_Imported1_2 ?                        'L7 (Import lens assembly)'
+  imp8_Imported1_2.pnt ?                        'L7 (Import lens assembly)'
+  imp8_Imported1_2.edg ?                        'L7 (Import lens assembly)'
+  imp8_Imported1_2.bnd ?                        'L7 (Import lens assembly)'
+  imp8_Imported1_2.dom ?                        'L7 (Import lens assembly)'
+  imp8_Imported1_3 ?                        'L9 (Import lens assembly)'
+  imp8_Imported1_3.pnt ?                        'L9 (Import lens assembly)'
+  imp8_Imported1_3.edg ?                        'L9 (Import lens assembly)'
+  imp8_Imported1_3.bnd ?                        'L9 (Import lens assembly)'
+  imp8_Imported1_3.dom ?                        'L9 (Import lens assembly)'
+  imp8_Imported1_4 ?                        'L6 (Import lens assembly)'
+  imp8_Imported1_4.pnt ?                        'L6 (Import lens assembly)'
+  imp8_Imported1_4.edg ?                        'L6 (Import lens assembly)'
+  imp8_Imported1_4.bnd ?                        'L6 (Import lens assembly)'
+  imp8_Imported1_4.dom ?                        'L6 (Import lens assembly)'
+  imp8_Imported1_5 ?                        'L8 (Import lens assembly)'
+  imp8_Imported1_5.pnt ?                        'L8 (Import lens assembly)'
+  imp8_Imported1_5.edg ?                        'L8 (Import lens assembly)'
+  imp8_Imported1_5.bnd ?                        'L8 (Import lens assembly)'
+  imp8_Imported1_5.dom ?                        'L8 (Import lens assembly)'
+  imp8_Imported1_6 ?                        'L2 (Import lens assembly)'
+  imp8_Imported1_6.pnt ?                        'L2 (Import lens assembly)'
+  imp8_Imported1_6.edg ?                        'L2 (Import lens assembly)'
+  imp8_Imported1_6.bnd ?                        'L2 (Import lens assembly)'
+  imp8_Imported1_6.dom ?                        'L2 (Import lens assembly)'
+  imp8_Imported1_7 ?                        'L3 (Import lens assembly)'
+  imp8_Imported1_7.pnt ?                        'L3 (Import lens assembly)'
+  imp8_Imported1_7.edg ?                        'L3 (Import lens assembly)'
+  imp8_Imported1_7.bnd ?                        'L3 (Import lens assembly)'
+  imp8_Imported1_7.dom ?                        'L3 (Import lens assembly)'
+  imp8_Imported1_8 ?                        'L1 (Import lens assembly)'
+  imp8_Imported1_8.pnt ?                        'L1 (Import lens assembly)'
+  imp8_Imported1_8.edg ?                        'L1 (Import lens assembly)'
+  imp8_Imported1_8.bnd ?                        'L1 (Import lens assembly)'
+  imp8_Imported1_8.dom ?                        'L1 (Import lens assembly)'
+  imp8_Imported1_9 ?                        'L4 (Import lens assembly)'
+  imp8_Imported1_9.pnt ?                        'L4 (Import lens assembly)'
+  imp8_Imported1_9.edg ?                        'L4 (Import lens assembly)'
+  imp8_Imported1_9.bnd ?                        'L4 (Import lens assembly)'
+  imp8_Imported1_9.dom ?                        'L4 (Import lens assembly)'
+  imp8_Imported1_10 ?                        'rod BR (Import lens assembly)'
+  imp8_Imported1_10.pnt ?                        'rod BR (Import lens assembly)'
+  imp8_Imported1_10.edg ?                        'rod BR (Import lens assembly)'
+  imp8_Imported1_10.bnd ?                        'rod BR (Import lens assembly)'
+  imp8_Imported1_10.dom ?                        'rod BR (Import lens assembly)'
+  imp8_Imported1_11 ?                        'rod UR (Import lens assembly)'
+  imp8_Imported1_11.pnt ?                        'rod UR (Import lens assembly)'
+  imp8_Imported1_11.edg ?                        'rod UR (Import lens assembly)'
+  imp8_Imported1_11.bnd ?                        'rod UR (Import lens assembly)'
+  imp8_Imported1_11.dom ?                        'rod UR (Import lens assembly)'
+  imp8_Imported1_12 ?                        'rod UL (Import lens assembly)'
+  imp8_Imported1_12.pnt ?                        'rod UL (Import lens assembly)'
+  imp8_Imported1_12.edg ?                        'rod UL (Import lens assembly)'
+  imp8_Imported1_12.bnd ?                        'rod UL (Import lens assembly)'
+  imp8_Imported1_12.dom ?                        'rod UL (Import lens assembly)'
+  imp8_Imported1_13 ?                        'rod BL (Import lens assembly)'
+  imp8_Imported1_13.pnt ?                        'rod BL (Import lens assembly)'
+  imp8_Imported1_13.edg ?                        'rod BL (Import lens assembly)'
+  imp8_Imported1_13.bnd ?                        'rod BL (Import lens assembly)'
+  imp8_Imported1_13.dom ?                        'rod BL (Import lens assembly)'
+  imp8_Imported1_14 ?                        'D1a (Import lens assembly)'
+  imp8_Imported1_14.pnt ?                        'D1a (Import lens assembly)'
+  imp8_Imported1_14.edg ?                        'D1a (Import lens assembly)'
+  imp8_Imported1_14.bnd ?                        'D1a (Import lens assembly)'
+  imp8_Imported1_14.dom ?                        'D1a (Import lens assembly)'
+  unisel1          ?                        'Deflector Selection'
+  imp8_Imported1_15 ?                        'D2b (Import lens assembly)'
+  imp8_Imported1_15.pnt ?                        'D2b (Import lens assembly)'
+  imp8_Imported1_15.edg ?                        'D2b (Import lens assembly)'
+  imp8_Imported1_15.bnd ?                        'D2b (Import lens assembly)'
+  imp8_Imported1_15.dom ?                        'D2b (Import lens assembly)'
+  imp8_Imported1_16 ?                        'D2a (Import lens assembly)'
+  imp8_Imported1_16.pnt ?                        'D2a (Import lens assembly)'
+  imp8_Imported1_16.edg ?                        'D2a (Import lens assembly)'
+  imp8_Imported1_16.bnd ?                        'D2a (Import lens assembly)'
+  imp8_Imported1_16.dom ?                        'D2a (Import lens assembly)'
+  imp8_Imported1_17 ?                        'D1b (Import lens assembly)'
+  imp8_Imported1_17.pnt ?                        'D1b (Import lens assembly)'
+  imp8_Imported1_17.edg ?                        'D1b (Import lens assembly)'
+  imp8_Imported1_17.bnd ?                        'D1b (Import lens assembly)'
+  imp8_Imported1_17.dom ?                        'D1b (Import lens assembly)'
+  imp8_Imported1_18 ?                        'bracket (Import lens assembly)'
+  imp8_Imported1_18.pnt ?                        'bracket (Import lens assembly)'
+  imp8_Imported1_18.edg ?                        'bracket (Import lens assembly)'
+  imp8_Imported1_18.bnd ?                        'bracket (Import lens assembly)'
+  imp8_Imported1_18.dom ?                        'bracket (Import lens assembly)'
+  unisel2          ?                        'Rods Selection'
+  sel11            ?                        'needle_tip'
+  sel12.dom        ?                        'dom_holder'
+  sel12            ?                        'dom_holder'
+  sel12.pnt        ?                        'dom_holder'
+  sel12.edg        ?                        'dom_holder'
+  sel12.bnd        ?                        'dom_holder'
+  sel13            ?                        'dom_cross_posts'
+  sel14            ?                        'mcp_surrounding'
+
+== Geometry pgeom_cpt (sdim 1): 0 domains, 1 boundaries ==
+  pt1              Point                    'Point 1'
+  -- geometry-level selections (named as <geom>_<tag>) --
+
+== Component selections ==
+  sel2             Explicit       dim2 n=0  'Explicit 2'
+  sel3             Explicit       dim2 n=0  'Explicit 3'
+  geom1_rot1_dom   FromGeom       dim3 n=0  'Rotate Chamber 1'
+  geom1_imp4_dom   FromGeom       dim3 n=0  'Import Chamber 1 and rails'
+  geom1_csel1_pnt  FromGeom       dim0 n=0  'Cumulative Selection 1'
+  geom1_csel1_edg  FromGeom       dim1 n=0  'Cumulative Selection 1'
+  geom1_csel1_bnd  FromGeom       dim2 n=0  'Cumulative Selection 1'
+  geom1_csel1_dom  FromGeom       dim3 n=0  'Cumulative Selection 1'
+  geom1_imp5_dom   FromGeom       dim3 n=0  'Import Ultem MCP Holder 5'
+  sel4             Explicit       dim2 n=42  'Explicit 4'
+  sel5             Explicit       dim2 n=44  'Explicit 5'
+  geom1_sel1       FromGeom       dim3 n=2  'dom_needle'
+  geom1_sel2       FromGeom       dim3 n=0  'dom_lens_2'
+  geom1_sel3       FromGeom       dim2 n=1  'sel_mcp_front'
+  geom1_sel4       FromGeom       dim2 n=1  'sel_mcp_back'
+  geom1_sel5       FromGeom       dim3 n=6  'dom_mesh'
+  geom1_sel6       FromGeom       dim3 n=14  'dom_mesh_cross'
+  adj1             Adjacent       dim2 n=0  'sel_lens_2'
+  adj2             Adjacent       dim2 n=42  'sel_mesh_cross'
+  adj3             Adjacent       dim2 n=24  'sel_mesh'
+  geom1_sel7       FromGeom       dim3 n=7  'dom_mcp_and_holder'
+  adj4             Adjacent       dim2 n=124  'sel_mcp_and_holder'
+  adj5             Adjacent       dim2 n=10  'sel_needle'
+  geom1_sel8_pnt   FromGeom       dim0 n=108  'Tube Chamber 1'
+  geom1_sel8_edg   FromGeom       dim1 n=162  'Tube Chamber 1'
+  geom1_sel8_bnd   FromGeom       dim2 n=68  'Tube Chamber 1'
+  geom1_sel8_dom   FromGeom       dim3 n=0  'Tube Chamber 1'
+  geom1_imp7_dom   FromGeom       dim3 n=11  'Import Chamber 2'
+  geom1_sel9_pnt   FromGeom       dim0 n=1466  'Spherical Chamber 2'
+  geom1_sel9_edg   FromGeom       dim1 n=2526  'Spherical Chamber 2'
+  geom1_sel9_bnd   FromGeom       dim2 n=1070  'Spherical Chamber 2'
+  geom1_sel9_dom   FromGeom       dim3 n=11  'Spherical Chamber 2'
+  geom1_sel10      FromGeom       dim2 n=0  'meshing issue flange'
+  geom1_imp4_Body1_dom FromGeom       dim3 n=0  'Body1 (Import Chamber 1 and rails)'
+  geom1_csel2_pnt  FromGeom       dim0 n=108  'Cumulative Selection 2a'
+  geom1_csel2_edg  FromGeom       dim1 n=162  'Cumulative Selection 2a'
+  geom1_csel2_bnd  FromGeom       dim2 n=68  'Cumulative Selection 2a'
+  geom1_csel2_dom  FromGeom       dim3 n=0  'Cumulative Selection 2a'
+  geom1_csel3_pnt  FromGeom       dim0 n=108  'Cumulative Selection 3'
+  geom1_csel3_edg  FromGeom       dim1 n=162  'Cumulative Selection 3'
+  geom1_csel3_bnd  FromGeom       dim2 n=68  'Cumulative Selection 3'
+  geom1_csel3_dom  FromGeom       dim3 n=0  'Cumulative Selection 3'
+  geom1_mov1_pnt   FromGeom       dim0 n=109  'Move Chamber 1'
+  geom1_mov1_edg   FromGeom       dim1 n=162  'Move Chamber 1'
+  geom1_mov1_bnd   FromGeom       dim2 n=68  'Move Chamber 1'
+  geom1_mov1_dom   FromGeom       dim3 n=0  'Move Chamber 1'
+  geom1_csel4_pnt  FromGeom       dim0 n=109  'Cumulative Selection 4'
+  geom1_csel4_edg  FromGeom       dim1 n=162  'Cumulative Selection 4'
+  geom1_csel4_bnd  FromGeom       dim2 n=68  'Cumulative Selection 4'
+  geom1_csel4_dom  FromGeom       dim3 n=0  'Cumulative Selection 4'
+  geom1_csel5_pnt  FromGeom       dim0 n=0  'Cumulative Selection 5'
+  geom1_csel5_edg  FromGeom       dim1 n=0  'Cumulative Selection 5'
+  geom1_csel5_bnd  FromGeom       dim2 n=0  'Cumulative Selection 5'
+  geom1_csel5_dom  FromGeom       dim3 n=0  'Cumulative Selection 5'
+  geom1_imp8_dom   FromGeom       dim3 n=18  'Import lens assembly'
+  geom1_uni6_dom   FromGeom       dim3 n=18  'Union lens assembly midpoint'
+  geom1_unisel1    FromGeom       dim3 n=4  'Deflector Selection'
+  geom1_imp8_Imported1_1 FromGeom       dim0 n=0  'L5 (Import lens assembly)'
+  geom1_imp8_Imported1_1_pnt FromGeom       dim0 n=107  'L5 (Import lens assembly)'
+  geom1_imp8_Imported1_1_edg FromGeom       dim1 n=163  'L5 (Import lens assembly)'
+  geom1_imp8_Imported1_1_bnd FromGeom       dim2 n=71  'L5 (Import lens assembly)'
+  geom1_imp8_Imported1_1_dom FromGeom       dim3 n=1  'L5 (Import lens assembly)'
+  geom1_imp8_Imported1_2 FromGeom       dim0 n=0  'L7 (Import lens assembly)'
+  geom1_imp8_Imported1_2_pnt FromGeom       dim0 n=107  'L7 (Import lens assembly)'
+  geom1_imp8_Imported1_2_edg FromGeom       dim1 n=163  'L7 (Import lens assembly)'
+  geom1_imp8_Imported1_2_bnd FromGeom       dim2 n=71  'L7 (Import lens assembly)'
+  geom1_imp8_Imported1_2_dom FromGeom       dim3 n=1  'L7 (Import lens assembly)'
+  geom1_imp8_Imported1_4 FromGeom       dim0 n=0  'L6 (Import lens assembly)'
+  geom1_imp8_Imported1_4_pnt FromGeom       dim0 n=107  'L6 (Import lens assembly)'
+  geom1_imp8_Imported1_4_edg FromGeom       dim1 n=163  'L6 (Import lens assembly)'
+  geom1_imp8_Imported1_4_bnd FromGeom       dim2 n=71  'L6 (Import lens assembly)'
+  geom1_imp8_Imported1_4_dom FromGeom       dim3 n=1  'L6 (Import lens assembly)'
+  geom1_imp8_Imported1_5 FromGeom       dim0 n=0  'L8 (Import lens assembly)'
+  geom1_imp8_Imported1_5_pnt FromGeom       dim0 n=107  'L8 (Import lens assembly)'
+  geom1_imp8_Imported1_5_edg FromGeom       dim1 n=163  'L8 (Import lens assembly)'
+  geom1_imp8_Imported1_5_bnd FromGeom       dim2 n=71  'L8 (Import lens assembly)'
+  geom1_imp8_Imported1_5_dom FromGeom       dim3 n=1  'L8 (Import lens assembly)'
+  geom1_imp8_Imported1_6 FromGeom       dim0 n=0  'L2 (Import lens assembly)'
+  geom1_imp8_Imported1_6_pnt FromGeom       dim0 n=111  'L2 (Import lens assembly)'
+  geom1_imp8_Imported1_6_edg FromGeom       dim1 n=169  'L2 (Import lens assembly)'
+  geom1_imp8_Imported1_6_bnd FromGeom       dim2 n=74  'L2 (Import lens assembly)'
+  geom1_imp8_Imported1_6_dom FromGeom       dim3 n=1  'L2 (Import lens assembly)'
+  geom1_imp8_Imported1_7 FromGeom       dim0 n=0  'L3 (Import lens assembly)'
+  geom1_imp8_Imported1_7_pnt FromGeom       dim0 n=111  'L3 (Import lens assembly)'
+  geom1_imp8_Imported1_7_edg FromGeom       dim1 n=169  'L3 (Import lens assembly)'
+  geom1_imp8_Imported1_7_bnd FromGeom       dim2 n=74  'L3 (Import lens assembly)'
+  geom1_imp8_Imported1_7_dom FromGeom       dim3 n=1  'L3 (Import lens assembly)'
+  geom1_imp8_Imported1_8 FromGeom       dim0 n=0  'L1 (Import lens assembly)'
+  geom1_imp8_Imported1_8_pnt FromGeom       dim0 n=111  'L1 (Import lens assembly)'
+  geom1_imp8_Imported1_8_edg FromGeom       dim1 n=169  'L1 (Import lens assembly)'
+  geom1_imp8_Imported1_8_bnd FromGeom       dim2 n=74  'L1 (Import lens assembly)'
+  geom1_imp8_Imported1_8_dom FromGeom       dim3 n=1  'L1 (Import lens assembly)'
+  geom1_imp8_Imported1_9 FromGeom       dim0 n=0  'L4 (Import lens assembly)'
+  geom1_imp8_Imported1_9_pnt FromGeom       dim0 n=111  'L4 (Import lens assembly)'
+  geom1_imp8_Imported1_9_edg FromGeom       dim1 n=169  'L4 (Import lens assembly)'
+  geom1_imp8_Imported1_9_bnd FromGeom       dim2 n=74  'L4 (Import lens assembly)'
+  geom1_imp8_Imported1_9_dom FromGeom       dim3 n=1  'L4 (Import lens assembly)'
+  geom1_imp8_Imported1_10 FromGeom       dim0 n=0  'rod BR (Import lens assembly)'
+  geom1_imp8_Imported1_10_pnt FromGeom       dim0 n=4  'rod BR (Import lens assembly)'
+  geom1_imp8_Imported1_10_edg FromGeom       dim1 n=6  'rod BR (Import lens assembly)'
+  geom1_imp8_Imported1_10_bnd FromGeom       dim2 n=4  'rod BR (Import lens assembly)'
+  geom1_imp8_Imported1_10_dom FromGeom       dim3 n=1  'rod BR (Import lens assembly)'
+  geom1_imp8_Imported1_11 FromGeom       dim0 n=0  'rod UR (Import lens assembly)'
+  geom1_imp8_Imported1_11_pnt FromGeom       dim0 n=4  'rod UR (Import lens assembly)'
+  geom1_imp8_Imported1_11_edg FromGeom       dim1 n=6  'rod UR (Import lens assembly)'
+  geom1_imp8_Imported1_11_bnd FromGeom       dim2 n=4  'rod UR (Import lens assembly)'
+  geom1_imp8_Imported1_11_dom FromGeom       dim3 n=1  'rod UR (Import lens assembly)'
+  geom1_imp8_Imported1_12 FromGeom       dim0 n=0  'rod UL (Import lens assembly)'
+  geom1_imp8_Imported1_12_pnt FromGeom       dim0 n=4  'rod UL (Import lens assembly)'
+  geom1_imp8_Imported1_12_edg FromGeom       dim1 n=6  'rod UL (Import lens assembly)'
+  geom1_imp8_Imported1_12_bnd FromGeom       dim2 n=4  'rod UL (Import lens assembly)'
+  geom1_imp8_Imported1_12_dom FromGeom       dim3 n=1  'rod UL (Import lens assembly)'
+  geom1_imp8_Imported1_13 FromGeom       dim0 n=0  'rod BL (Import lens assembly)'
+  geom1_imp8_Imported1_13_pnt FromGeom       dim0 n=4  'rod BL (Import lens assembly)'
+  geom1_imp8_Imported1_13_edg FromGeom       dim1 n=6  'rod BL (Import lens assembly)'
+  geom1_imp8_Imported1_13_bnd FromGeom       dim2 n=4  'rod BL (Import lens assembly)'
+  geom1_imp8_Imported1_13_dom FromGeom       dim3 n=1  'rod BL (Import lens assembly)'
+  geom1_imp8_Imported1_14 FromGeom       dim0 n=0  'D1a (Import lens assembly)'
+  geom1_imp8_Imported1_14_pnt FromGeom       dim0 n=128  'D1a (Import lens assembly)'
+  geom1_imp8_Imported1_14_edg FromGeom       dim1 n=197  'D1a (Import lens assembly)'
+  geom1_imp8_Imported1_14_bnd FromGeom       dim2 n=74  'D1a (Import lens assembly)'
+  geom1_imp8_Imported1_14_dom FromGeom       dim3 n=1  'D1a (Import lens assembly)'
+  geom1_imp8_Imported1_15 FromGeom       dim0 n=0  'D2b (Import lens assembly)'
+  geom1_imp8_Imported1_15_pnt FromGeom       dim0 n=128  'D2b (Import lens assembly)'
+  geom1_imp8_Imported1_15_edg FromGeom       dim1 n=197  'D2b (Import lens assembly)'
+  geom1_imp8_Imported1_15_bnd FromGeom       dim2 n=74  'D2b (Import lens assembly)'
+  geom1_imp8_Imported1_15_dom FromGeom       dim3 n=1  'D2b (Import lens assembly)'
+  geom1_imp8_Imported1_16 FromGeom       dim0 n=0  'D2a (Import lens assembly)'
+  geom1_imp8_Imported1_16_pnt FromGeom       dim0 n=128  'D2a (Import lens assembly)'
+  geom1_imp8_Imported1_16_edg FromGeom       dim1 n=197  'D2a (Import lens assembly)'
+  geom1_imp8_Imported1_16_bnd FromGeom       dim2 n=74  'D2a (Import lens assembly)'
+  geom1_imp8_Imported1_16_dom FromGeom       dim3 n=1  'D2a (Import lens assembly)'
+  geom1_imp8_Imported1_17 FromGeom       dim0 n=0  'D1b (Import lens assembly)'
+  geom1_imp8_Imported1_17_pnt FromGeom       dim0 n=128  'D1b (Import lens assembly)'
+  geom1_imp8_Imported1_17_edg FromGeom       dim1 n=197  'D1b (Import lens assembly)'
+  geom1_imp8_Imported1_17_bnd FromGeom       dim2 n=74  'D1b (Import lens assembly)'
+  geom1_imp8_Imported1_17_dom FromGeom       dim3 n=1  'D1b (Import lens assembly)'
+  geom1_imp8_Imported1_18 FromGeom       dim0 n=0  'bracket (Import lens assembly)'
+  geom1_imp8_Imported1_18_pnt FromGeom       dim0 n=60  'bracket (Import lens assembly)'
+  geom1_imp8_Imported1_18_edg FromGeom       dim1 n=90  'bracket (Import lens assembly)'
+  geom1_imp8_Imported1_18_bnd FromGeom       dim2 n=32  'bracket (Import lens assembly)'
+  geom1_imp8_Imported1_18_dom FromGeom       dim3 n=1  'bracket (Import lens assembly)'
+  geom1_imp8_Imported1_3 FromGeom       dim0 n=0  'L9 (Import lens assembly)'
+  geom1_imp8_Imported1_3_pnt FromGeom       dim0 n=107  'L9 (Import lens assembly)'
+  geom1_imp8_Imported1_3_edg FromGeom       dim1 n=163  'L9 (Import lens assembly)'
+  geom1_imp8_Imported1_3_bnd FromGeom       dim2 n=71  'L9 (Import lens assembly)'
+  geom1_imp8_Imported1_3_dom FromGeom       dim3 n=1  'L9 (Import lens assembly)'
+  geom1_unisel2    FromGeom       dim3 n=4  'Rods Selection'
+  geom1_sel11      FromGeom       dim2 n=1  'needle_tip'
+  geom1_sel12_pnt  FromGeom       dim0 n=56  'dom_holder'
+  geom1_sel12_edg  FromGeom       dim1 n=92  'dom_holder'
+  geom1_sel12_bnd  FromGeom       dim2 n=39  'dom_holder'
+  geom1_sel12_dom  FromGeom       dim3 n=1  'dom_holder'
+  adj_rods         Adjacent       dim2 n=16  'sel_rods (boundaries)'
+  sel_asm_gnd      Union          dim2 n=48  'sel_rods_bracket (grounded)'
+  cyl_beam         Cylinder       dim2 n=41  'Boundaries reaching r < 7.0 mm (tip..end of L9)'
+  adj_asm          Adjacent       dim2 n=995  'Lens assembly boundaries'
+  sel_apertures    Intersection   dim2 n=36  'sel_apertures (lens assembly near the beam axis)'
+  geom1_sel13      FromGeom       dim3 n=12  'dom_cross_posts'
+  geom1_sel14      FromGeom       dim3 n=5  'mcp_surrounding'
+  box_tip          Box            dim2 n=6  'Boundaries fully inside the needle cone/tip box'
+  sel_needle_tip   Intersection   dim2 n=5  'sel_needle_tip (needle cone + tip face)'
+  cyl_defl         Cylinder       dim2 n=0  'Boundaries entirely within r < 7.0 mm (deflector region)'
+  cyl_beam_all     Union          dim2 n=41  'Beam-region boundaries (lenses + deflector tubes)'
+  box_tipface      Box            dim2 n=1  'Boundaries fully inside a box around the tip face'
+  sel_tipface      Intersection   dim2 n=1  'sel_tipface (needle tip face, particle release)'
+
+== Materials ==
+  mat1       '304L [solid,polished]' eps_r=['1'] sel[dim3 n=42 [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14]]
+  mat2       'Corning 7740 (Pyrex) [solid,1.05 mm thick]' eps_r=['4.6'] sel[dim3 named=geom1_sel1 n=2]
+  mat3       'Leaded 1 [solid]' eps_r=['8'] sel[dim3 n=0 []]
+  mat5       'P25N Polyimide-based No Flow Prepreg' eps_r=['3'] sel[dim3 named=geom1_sel13 n=0]
+  mat6       'ULTEM 1000 [solid]' eps_r=['3.15'] sel[dim3 named=geom1_sel12_dom n=1]
+  mat7       'Al2O3 - Aluminum oxide' eps_r=['9.4'] sel[dim3 named=geom1_sel13 n=8]
+  mat8       'Al2O3 - Aluminum oxide 1' eps_r=['9.4'] sel[dim3 named=geom1_sel14 n=5]
+
+== Physics ==
+  [es] Electrostatics 'Electrostatics'
+     ccn1         ChargeConservation         'Charge Conservation 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+     zc1          ZeroCharge                 'Zero Charge 1' sel[dim2 n=38 [63, 64, 65, 69, 70, 74, 75, 78, 81, 84, 87, 90]]
+     init1        init                       'Initial Values 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+     gnd1         Ground                     'ground chamber 1' sel[dim2 named=geom1_mov1_bnd n=0]
+     gnd3         Ground                     'Ground Chamber 2' sel[dim2 named=geom1_sel9_bnd n=1070]
+     gnd2         Ground                     'Ground needle' sel[dim2 named=adj5 n=10]
+     pot5         ElectricPotential          'MCP Front Electric Potential' sel[dim2 named=geom1_sel3 n=1]
+         V0 = -10000
+     pot6         ElectricPotential          'MCP Back Electric Potential' sel[dim2 named=geom1_sel4 n=1]
+         V0 = -5000
+     pot7         ElectricPotential          'Screen Mesh Cross Electric Potential' sel[dim2 named=adj2 n=37]
+         V0 = -1000
+     pot8         ElectricPotential          'Screen Mesh Electric Potential 1' sel[dim2 named=adj3 n=24]
+         V0 = -1000
+     gnd4         Ground                     'Ground 4' sel[dim2 named=geom1_sel8_bnd n=68]
+     pot3         ElectricPotential          'Lens 1 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_8_bnd n=74]
+         V0 = L1_v
+     pot9         ElectricPotential          'Lens 2 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_6_bnd n=74]
+         V0 = L2_v
+     pot10        ElectricPotential          'Lens 3 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_7_bnd n=74]
+         V0 = L3_v
+     pot11        ElectricPotential          'Lens 4 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_9_bnd n=74]
+         V0 = L4_v
+     pot12        ElectricPotential          'Lens 5 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_1_bnd n=71]
+         V0 = L5_v
+     pot13        ElectricPotential          'Lens 6 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_4_bnd n=71]
+         V0 = L6_v
+     pot14        ElectricPotential          'Lens 7 Electric Potential ' sel[dim2 named=geom1_imp8_Imported1_2_bnd n=71]
+         V0 = L7_v
+     pot15        ElectricPotential          'Lens 8 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_5_bnd n=71]
+         V0 = L8_v
+     pot17        ElectricPotential          'Deflector 1a Electric Potential' sel[dim2 named=geom1_imp8_Imported1_14_bnd n=74]
+         V0 = D1a_v
+     pot18        ElectricPotential          'Deflector 1b Electric Potential' sel[dim2 named=geom1_imp8_Imported1_17_bnd n=74]
+         V0 = D1b_v
+     pot19        ElectricPotential          'Deflector 2a Electric Potential' sel[dim2 named=geom1_imp8_Imported1_16_bnd n=74]
+         V0 = D2a_v
+     pot20        ElectricPotential          'Deflector 2b Electric Potential' sel[dim2 named=geom1_imp8_Imported1_15_bnd n=74]
+         V0 = D2b_v
+     gnd_asm      Ground                     'Ground rods and bracket' sel[dim2 named=sel_asm_gnd n=48]
+     pot16        ElectricPotential          'Lens 9 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_3_bnd n=71]
+         V0 = L9_v
+  [cpt] ChargedParticleTracing 'Charged Particle Tracing'
+     prop(ParticleReleaseSpecification): {'ParticleReleaseSpecification': 'SpecifyReleaseTimes'}
+     wall1        Wall                       'Wall 1' sel[dim2 n=38 [63, 64, 65, 69, 70, 74, 75, 78, 81, 84, 87, 90]]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     pp1          ParticleProperties         'Particle Properties 1' sel[dim[]]
+         SpecifyHamiltonian = Directly
+         H = 0
+         Fh = [['0'], ['0'], ['0']]
+         vh = [['0'], ['0'], ['0']]
+         L = 0
+         v = [['0'], ['0'], ['0']]
+         ParticleSpecies = UserDefined
+         mp = 1.7e-24
+         mprest = me_const
+         Z = 1
+         StudyStep = std1/stat
+     ef1          ElectricForce              'Electric Force 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+         SpecifyForceUsing = ElectricField
+         TimeDependenceOfField = StationaryOrTimeDependent
+         FrequencySpecification = FromSolution
+         UsePPR = 1
+         omega = 1[MHz]
+         Tper = 1[us]
+         phi0 = 0
+         dtper = 0
+         E_src = root.comp1.es.Ex
+         E = [['0'], ['0'], ['0']]
+         V_src = userdef
+         V = 0
+         ParticlesToAffect = All
+         AffectedParticleProperties = pp1
+         ei = 1
+         coordinateSystem = GlobalSystem
+         StudyStep = std1/stat
+     pbeam1       ParticleBeam               'Particle Beam 1' sel[dim2 n=1 [1013]]
+         rc = 1[nA]
+         TimeDistributionFunction = ListOfValues
+         SamplingFromTimeDistribution = Deterministic
+         rt = 0
+         Nvalt = 10
+         meant = 0.5
+         stdevt = 0.2
+         tstart = 0
+         tlast = 1
+         BeamPosition = CentroidOfSelection
+         rcb = [['0'], ['0'], ['10']]
+         N = 1000
+         SamplingFromPhaseSpaceEllipse = Gaussian
+         BeamSymmetry = Symmetric
+         BeamOrientation = Upright
+         TransverseVelocityDistributionSpecification = SpecifyPhaseSpaceEllipseDimensions
+         EmittanceSpecification = SpecifyEmittance
+         twalpha0 = 0
+         twbeta0 = 100[nm]
+         e1rms = 100[nm]
+         xm = 50[nm]
+         xmp = 0.5
+         theta0 = 0
+         B = 1[mA/m^2]
+         twalpha0_1 = 0
+         twbeta0_1 = 1[m]
+         e1rms_1 = 1[mm]
+         xm_1 = 1[mm]
+         xmp_1 = 0.1
+         theta0_1 = 0
+         twalpha0_2 = 0
+         twbeta0_2 = 1[m]
+         e1rms_2 = 1[mm]
+         xm_2 = 1[mm]
+         xmp_2 = 0.1
+         theta0_2 = 0
+         TransverseDirectionSpecification = UserDefined
+         tb = [['0'], ['1'], ['0']]
+         LongitudinalVelocitySpecification = SpecifyKineticEnergy
+         LongitudinalVelocityDistribution = None
+         vnave = <?>
+         vnsigma = <?>
+         Enmp = <?>
+         Nlval = 1
+         vl = 1[m/s]
+         El = 1[eV]
+         vlmean = 1[m/s]
+         vlstd = 0.1[m/s]
+         Elmean = 1[eV]
+         Elstd = 0.1[eV]
+         vlstart = 1[m/s]
+         vllast = 2[m/s]
+         Elstart = 1[eV]
+         Ellast = 2[eV]
+         vlvals = 0
+         Elvals = 0
+         ReverseDirection = 1
+         ReleasedParticleProperties = pp1
+         StudyStep = std1/stat
+         showPhysicsSymbols = 1
+     wall5        Wall                       'MCP and Holder Wall' sel[dim2 named=adj4 n=124]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall6        Wall                       'Mesh Holder' sel[dim2 named=adj2 n=42]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall7        Wall                       'Chamber 1 wall' sel[dim2 named=geom1_sel8_bnd n=68]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall8        Wall                       'Chamber 2 wall' sel[dim2 named=geom1_sel9_bnd n=1070]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall2        Wall                       'Lens 1 Walls' sel[dim2 named=geom1_imp8_Imported1_8_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall4        Wall                       'Lens Walls 2' sel[dim2 named=geom1_imp8_Imported1_6_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall9        Wall                       'Lens Walls 3' sel[dim2 named=geom1_imp8_Imported1_7_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L4      Wall                       'L4 Walls' sel[dim2 named=geom1_imp8_Imported1_9_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L5      Wall                       'L5 Walls' sel[dim2 named=geom1_imp8_Imported1_1_bnd n=71]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L6      Wall                       'L6 Walls' sel[dim2 named=geom1_imp8_Imported1_4_bnd n=71]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L7      Wall                       'L7 Walls' sel[dim2 named=geom1_imp8_Imported1_2_bnd n=71]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L8      Wall                       'L8 Walls' sel[dim2 named=geom1_imp8_Imported1_5_bnd n=71]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_L9      Wall                       'L9 Walls' sel[dim2 named=geom1_imp8_Imported1_3_bnd n=71]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_D1a     Wall                       'D1a Walls' sel[dim2 named=geom1_imp8_Imported1_14_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_D1b     Wall                       'D1b Walls' sel[dim2 named=geom1_imp8_Imported1_17_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_D2a     Wall                       'D2a Walls' sel[dim2 named=geom1_imp8_Imported1_16_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_D2b     Wall                       'D2b Walls' sel[dim2 named=geom1_imp8_Imported1_15_bnd n=74]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall_asm     Wall                       'Rods and bracket Walls' sel[dim2 named=sel_asm_gnd n=48]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+
+== Meshes ==
+  mesh1 'Mesh 1' n_elem=2409830
+     size         MeshSizeDefault 'Size'
+     ftet4        FreeTet        'Free Tetrahedral 4' sel[dim[0, 1, 2, 3]]
+         size1        Size       'Size 1 needle' sel[dim3 named=geom1_sel1 n=2]
+         size2        Size       'Size 2 spherical chamber' sel[dim3 named=geom1_sel9_dom n=11]
+         size3        Size       'Size 3 boundary cyl' sel[dim2 n=54 [63, 64, 65, 66, 67, 69, 70, 74, 75, 78, 81, 84]]
+         size4        Size       'Size 4 tube chamber' sel[dim2 named=geom1_sel8_bnd n=68]
+         size5        Size       'Size 5 lenses' sel[dim3 named=geom1_uni6_dom n=18]
+         size6        Size       'Size 6 mcp holder' sel[dim3 named=geom1_sel7 n=7]
+         size7        Size       'Size 7 mesh cross' sel[dim3 named=geom1_sel6 n=14]
+         size_asm     Size       'Lens assembly surfaces (coarse, ignore small off-axis features)' sel[dim2 named=adj_asm n=995]
+         size_ap      Size       'Beam region: lens apertures' sel[dim2 named=sel_apertures n=36]
+         size_needle  Size       'Needle shank' sel[dim2 named=adj5 n=10]
+         size_tip     Size       'Beam region: needle cone + tip' sel[dim2 named=sel_needle_tip n=5]
+         size_mcp     Size       'Beam region: MCP front face' sel[dim2 named=geom1_sel3 n=1]
+         size_tipface Size       'Beam region: needle tip face' sel[dim2 named=sel_tipface n=1]
+
+== Studies ==
+  std1 'Study 1'
+     stat       Stationary     {'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'on', 'cpt', 'off', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'off', 'notsolmethod': 'init', 'notstudy': 'zero', 'notsol': 'current'}
+  std2 'Study 2'
+     time       Transient      {'tlist': 'range(0,0.5[us],250[us])', 'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'off', 'cpt', 'on', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'on', 'notsolmethod': 'sol', 'notstudy': 'std1', 'notsol': 'current'}
+
+== Solutions ==
+  sol1 'Solution 1' study=std1  features=['st1:StudyStep', 'v1:Variables', 's1:Stationary']
+       st1: {'studystep': 'stat'}
+       v1: {'initmethod': 'init', 'initsol': 'zero', 'initsoluse': 'current', 'solnum': '1', 'notsolmethod': 'init', 'notsol': 'zero', 'notsoluse': 'current'}
+       s1: {'solnum': '1'}
+  sol2 'Solution 2' study=std2  features=['st1:StudyStep', 'v1:Variables', 't1:Time']
+       st1: {'studystep': 'time'}
+       v1: {'initmethod': 'init', 'initsol': 'zero', 'initsoluse': 'current', 'solnum': '1', 'notsolmethod': 'sol', 'notsol': 'sol1', 'notsoluse': 'current'}
+       t1: {'tlist': 'range(0,0.5e-6,250e-6)', 'rtol': '1.0E-5', 'atolglobal': '0.001', 'timemethod': 'genalpha', 'tstepsbdf': 'free', 'storeudot': 'on'}
+
+== Datasets ==
+  dset1      Solution             'Study 1/Solution 1' {'solution': 'sol1', 'geom': 'geom1'}
+  dset2      Solution             'Study 2/Solution 2' {'solution': 'sol2', 'geom': 'geom1'}
+  part1      Particle             'Particle 1' {'solution': 'sol2', 'geom': 'geom1'}
+  cpl1       CutPlane             'in front of tip' {'data': 'part1', 'quickplane': 'xy', 'quickz': 'tip_z+1[mm]', 'quickx': '0', 'quicky': '0', 'genpoints': [['0', '0', '0'], ['1', '0', '0'], ['0', '1', '0']]}
+  cpl2       CutPlane             'right before mcp' {'data': 'part1', 'quickplane': 'xy', 'quickz': 'mcp_z-1[mm]', 'quickx': '0', 'quicky': '0', 'genpoints': [['0', '0', '0'], ['1', '0', '0'], ['0', '1', '0']]}
+
+== Export nodes ==
+  anim1      Animation        'Animation 1'
+      plotgroup = pg3
+      alwaysask = off
+      plot = none
+      resolution = 96
+
+== Numerical (derived values) ==
+
+== Plot groups ==
+  pg1        ''
+  pg3        ''
+  pg4        ''
+  pg5        ''
+  pg6        ''

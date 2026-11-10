@@ -1,0 +1,73 @@
+COMSOL 5.5 started in 10.1 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 9.3 s
+ok es.Ex
+ok es.Ey
+ok es.Ez
+ok cpt.Ftx
+ok cpt.Fty
+ok cpt.Ftz
+particle 0
+  t= 0.02us z= 105.012 r= 0.003  dEk=    1.97  -dV=    3.55  int qE.v=    3.36  int Ft.v=    2.52
+  t= 0.52us z= 106.687 r= 0.165  dEk=   88.18  -dV=   87.38  int qE.v=   87.12  int Ft.v=   88.60
+  t= 1.02us z= 108.831 r= 0.355  dEk=  104.81  -dV=  104.15  int qE.v=  103.89  int Ft.v=  105.22
+  t= 1.52us z= 111.106 r= 0.550  dEk=  113.48  -dV=  112.78  int qE.v=  112.52  int Ft.v=  113.90
+  t= 2.02us z= 113.438 r= 0.753  dEk=  116.07  -dV=  115.22  int qE.v=  114.96  int Ft.v=  116.49
+  t= 2.52us z= 115.764 r= 0.965  dEk=  112.28  -dV=  111.58  int qE.v=  111.30  int Ft.v=  112.70
+  t= 3.02us z= 118.006 r= 1.208  dEk=  100.21  -dV=   99.16  int qE.v=   98.91  int Ft.v=  100.63
+  t= 3.52us z= 120.087 r= 1.504  dEk=   85.26  -dV=   78.97  int qE.v=   78.74  int Ft.v=   85.67
+  t= 4.02us z= 121.983 r= 1.776  dEk=   68.67  -dV=   60.87  int qE.v=   60.23  int Ft.v=   69.08
+  t= 4.52us z= 123.711 r= 1.943  dEk=   58.88  -dV=   48.87  int qE.v=   48.24  int Ft.v=   59.29
+  t= 5.02us z= 125.351 r= 2.050  dEk=   54.19  -dV=   44.19  int qE.v=   43.54  int Ft.v=   54.60
+  t= 5.52us z= 126.943 r= 2.134  dEk=   51.90  -dV=   41.69  int qE.v=   41.04  int Ft.v=   52.31
+particle 1
+  t= 0.02us z= 105.012 r= 0.002  dEk=    1.97  -dV=    3.53  int qE.v=    3.38  int Ft.v=    2.52
+  t= 0.52us z= 106.763 r= 0.062  dEk=   94.59  -dV=   88.24  int qE.v=   86.94  int Ft.v=   88.85
+  t= 1.02us z= 108.983 r= 0.138  dEk=  111.14  -dV=  104.91  int qE.v=  103.62  int Ft.v=  105.42
+  t= 1.52us z= 111.328 r= 0.216  dEk=  119.53  -dV=  113.19  int qE.v=  111.89  int Ft.v=  113.81
+  t= 2.02us z= 113.725 r= 0.298  dEk=  121.37  -dV=  114.97  int qE.v=  113.68  int Ft.v=  115.65
+  t= 2.52us z= 116.104 r= 0.387  dEk=  115.70  -dV=  110.02  int qE.v=  108.73  int Ft.v=  110.03
+  t= 3.02us z= 118.387 r= 0.499  dEk=  103.11  -dV=   96.11  int qE.v=   94.82  int Ft.v=   97.44
+  t= 3.52us z= 120.528 r= 0.627  dEk=   91.31  -dV=   76.88  int qE.v=   74.79  int Ft.v=   85.54
+  t= 4.02us z= 122.524 r= 0.730  dEk=   76.42  -dV=   58.04  int qE.v=   55.99  int Ft.v=   70.73
+  t= 4.52us z= 124.358 r= 0.800  dEk=   65.93  -dV=   48.06  int qE.v=   46.01  int Ft.v=   60.24
+  t= 5.02us z= 126.100 r= 0.880  dEk=   61.58  -dV=   43.39  int qE.v=   41.31  int Ft.v=   55.85
+  t= 5.52us z= 127.800 r= 0.953  dEk=   59.57  -dV=   41.22  int qE.v=   39.13  int Ft.v=   53.83
+particle 2
+  t= 0.02us z= 105.011 r= 0.004  dEk=    1.88  -dV=    3.26  int qE.v=    3.20  int Ft.v=    2.41
+  t= 0.52us z= 106.670 r= 0.236  dEk=   87.48  -dV=   87.22  int qE.v=   87.70  int Ft.v=   89.07
+  t= 1.02us z= 108.798 r= 0.506  dEk=  104.15  -dV=  104.03  int qE.v=  104.51  int Ft.v=  105.75
+  t= 1.52us z= 111.058 r= 0.786  dEk=  112.98  -dV=  112.76  int qE.v=  113.25  int Ft.v=  114.62
+  t= 2.02us z= 113.377 r= 1.074  dEk=  115.80  -dV=  115.38  int qE.v=  115.86  int Ft.v=  117.43
+  t= 2.52us z= 115.692 r= 1.376  dEk=  112.27  -dV=  112.27  int qE.v=  112.75  int Ft.v=  113.91
+  t= 3.02us z= 117.927 r= 1.716  dEk=  101.35  -dV=  100.40  int qE.v=  100.80  int Ft.v=  103.03
+  t= 3.52us z= 119.987 r= 2.136  dEk=   83.65  -dV=   82.29  int qE.v=   82.70  int Ft.v=   85.40
+  t= 4.02us z= 121.797 r= 2.576  dEk=   62.90  -dV=   60.57  int qE.v=   60.54  int Ft.v=   64.33
+  t= 4.52us z= 123.411 r= 2.912  dEk=   52.40  -dV=   47.62  int qE.v=   47.55  int Ft.v=   53.81
+  t= 5.02us z= 124.946 r= 3.160  dEk=   48.93  -dV=   43.51  int qE.v=   43.45  int Ft.v=   50.40
+  t= 5.52us z= 126.452 r= 3.370  dEk=   47.55  -dV=   41.53  int qE.v=   41.47  int Ft.v=   49.03
+particle 3
+  t= 0.02us z= 105.012 r= 0.001  dEk=    1.97  -dV=    3.54  int qE.v=    2.17  int Ft.v=    1.72
+  t= 0.52us z= 106.685 r= 0.036  dEk=   87.43  -dV=   87.34  int qE.v=   85.73  int Ft.v=   88.05
+  t= 1.02us z= 108.829 r= 0.079  dEk=  104.12  -dV=  104.10  int qE.v=  102.50  int Ft.v=  104.73
+  t= 1.52us z= 111.105 r= 0.124  dEk=  112.76  -dV=  112.69  int qE.v=  111.09  int Ft.v=  113.38
+  t= 2.02us z= 113.438 r= 0.171  dEk=  115.27  -dV=  115.07  int qE.v=  113.47  int Ft.v=  115.89
+  t= 2.52us z= 115.762 r= 0.222  dEk=  110.96  -dV=  111.20  int qE.v=  109.58  int Ft.v=  111.62
+  t= 3.02us z= 118.006 r= 0.299  dEk=   99.84  -dV=   98.90  int qE.v=   97.29  int Ft.v=  100.52
+  t= 3.52us z= 120.103 r= 0.394  dEk=   86.84  -dV=   80.62  int qE.v=   79.12  int Ft.v=   87.30
+  t= 4.02us z= 122.048 r= 0.475  dEk=   72.00  -dV=   61.90  int qE.v=   61.14  int Ft.v=   73.03
+  t= 4.52us z= 123.815 r= 0.513  dEk=   59.72  -dV=   50.65  int qE.v=   49.91  int Ft.v=   60.77
+  t= 5.02us z= 125.461 r= 0.562  dEk=   54.76  -dV=   44.85  int qE.v=   44.10  int Ft.v=   55.82
+  t= 5.52us z= 127.061 r= 0.630  dEk=   52.40  -dV=   42.07  int qE.v=   41.28  int Ft.v=   53.51
+particle 4
+  t= 0.02us z= 105.012 r= 0.003  dEk=    2.00  -dV=    3.55  int qE.v=    3.40  int Ft.v=    2.56
+  t= 0.52us z= 106.696 r= 0.191  dEk=   89.86  -dV=   87.53  int qE.v=   86.77  int Ft.v=   89.36
+  t= 1.02us z= 108.855 r= 0.416  dEk=  106.50  -dV=  104.32  int qE.v=  103.55  int Ft.v=  106.03
+  t= 1.52us z= 111.144 r= 0.648  dEk=  115.15  -dV=  112.91  int qE.v=  112.15  int Ft.v=  114.68
+  t= 2.02us z= 113.490 r= 0.888  dEk=  117.66  -dV=  115.23  int qE.v=  114.47  int Ft.v=  117.19
+  t= 2.52us z= 115.826 r= 1.142  dEk=  113.84  -dV=  111.48  int qE.v=  110.71  int Ft.v=  113.36
+  t= 3.02us z= 118.080 r= 1.432  dEk=  101.95  -dV=   98.82  int qE.v=   98.03  int Ft.v=  101.48
+  t= 3.52us z= 120.146 r= 1.799  dEk=   82.65  -dV=   78.54  int qE.v=   77.66  int Ft.v=   82.12
+  t= 4.02us z= 121.966 r= 2.152  dEk=   62.76  -dV=   59.93  int qE.v=   58.98  int Ft.v=   62.08
+  t= 4.52us z= 123.580 r= 2.382  dEk=   49.89  -dV=   49.12  int qE.v=   48.16  int Ft.v=   49.28
+  t= 5.02us z= 125.083 r= 2.532  dEk=   45.62  -dV=   44.32  int qE.v=   43.36  int Ft.v=   44.99
+  t= 5.52us z= 126.544 r= 2.648  dEk=   43.75  -dV=   41.86  int qE.v=   40.88  int Ft.v=   43.12

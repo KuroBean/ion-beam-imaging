@@ -1,0 +1,658 @@
+# Introspection: lens8_axisym_asm.mph  (2d)
+COMSOL 5.5, loaded in 7.5 s, size 56 MB
+MPh tree:
+lens8_axisym_asm
+├─ parameters
+├─ functions
+├─ components
+├─ geometries
+├─ views
+├─ selections
+├─ coordinates
+├─ variables
+├─ couplings
+├─ physics
+├─ multiphysics
+├─ materials
+├─ meshes
+├─ studies
+├─ solutions
+├─ batches
+├─ datasets
+├─ evaluations
+├─ tables
+├─ plots
+└─ exports
+
+
+== Parameters (expr -> SI value) ==
+  cfg              = 3                                                            -> 3.0   1: tube chamber only, 2: sphere chamber only, 3: tube + sphere
+  L_c1             = 300[mm]                                                      -> 0.3   chamber 1 (tube) reference length
+  z_c2             = if(cfg==3,L_c1,0[mm])                                        -> 0.3   z of chamber 2 input flange face
+  z_c2_center      = 215.9[mm]                                                    -> 0.2159   chamber 2 sphere centre, relative to its flange face
+  z_mcp_c1         = 250[mm]                                                      -> 0.25   MCP face z for cfg 1
+  mcp_z            = if(cfg==1,z_mcp_c1,z_c2+z_c2_center)                         -> 0.5159   z coord of MCP front face
+  z_end            = if(cfg==1,L_c1,z_c2+2*z_c2_center)                           -> 0.7318   z of last chamber flange face
+  z_dom0           = -50[mm]                                                      -> -0.05   domain start z
+  z_dom1           = z_end+50[mm]                                                 -> 0.7818   domain end z
+  r_dom            = 175[mm]                                                      -> 0.17500000000000002   domain radius (3D bounding cylinder)
+  tip_z            = 105[mm]                                                      -> 0.105   needle tip z (particle release)
+  tip_base_z       = 65[mm]                                                       -> 0.065   needle base z
+  r_needle         = 0.5[mm]                                                      -> 0.0005   needle shank radius
+  r_tip            = 0.1[mm]                                                      -> 0.0001   needle tip flat radius
+  L_cone           = 10[mm]                                                       -> 0.01   needle cone length
+  lens_gap         = 13.482[mm]                                                   -> 0.013482   needle tip to L1 entrance face (front plane closest to the tip)
+  z_asm            = tip_z+lens_gap+136.165[mm]                                   -> 0.254647   model z of the assembly CAD origin (L1 front is at CAD z = -136.165 mm)
+  L1_v             = -120[V]                                                      -> -120.0   L1 potential
+  L2_v             = -40[V]                                                       -> -40.0   L2 potential
+  L3_v             = -40[V]                                                       -> -40.0   L3 potential
+  L4_v             = -40[V]                                                       -> -40.0   L4 potential
+  L5_v             = -40[V]                                                       -> -40.0   L5 potential
+  L6_v             = -40[V]                                                       -> -40.0   L6 potential
+  L7_v             = -40[V]                                                       -> -40.0   L7 potential
+  L8_v             = -40[V]                                                       -> -40.0   L8 potential
+  L9_v             = 0[V]                                                         -> 0.0   L9 potential
+  D1a_v            = 0[V]                                                         -> 0.0   deflector 1 half a potential (2D uses the mean of a and b)
+  D1b_v            = 0[V]                                                         -> 0.0   deflector 1 half b potential
+  D2a_v            = 0[V]                                                         -> 0.0   deflector 2 half a potential (2D uses the mean of a and b)
+  D2b_v            = 0[V]                                                         -> 0.0   deflector 2 half b potential
+  V_mcp_front      = -10000[V]                                                    -> -10000.0   MCP front potential
+  V_mcp_back       = -5000[V]                                                     -> -5000.0   MCP back potential
+  V_screen         = -1000[V]                                                     -> -1000.0   screen mesh potential
+  R_cross          = 24.5[mm]                                                     -> 0.0245   effective -1 kV screen-cross ring outer radius, fitted to the 3D potential on r = 0 and 10 mm (calibrate_2d.py; 8.485 = hub only; 3D arms reach 45.4)
+  eps_holder       = 3.15                                                         -> 3.15   rel. permittivity of the MCP holder ring (Ultem 1000 polyetherimide)
+  eps_surround     = 9.4                                                          -> 9.4   rel. permittivity of the MCP surround around the active area (Al2O3 ceramic)
+  m_ion            = 1.7e-24[kg]                                                  -> 1.7e-24   particle mass
+  Z_ion            = 1                                                            -> 1.0   charge number
+  E_ion            = 1[eV]                                                        -> 1.6021766208e-19   initial kinetic energy
+  N_ion            = 1000                                                         -> 1000.0   number of particles released (Particle Beam release only)
+  t_end            = 800[us]                                                      -> 0.0007999999999999999   particle tracing end time (3D model used 200 us)
+  dt_out           = 1[us]                                                        -> 1e-06   particle tracing output interval
+
+######## component comp1 ########
+
+== Geometry geom1 (sdim 2): 19 domains, 194 boundaries ==
+  dom              Rectangle                'Vacuum domain'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      pos = ['0', 'z_dom0']
+      x = 0
+      y = z_dom0
+      rot = 0
+      size = ['r_dom', 'z_dom1-z_dom0']
+  if1              If                       'If tube chamber 1'
+      condition = cfg==1||cfg==3
+  ch1              Polygon                  'Chamber 1 tube + flanges (gnd)'
+  endif1           EndIf                    'End If 1'
+  if2              If                       'If sphere chamber 2'
+      condition = cfg==2||cfg==3
+  c2out            Circle                   'Circle'
+  c2in             Circle                   'Circle 2'
+  c2shell          Difference               'Difference'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = c2out
+      keep = off
+  c2bore           Rectangle                'Rectangle'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      pos = ['0', 'z_c2']
+      x = 0
+      y = z_c2
+      rot = 0
+      size = ['74.09', '2*z_c2_center']
+  c2cut            Difference               'Difference 2'
+      contributeto = none
+      selresult = off
+      selresultshow = dom
+      input = c2shell
+      keep = off
+  c2fl1            Polygon                  'Chamber 2 input flange'
+  c2fl2            Polygon                  'Chamber 2 output flange'
+  ch2              Union                    'Chamber 2 (gnd)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      input = ['c2cut', 'c2fl1', 'c2fl2']
+      keep = off
+  endif2           EndIf                    'End If 2'
+  needle           Polygon                  'Needle (gnd)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['0', 'tip_base_z'], ['r_needle', 'tip_base_z'], ['r_needle', 'tip_z-L_cone'], ['r_tip', 'tip_z'], ['0', 'tip_z']]
+      x = []
+      y = []
+  L1               Polygon                  'L1 (lens)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-136.165+0)'], ['10', 'z_asm+(-136.165+0)'], ['10', 'z_asm+(-136.165+5)'], ['15', 'z_asm+(-136.165+5)'], ['15', 'z_asm+(-136.165+0)'], ['32.5', 'z_asm+(-136.165+0)'], ['32.5', 'z_asm+(-136.165+9)'], ['13', 'z_asm+(-136.165+9)'], ['13', 'z_asm+(-136.165+14)'], ['12', 'z_asm+(-136.165+14)'], ['12', 'z_asm+(-136.165+9)'], ['5', 'z_asm+(-136.165+9)']]
+      x = []
+      y = []
+  L2               Polygon                  'L2 (lens)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-124.935+0)'], ['10', 'z_asm+(-124.935+0)'], ['10', 'z_asm+(-124.935+5)'], ['15', 'z_asm+(-124.935+5)'], ['15', 'z_asm+(-124.935+0)'], ['32.5', 'z_asm+(-124.935+0)'], ['32.5', 'z_asm+(-124.935+9)'], ['13', 'z_asm+(-124.935+9)'], ['13', 'z_asm+(-124.935+14)'], ['12', 'z_asm+(-124.935+14)'], ['12', 'z_asm+(-124.935+9)'], ['5', 'z_asm+(-124.935+9)']]
+      x = []
+      y = []
+  L3               Polygon                  'L3 (lens)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-113.705+0)'], ['10', 'z_asm+(-113.705+0)'], ['10', 'z_asm+(-113.705+5)'], ['15', 'z_asm+(-113.705+5)'], ['15', 'z_asm+(-113.705+0)'], ['32.5', 'z_asm+(-113.705+0)'], ['32.5', 'z_asm+(-113.705+9)'], ['13', 'z_asm+(-113.705+9)'], ['13', 'z_asm+(-113.705+14)'], ['12', 'z_asm+(-113.705+14)'], ['12', 'z_asm+(-113.705+9)'], ['5', 'z_asm+(-113.705+9)']]
+      x = []
+      y = []
+  L4               Polygon                  'L4 (lens)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-102.475+0)'], ['10', 'z_asm+(-102.475+0)'], ['10', 'z_asm+(-102.475+5)'], ['15', 'z_asm+(-102.475+5)'], ['15', 'z_asm+(-102.475+0)'], ['32.5', 'z_asm+(-102.475+0)'], ['32.5', 'z_asm+(-102.475+9)'], ['13', 'z_asm+(-102.475+9)'], ['13', 'z_asm+(-102.475+14)'], ['12', 'z_asm+(-102.475+14)'], ['12', 'z_asm+(-102.475+9)'], ['5', 'z_asm+(-102.475+9)']]
+      x = []
+      y = []
+  L5               Polygon                  'L5 (accel)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-91.245+7)'], ['15', 'z_asm+(-91.245+7)'], ['15', 'z_asm+(-91.245+0)'], ['32.5', 'z_asm+(-91.245+0)'], ['32.5', 'z_asm+(-91.245+10)'], ['13', 'z_asm+(-91.245+10)'], ['13', 'z_asm+(-91.245+15)'], ['12', 'z_asm+(-91.245+15)'], ['12', 'z_asm+(-91.245+8)'], ['5', 'z_asm+(-91.245+8)']]
+      x = []
+      y = []
+  L6               Polygon                  'L6 (accel)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-79.015+7)'], ['15', 'z_asm+(-79.015+7)'], ['15', 'z_asm+(-79.015+0)'], ['32.5', 'z_asm+(-79.015+0)'], ['32.5', 'z_asm+(-79.015+10)'], ['13', 'z_asm+(-79.015+10)'], ['13', 'z_asm+(-79.015+15)'], ['12', 'z_asm+(-79.015+15)'], ['12', 'z_asm+(-79.015+8)'], ['5', 'z_asm+(-79.015+8)']]
+      x = []
+      y = []
+  L7               Polygon                  'L7 (accel)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-66.785+7)'], ['15', 'z_asm+(-66.785+7)'], ['15', 'z_asm+(-66.785+0)'], ['32.5', 'z_asm+(-66.785+0)'], ['32.5', 'z_asm+(-66.785+10)'], ['13', 'z_asm+(-66.785+10)'], ['13', 'z_asm+(-66.785+15)'], ['12', 'z_asm+(-66.785+15)'], ['12', 'z_asm+(-66.785+8)'], ['5', 'z_asm+(-66.785+8)']]
+      x = []
+      y = []
+  L8               Polygon                  'L8 (accel)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-54.555+7)'], ['15', 'z_asm+(-54.555+7)'], ['15', 'z_asm+(-54.555+0)'], ['32.5', 'z_asm+(-54.555+0)'], ['32.5', 'z_asm+(-54.555+10)'], ['13', 'z_asm+(-54.555+10)'], ['13', 'z_asm+(-54.555+15)'], ['12', 'z_asm+(-54.555+15)'], ['12', 'z_asm+(-54.555+8)'], ['5', 'z_asm+(-54.555+8)']]
+      x = []
+      y = []
+  L9               Polygon                  'L9 (accel)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-42.325+7)'], ['15', 'z_asm+(-42.325+7)'], ['15', 'z_asm+(-42.325+0)'], ['32.5', 'z_asm+(-42.325+0)'], ['32.5', 'z_asm+(-42.325+10)'], ['13', 'z_asm+(-42.325+10)'], ['13', 'z_asm+(-42.325+15)'], ['12', 'z_asm+(-42.325+15)'], ['12', 'z_asm+(-42.325+8)'], ['5', 'z_asm+(-42.325+8)']]
+      x = []
+      y = []
+  if_defl          If                       'If keep deflectors (deleted for cfg 1 and 2)'
+      condition = cfg!=1&&cfg!=2
+  D1               Polygon                  'D1 (deflector pair, axisymmetric)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-25.46)'], ['6.5', 'z_asm+(-25.46)'], ['6.5', 'z_asm+(-24.69)'], ['32.5', 'z_asm+(-24.69)'], ['32.5', 'z_asm+(-20.19)'], ['6.5', 'z_asm+(-20.19)'], ['6.5', 'z_asm+(-17.96)'], ['32.5', 'z_asm+(-17.96)'], ['32.5', 'z_asm+(-13.46)'], ['6.5', 'z_asm+(-13.46)'], ['6.5', 'z_asm+(-12.69)'], ['5', 'z_asm+(-12.69)']]
+      x = []
+      y = []
+  D2               Polygon                  'D2 (deflector pair, axisymmetric)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['5', 'z_asm+(-12.0)'], ['6.5', 'z_asm+(-12.0)'], ['6.5', 'z_asm+(-11.23)'], ['32.5', 'z_asm+(-11.23)'], ['32.5', 'z_asm+(-6.73)'], ['6.5', 'z_asm+(-6.73)'], ['6.5', 'z_asm+(-4.5)'], ['32.5', 'z_asm+(-4.5)'], ['32.5', 'z_asm+(0.0)'], ['6.5', 'z_asm+(0.0)'], ['6.5', 'z_asm+(0.77)'], ['5', 'z_asm+(0.77)']]
+      x = []
+      y = []
+  endif_defl       EndIf                    'End If'
+  mcp              Rectangle                'MCP plate'
+      contributeto = csel_diel
+      selresult = on
+      selresultshow = all
+      pos = ['0', 'mcp_z']
+      x = 0
+      y = mcp_z
+      rot = 0
+      size = ['20', '5.9']
+  surround         Polygon                  'MCP surround (Al2O3 ceramic)'
+      contributeto = csel_diel
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['25', 'mcp_z-4'], ['33', 'mcp_z-4'], ['33', 'mcp_z+4.9'], ['43', 'mcp_z+4.9'], ['43', 'mcp_z+7.9'], ['25', 'mcp_z+7.9'], ['25', 'mcp_z+4.9'], ['20', 'mcp_z+4.9'], ['20', 'mcp_z-1'], ['25', 'mcp_z-1']]
+      x = []
+      y = []
+  ring             Rectangle                'MCP holder ring (Ultem 1000)'
+      contributeto = csel_diel
+      selresult = on
+      selresultshow = all
+      pos = ['27.5', 'mcp_z+7.9']
+      x = 27.5
+      y = mcp_z+7.9
+      rot = 0
+      size = ['69.862-27.5', '7.5']
+  hub              Rectangle                'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+      contributeto = csel_cond
+      selresult = on
+      selresultshow = all
+      pos = ['5.5', 'mcp_z-15.6']
+      x = 5.5
+      y = mcp_z-15.6
+      rot = 0
+      size = ['max(R_cross,8.485[mm])-5.5[mm]', '3']
+  meshline         Polygon                  'Screen mesh (transparent, -1 kV)'
+      contributeto = none
+      selresult = on
+      selresultshow = all
+      filename = 
+      table = [['0', 'mcp_z-12.7'], ['5.5', 'mcp_z-12.7']]
+      x = []
+      y = []
+  fin              Finalize                 'Form Union'
+  sel_es           ComplementSelection      'es domains (not conductors)'
+      entitydim = 2
+      input = csel_cond
+      contributeto = none
+  sel_solid        UnionSelection           'All solids'
+      entitydim = 2
+      input = ['csel_cond', 'csel_diel']
+      contributeto = none
+  sel_vac          ComplementSelection      'Vacuum (particle domain)'
+      entitydim = 2
+      input = sel_solid
+      contributeto = none
+  sel_tip          BoxSelection             'Needle tip face'
+      entitydim = 1
+      input = []
+      xmin = -1e-3
+      xmax = r_tip+1e-3
+      ymin = tip_z-1e-3
+      ymax = tip_z+1e-3
+      zmin = -Inf
+      zmax = Inf
+      condition = inside
+      contributeto = none
+  bnd_mcpfront     BoxSelection             'MCP front face'
+      entitydim = 1
+      input = []
+      xmin = 0-1e-3
+      xmax = 20+1e-3
+      ymin = mcp_z-1e-3
+      ymax = mcp_z+1e-3
+      zmin = -Inf
+      zmax = Inf
+      condition = inside
+      contributeto = none
+  bnd_mcpback      BoxSelection             'MCP back face'
+      entitydim = 1
+      input = []
+      xmin = 0-1e-3
+      xmax = 20+1e-3
+      ymin = mcp_z+5.9-1e-3
+      ymax = mcp_z+5.9+1e-3
+      zmin = -Inf
+      zmax = Inf
+      condition = inside
+      contributeto = none
+  -- geometry-level selections (named as <geom>_<tag>) --
+  csel_cond        ?                        'Conductors (excluded)'
+  csel_cond.dom    ?                        'Conductors (excluded)'
+  csel_cond.bnd    ?                        'Conductors (excluded)'
+  csel_cond.pnt    ?                        'Conductors (excluded)'
+  csel_diel        ?                        'Dielectrics (MCP plate, MCP surround, holder ring)'
+  csel_diel.dom    ?                        'Dielectrics (MCP plate, MCP surround, holder ring)'
+  csel_diel.bnd    ?                        'Dielectrics (MCP plate, MCP surround, holder ring)'
+  csel_diel.pnt    ?                        'Dielectrics (MCP plate, MCP surround, holder ring)'
+  ch1              ?                        'Chamber 1 tube + flanges (gnd)'
+  ch1.pnt          ?                        'Chamber 1 tube + flanges (gnd)'
+  ch1.bnd          ?                        'Chamber 1 tube + flanges (gnd)'
+  ch1.dom          ?                        'Chamber 1 tube + flanges (gnd)'
+  ch2              ?                        'Chamber 2 (gnd)'
+  ch2.pnt          ?                        'Chamber 2 (gnd)'
+  ch2.bnd          ?                        'Chamber 2 (gnd)'
+  ch2.dom          ?                        'Chamber 2 (gnd)'
+  needle           ?                        'Needle (gnd)'
+  needle.pnt       ?                        'Needle (gnd)'
+  needle.bnd       ?                        'Needle (gnd)'
+  needle.dom       ?                        'Needle (gnd)'
+  L1               ?                        'L1 (lens)'
+  L1.pnt           ?                        'L1 (lens)'
+  L1.bnd           ?                        'L1 (lens)'
+  L1.dom           ?                        'L1 (lens)'
+  L2               ?                        'L2 (lens)'
+  L2.pnt           ?                        'L2 (lens)'
+  L2.bnd           ?                        'L2 (lens)'
+  L2.dom           ?                        'L2 (lens)'
+  L3               ?                        'L3 (lens)'
+  L3.pnt           ?                        'L3 (lens)'
+  L3.bnd           ?                        'L3 (lens)'
+  L3.dom           ?                        'L3 (lens)'
+  L4               ?                        'L4 (lens)'
+  L4.pnt           ?                        'L4 (lens)'
+  L4.bnd           ?                        'L4 (lens)'
+  L4.dom           ?                        'L4 (lens)'
+  L5               ?                        'L5 (accel)'
+  L5.pnt           ?                        'L5 (accel)'
+  L5.bnd           ?                        'L5 (accel)'
+  L5.dom           ?                        'L5 (accel)'
+  L6               ?                        'L6 (accel)'
+  L6.pnt           ?                        'L6 (accel)'
+  L6.bnd           ?                        'L6 (accel)'
+  L6.dom           ?                        'L6 (accel)'
+  L7               ?                        'L7 (accel)'
+  L7.pnt           ?                        'L7 (accel)'
+  L7.bnd           ?                        'L7 (accel)'
+  L7.dom           ?                        'L7 (accel)'
+  L8               ?                        'L8 (accel)'
+  L8.pnt           ?                        'L8 (accel)'
+  L8.bnd           ?                        'L8 (accel)'
+  L8.dom           ?                        'L8 (accel)'
+  L9               ?                        'L9 (accel)'
+  L9.pnt           ?                        'L9 (accel)'
+  L9.bnd           ?                        'L9 (accel)'
+  L9.dom           ?                        'L9 (accel)'
+  D1               ?                        'D1 (deflector pair, axisymmetric)'
+  D1.pnt           ?                        'D1 (deflector pair, axisymmetric)'
+  D1.bnd           ?                        'D1 (deflector pair, axisymmetric)'
+  D1.dom           ?                        'D1 (deflector pair, axisymmetric)'
+  D2               ?                        'D2 (deflector pair, axisymmetric)'
+  D2.pnt           ?                        'D2 (deflector pair, axisymmetric)'
+  D2.bnd           ?                        'D2 (deflector pair, axisymmetric)'
+  D2.dom           ?                        'D2 (deflector pair, axisymmetric)'
+  mcp              ?                        'MCP plate'
+  mcp.pnt          ?                        'MCP plate'
+  mcp.bnd          ?                        'MCP plate'
+  mcp.dom          ?                        'MCP plate'
+  surround         ?                        'MCP surround (Al2O3 ceramic)'
+  surround.pnt     ?                        'MCP surround (Al2O3 ceramic)'
+  surround.bnd     ?                        'MCP surround (Al2O3 ceramic)'
+  surround.dom     ?                        'MCP surround (Al2O3 ceramic)'
+  ring             ?                        'MCP holder ring (Ultem 1000)'
+  ring.pnt         ?                        'MCP holder ring (Ultem 1000)'
+  ring.bnd         ?                        'MCP holder ring (Ultem 1000)'
+  ring.dom         ?                        'MCP holder ring (Ultem 1000)'
+  hub              ?                        'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  hub.pnt          ?                        'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  hub.bnd          ?                        'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  hub.dom          ?                        'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  meshline         ?                        'Screen mesh (transparent, -1 kV)'
+  meshline.pnt     ?                        'Screen mesh (transparent, -1 kV)'
+  meshline.bnd     ?                        'Screen mesh (transparent, -1 kV)'
+  meshline.dom     ?                        'Screen mesh (transparent, -1 kV)'
+  sel_es           ?                        'es domains (not conductors)'
+  sel_solid        ?                        'All solids'
+  sel_vac          ?                        'Vacuum (particle domain)'
+  sel_tip          ?                        'Needle tip face'
+  bnd_mcpfront     ?                        'MCP front face'
+  bnd_mcpback      ?                        'MCP back face'
+
+== Geometry pgeom_cpt (sdim 1): 0 domains, 1 boundaries ==
+  pt1              Point                    'Point 1'
+  -- geometry-level selections (named as <geom>_<tag>) --
+
+== Component selections ==
+  geom1_csel_cond_pnt FromGeom       dim0 n=165  'Conductors (excluded)'
+  geom1_csel_cond_bnd FromGeom       dim1 n=166  'Conductors (excluded)'
+  geom1_csel_cond_dom FromGeom       dim2 n=15  'Conductors (excluded)'
+  geom1_csel_diel_pnt FromGeom       dim0 n=18  'Dielectrics (MCP plate, MCP surround, holder ring)'
+  geom1_csel_diel_bnd FromGeom       dim1 n=20  'Dielectrics (MCP plate, MCP surround, holder ring)'
+  geom1_csel_diel_dom FromGeom       dim2 n=3  'Dielectrics (MCP plate, MCP surround, holder ring)'
+  geom1_ch1_pnt    FromGeom       dim0 n=8  'Chamber 1 tube + flanges (gnd)'
+  geom1_ch1_bnd    FromGeom       dim1 n=8  'Chamber 1 tube + flanges (gnd)'
+  geom1_ch1_dom    FromGeom       dim2 n=1  'Chamber 1 tube + flanges (gnd)'
+  geom1_ch2_pnt    FromGeom       dim0 n=26  'Chamber 2 (gnd)'
+  geom1_ch2_bnd    FromGeom       dim1 n=26  'Chamber 2 (gnd)'
+  geom1_ch2_dom    FromGeom       dim2 n=1  'Chamber 2 (gnd)'
+  geom1_needle_pnt FromGeom       dim0 n=5  'Needle (gnd)'
+  geom1_needle_bnd FromGeom       dim1 n=5  'Needle (gnd)'
+  geom1_needle_dom FromGeom       dim2 n=1  'Needle (gnd)'
+  geom1_L1_pnt     FromGeom       dim0 n=12  'L1 (lens)'
+  geom1_L1_bnd     FromGeom       dim1 n=12  'L1 (lens)'
+  geom1_L1_dom     FromGeom       dim2 n=1  'L1 (lens)'
+  geom1_L2_pnt     FromGeom       dim0 n=12  'L2 (lens)'
+  geom1_L2_bnd     FromGeom       dim1 n=12  'L2 (lens)'
+  geom1_L2_dom     FromGeom       dim2 n=1  'L2 (lens)'
+  geom1_L3_pnt     FromGeom       dim0 n=12  'L3 (lens)'
+  geom1_L3_bnd     FromGeom       dim1 n=12  'L3 (lens)'
+  geom1_L3_dom     FromGeom       dim2 n=1  'L3 (lens)'
+  geom1_L4_pnt     FromGeom       dim0 n=12  'L4 (lens)'
+  geom1_L4_bnd     FromGeom       dim1 n=12  'L4 (lens)'
+  geom1_L4_dom     FromGeom       dim2 n=1  'L4 (lens)'
+  geom1_L5_pnt     FromGeom       dim0 n=10  'L5 (accel)'
+  geom1_L5_bnd     FromGeom       dim1 n=10  'L5 (accel)'
+  geom1_L5_dom     FromGeom       dim2 n=1  'L5 (accel)'
+  geom1_L6_pnt     FromGeom       dim0 n=10  'L6 (accel)'
+  geom1_L6_bnd     FromGeom       dim1 n=10  'L6 (accel)'
+  geom1_L6_dom     FromGeom       dim2 n=1  'L6 (accel)'
+  geom1_L7_pnt     FromGeom       dim0 n=10  'L7 (accel)'
+  geom1_L7_bnd     FromGeom       dim1 n=10  'L7 (accel)'
+  geom1_L7_dom     FromGeom       dim2 n=1  'L7 (accel)'
+  geom1_L8_pnt     FromGeom       dim0 n=10  'L8 (accel)'
+  geom1_L8_bnd     FromGeom       dim1 n=10  'L8 (accel)'
+  geom1_L8_dom     FromGeom       dim2 n=1  'L8 (accel)'
+  geom1_L9_pnt     FromGeom       dim0 n=10  'L9 (accel)'
+  geom1_L9_bnd     FromGeom       dim1 n=10  'L9 (accel)'
+  geom1_L9_dom     FromGeom       dim2 n=1  'L9 (accel)'
+  geom1_D1_pnt     FromGeom       dim0 n=12  'D1 (deflector pair, axisymmetric)'
+  geom1_D1_bnd     FromGeom       dim1 n=12  'D1 (deflector pair, axisymmetric)'
+  geom1_D1_dom     FromGeom       dim2 n=1  'D1 (deflector pair, axisymmetric)'
+  geom1_D2_pnt     FromGeom       dim0 n=12  'D2 (deflector pair, axisymmetric)'
+  geom1_D2_bnd     FromGeom       dim1 n=12  'D2 (deflector pair, axisymmetric)'
+  geom1_D2_dom     FromGeom       dim2 n=1  'D2 (deflector pair, axisymmetric)'
+  geom1_mcp_pnt    FromGeom       dim0 n=4  'MCP plate'
+  geom1_mcp_bnd    FromGeom       dim1 n=5  'MCP plate'
+  geom1_mcp_dom    FromGeom       dim2 n=1  'MCP plate'
+  geom1_surround_pnt FromGeom       dim0 n=10  'MCP surround (Al2O3 ceramic)'
+  geom1_surround_bnd FromGeom       dim1 n=12  'MCP surround (Al2O3 ceramic)'
+  geom1_surround_dom FromGeom       dim2 n=1  'MCP surround (Al2O3 ceramic)'
+  geom1_ring_pnt   FromGeom       dim0 n=4  'MCP holder ring (Ultem 1000)'
+  geom1_ring_bnd   FromGeom       dim1 n=5  'MCP holder ring (Ultem 1000)'
+  geom1_ring_dom   FromGeom       dim2 n=1  'MCP holder ring (Ultem 1000)'
+  geom1_hub_pnt    FromGeom       dim0 n=4  'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  geom1_hub_bnd    FromGeom       dim1 n=5  'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  geom1_hub_dom    FromGeom       dim2 n=1  'Screen cross hub / effective cross ring (r 5.5..R_cross)'
+  geom1_meshline_pnt FromGeom       dim0 n=2  'Screen mesh (transparent, -1 kV)'
+  geom1_meshline_bnd FromGeom       dim1 n=1  'Screen mesh (transparent, -1 kV)'
+  geom1_meshline_dom FromGeom       dim2 n=0  'Screen mesh (transparent, -1 kV)'
+  geom1_sel_es     FromGeom       dim2 n=4  'es domains (not conductors)'
+  geom1_sel_solid  FromGeom       dim2 n=18  'All solids'
+  geom1_sel_vac    FromGeom       dim2 n=1  'Vacuum (particle domain)'
+  geom1_sel_tip    FromGeom       dim1 n=1  'Needle tip face'
+  geom1_bnd_mcpfront FromGeom       dim1 n=1  'MCP front face'
+  geom1_bnd_mcpback FromGeom       dim1 n=1  'MCP back face'
+
+== Materials ==
+
+== Physics ==
+  [es] Electrostatics 'Electrostatics'
+     ccn1         ChargeConservation         'Charge Conservation 1' sel[dim2 n=2 [1, 3]]
+     axi1         AxialSymmetry              'Axial Symmetry 1' sel[dim1 n=5 [1, 5, 7, 9, 11]]
+         StudyStep = std1/stat
+     zc1          ZeroCharge                 'Zero Charge 1' sel[dim1 n=3 [2, 13, 190]]
+     init1        init                       'Initial Values 1' sel[dim2 n=4 [1, 3, 16, 17]]
+     ccn2         ChargeConservation         'MCP holder ring (Ultem 1000)' sel[dim2 named=geom1_ring_dom n=1]
+     ccn3         ChargeConservation         'MCP surround (Al2O3)' sel[dim2 named=geom1_surround_dom n=1]
+     gnd_needle   Ground                     'Ground needle' sel[dim1 named=geom1_needle_bnd n=4]
+     gnd_ch1      Ground                     'Ground chamber 1' sel[dim1 named=geom1_ch1_bnd n=8]
+     gnd_ch2      Ground                     'Ground chamber 2' sel[dim1 named=geom1_ch2_bnd n=26]
+     pot_L1       ElectricPotential          'L1 potential' sel[dim1 named=geom1_L1_bnd n=12]
+         V0 = L1_v
+     pot_L2       ElectricPotential          'L2 potential' sel[dim1 named=geom1_L2_bnd n=12]
+         V0 = L2_v
+     pot_L3       ElectricPotential          'L3 potential' sel[dim1 named=geom1_L3_bnd n=12]
+         V0 = L3_v
+     pot_L4       ElectricPotential          'L4 potential' sel[dim1 named=geom1_L4_bnd n=12]
+         V0 = L4_v
+     pot_L5       ElectricPotential          'L5 potential' sel[dim1 named=geom1_L5_bnd n=10]
+         V0 = L5_v
+     pot_L6       ElectricPotential          'L6 potential' sel[dim1 named=geom1_L6_bnd n=10]
+         V0 = L6_v
+     pot_L7       ElectricPotential          'L7 potential' sel[dim1 named=geom1_L7_bnd n=10]
+         V0 = L7_v
+     pot_L8       ElectricPotential          'L8 potential' sel[dim1 named=geom1_L8_bnd n=10]
+         V0 = L8_v
+     pot_L9       ElectricPotential          'L9 potential' sel[dim1 named=geom1_L9_bnd n=10]
+         V0 = L9_v
+     pot_D1       ElectricPotential          'D1 potential (mean of halves)' sel[dim1 named=geom1_D1_bnd n=12]
+         V0 = (D1a_v+D1b_v)/2
+     pot_D2       ElectricPotential          'D2 potential (mean of halves)' sel[dim1 named=geom1_D2_bnd n=12]
+         V0 = (D2a_v+D2b_v)/2
+     pot_mcpf     ElectricPotential          'MCP front' sel[dim1 named=geom1_bnd_mcpfront n=1]
+         V0 = V_mcp_front
+     pot_mcpb     ElectricPotential          'MCP back' sel[dim1 named=geom1_bnd_mcpback n=1]
+         V0 = V_mcp_back
+     pot_hub      ElectricPotential          'Screen hub' sel[dim1 named=geom1_hub_bnd n=5]
+         V0 = V_screen
+     pot_mesh     ElectricPotential          'Screen mesh' sel[dim1 named=geom1_meshline_bnd n=1]
+         V0 = V_screen
+  [cpt] ChargedParticleTracing 'Charged Particle Tracing'
+     prop(ParticleReleaseSpecification): {'ParticleReleaseSpecification': 'SpecifyReleaseTimes'}
+     axi1         AxialSymmetry              'Axial Symmetry 1' sel[dim1 n=4 [1, 5, 7, 11]]
+         WallCondition = Bounce
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     wall1        Wall                       'Wall 1' sel[dim1 n=185 [2, 4, 6, 10, 12, 13, 14, 15, 16, 17, 18, 19]]
+         WallCondition = Freeze
+         WallContactCondition = UseWallCond
+         gammas = 0
+         vprim = [['0'], ['0'], ['0']]
+         SpecifyPrimaryTangentialNormal = 0
+         PrimaryParticleCondition = None
+         gamma = 0
+         e = 1
+         Otherwise = Freeze
+         i = 1
+         StudyStep = std1/stat
+     pp1          ParticleProperties         'Particle Properties 1' sel[dim[]]
+         SpecifyHamiltonian = Directly
+         H = 0
+         Fh = [['0'], ['0'], ['0']]
+         vh = [['0'], ['0'], ['0']]
+         L = 0
+         v = [['0'], ['0'], ['0']]
+         ParticleSpecies = UserDefined
+         mp = m_ion
+         mprest = me_const
+         Z = Z_ion
+         StudyStep = std1/stat
+     ef1          ElectricForce              'Electric Force 1' sel[dim2 named=geom1_sel_vac n=1]
+         SpecifyForceUsing = ElectricField
+         TimeDependenceOfField = StationaryOrTimeDependent
+         FrequencySpecification = FromSolution
+         UsePPR = 0
+         omega = 1[MHz]
+         Tper = 1[us]
+         phi0 = 0
+         dtper = 0
+         E_src = root.comp1.es.Er
+         E = [['0'], ['0'], ['0']]
+         V_src = userdef
+         V = 0
+         ParticlesToAffect = All
+         AffectedParticleProperties = pp1
+         ei = 1
+         coordinateSystem = GlobalSystem
+         StudyStep = std1/stat
+     relf1        ReleaseFromDataFile        'Release: 3D beam initial conditions' sel[dim[]]
+         rc = 1[nA]
+         TimeDistributionFunction = ListOfValues
+         SamplingFromTimeDistribution = Deterministic
+         rt = 0
+         Nvalt = 10
+         meant = 0.5
+         stdevt = 0.2
+         tstart = 0
+         tlast = 1
+         Filename = D:\Users\kshimojo\projects\ion_beam_measurement\data\release_from_3d.txt
+         ModelRes = res1
+         FilenameShort = release_from_3d.txt
+         FileDiscard = 0
+         icolp = 0
+         InitialVelocity = FromFile
+         SamplingFromDistribution = Deterministic
+         AllowNonuniformSpeedsInDistributon = 0
+         v0 = [['0'], ['0'], ['0']]
+         Us = 1
+         Nvel = 200
+         rax = [['1'], ['0'], ['0']]
+         cax = [['1'], ['0'], ['0']]
+         alphac = pi/3
+         L0 = [['1'], ['0'], ['0']]
+         Ep0 = 1[keV]
+         T0 = 293.15[K]
+         M = 50
+         icolv = 2
+         ReleasedParticleProperties = pp1
+         SubtractMovingFrameVelocity = 0
+         BackgroundVelocity = FromRotatingFrame
+         vb = [['0'], ['0'], ['0']]
+         StudyStep = std1/stat
+
+== Meshes ==
+  mesh1 'Mesh 1' n_elem=211688
+     size         MeshSizeDefault 'Size'
+     ftri1        FreeTri        'Free Triangular 1' sel[dim[0, 1, 2]]
+         s_tip        Size       'Size' sel[dim1 named=geom1_needle_bnd n=5]
+         s_L1         Size       'Size 1' sel[dim1 named=geom1_L1_bnd n=12]
+         s_L2         Size       'Size 2' sel[dim1 named=geom1_L2_bnd n=12]
+         s_L3         Size       'Size 3' sel[dim1 named=geom1_L3_bnd n=12]
+         s_L4         Size       'Size 4' sel[dim1 named=geom1_L4_bnd n=12]
+         s_L5         Size       'Size 5' sel[dim1 named=geom1_L5_bnd n=10]
+         s_L6         Size       'Size 6' sel[dim1 named=geom1_L6_bnd n=10]
+         s_L7         Size       'Size 7' sel[dim1 named=geom1_L7_bnd n=10]
+         s_L8         Size       'Size 8' sel[dim1 named=geom1_L8_bnd n=10]
+         s_L9         Size       'Size 9' sel[dim1 named=geom1_L9_bnd n=10]
+         s_D1         Size       'Size 1a' sel[dim1 named=geom1_D1_bnd n=12]
+         s_D2         Size       'Size 2a' sel[dim1 named=geom1_D2_bnd n=12]
+         s_mesh       Size       'Size 10' sel[dim1 named=geom1_meshline_bnd n=1]
+         s_hub        Size       'Size 11' sel[dim1 named=geom1_hub_bnd n=5]
+         s_mcp        Size       'Size 12' sel[dim1 named=geom1_bnd_mcpfront n=1]
+         s_axis       Size       'Size 13' sel[dim2 named=geom1_sel_vac n=1]
+
+== Studies ==
+  std1 'Study 1 - electrostatics'
+     stat       Stationary     {'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'on', 'cpt', 'off', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'off', 'notsolmethod': 'init', 'notstudy': 'zero', 'notsol': 'current'}
+  std2 'Study 2 - particle tracing'
+     time       Transient      {'tlist': 'range(0,dt_out,t_end)', 'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'off', 'cpt', 'on', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'on', 'notsolmethod': 'sol', 'notstudy': 'std1', 'notsol': 'current'}
+
+== Solutions ==
+  sol1 'Solution 1' study=std1  features=['st1:StudyStep', 'v1:Variables', 's1:Stationary']
+       st1: {'studystep': 'stat'}
+       v1: {'initmethod': 'init', 'initsol': 'zero', 'initsoluse': 'current', 'solnum': '1', 'notsolmethod': 'init', 'notsol': 'zero', 'notsoluse': 'current'}
+       s1: {'solnum': '1'}
+  sol2 'Solution 2' study=std2  features=['st1:StudyStep', 'v1:Variables', 't1:Time']
+       st1: {'studystep': 'time'}
+       v1: {'initmethod': 'init', 'initsol': 'zero', 'initsoluse': 'current', 'solnum': '1', 'notsolmethod': 'sol', 'notsol': 'sol1', 'notsoluse': 'current'}
+       t1: {'tlist': 'range(0,dt_out,t_end)', 'rtol': '1.0E-5', 'atolglobal': '0.001', 'timemethod': 'genalpha', 'tstepsbdf': 'free', 'storeudot': 'on'}
+
+== Datasets ==
+  dset1      Solution             'Study 1 - electrostatics/Solution 1' {'solution': 'sol1', 'geom': 'geom1'}
+  dset2      Solution             'Study 2 - particle tracing/Solution 2' {'solution': 'sol2', 'geom': 'geom1'}
+
+== Export nodes ==
+  (none)
+
+== Numerical (derived values) ==
+
+== Plot groups ==

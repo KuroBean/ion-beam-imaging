@@ -1,0 +1,7 @@
+COMSOL 5.5 started in 11.5 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 9.3 s
+holder material -> Ultem (eps_r 3.15)
+L_dom: 'if(cfg==3,2*z_c2_center+L_c1+0.1[m],L_c1+0.1[m])' -> 'if(cfg==1,L_c1,z_c2+2*z_c2_center)+0.1[m]'
+geometry rebuilt: 44 domains, 1521 boundaries (0 s)
+mesh: 2613092 elements, 460841 vertices (192 s)
+saved lens8newMCP_ks_v3_touchup.mph
