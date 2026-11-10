@@ -62,7 +62,7 @@ class RunLog:
     def record_job(self, job: JobSpec, bundle: ResultBundle | None = None, config_hash: str | None = None,
                    backend: str | None = None) -> None:
         meta = bundle.meta if bundle else None
-        cfg_json = json.dumps({"electrodes_used": job.electrodes_used, "wiring": job.wiring,
+        cfg_json = json.dumps({"wiring": job.wiring,
                                "channels": job.channels, "positions": job.positions,
                                "mesh_level": job.mesh_level, "ion_level": job.ion_level, "tags": job.tags})
         row = {

@@ -1,40 +1,57 @@
 # Chambers, positions, electrodes and supplies (plan section 12). Used for optimizer
 # bounds and job validation. Positions are along z from the model tip apex (mm).
 # null = TBD. Ask the author before changing values here.
+#
+# The lens assembly is a FIXED stack (KNOWN_ISSUES #10): nine plates E1..E9 (= L1..L9 in the
+# models; E1 = extractor) plus two split deflectors, placed as one unit by lens_gap.
 
 chamber_setups:              # 2 physical chambers, 3 setups (same numbering as the cfg parameter)
   1:
     name: chamber 1 alone (tube)
     z_mcp_mm: [null, null]       # TBD allowed range of the MCP front face
     mesh_gap_mm: [null, null]    # TBD, mesh distance in front of the MCP face
-    electrode_z_mm: [null, null] # TBD allowed range for E1..E9 centres
+    lens_gap_mm: [null, null]    # TBD, tip apex to the E1 (L1) front face (models: 13.482)
   2:
-    name: chamber 2 alone (sphere)
+    name: chamber 2 alone (sphere)   # unusable for now: the MCP sits inside L8/L9 (KNOWN_ISSUES #12)
     z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
     mesh_gap_mm: [null, null]
-    electrode_z_mm: [null, null]
+    lens_gap_mm: [null, null]
   3:
     name: chambers 1 and 2 joined
     z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
     mesh_gap_mm: [null, null]
-    electrode_z_mm: [null, null]
+    lens_gap_mm: [null, null]
 
 mesh:
   min_gap_to_mcp_mm: null    # TBD, lower bound on mesh_gap (current model 12.7)
 
 electrodes:
-  count: 9                   # identical disks E1..E9, E1 = extractor
-  outer_diameter_mm: null    # TBD, from the electrode STEP file
-  aperture_diameter_mm: null # TBD
-  thickness_mm: null         # TBD
-  min_gap_mm: null           # TBD, free gap between adjacent disks (face to face)
-  e1_z_mm: [null, null]      # TBD, allowed extractor centre position relative to the tip
+  count: 9                   # E1..E9 = L1..L9, E1 = extractor
+  # Geometry from the CAD ("lens assembly stripped with rods.STEP"), front faces relative to the
+  # E1 front face. length = full extent incl. the 5 mm back lip; plate = plate thickness only.
+  # Lens plates E1-E4: 9 mm plate, accelerator plates E5-E9: 10 mm plate; OD 65, aperture r 5.
+  stack:
+    - {front_mm: 0.0,   length_mm: 14, plate_mm: 9,  r_in_mm: 5, r_out_mm: 32.5}   # E1 = L1 (lens)
+    - {front_mm: 11.23, length_mm: 14, plate_mm: 9,  r_in_mm: 5, r_out_mm: 32.5}   # E2 = L2
+    - {front_mm: 22.46, length_mm: 14, plate_mm: 9,  r_in_mm: 5, r_out_mm: 32.5}   # E3 = L3
+    - {front_mm: 33.69, length_mm: 14, plate_mm: 9,  r_in_mm: 5, r_out_mm: 32.5}   # E4 = L4
+    - {front_mm: 44.92, length_mm: 15, plate_mm: 10, r_in_mm: 5, r_out_mm: 32.5}   # E5 = L5 (accelerator)
+    - {front_mm: 57.15, length_mm: 15, plate_mm: 10, r_in_mm: 5, r_out_mm: 32.5}   # E6 = L6
+    - {front_mm: 69.38, length_mm: 15, plate_mm: 10, r_in_mm: 5, r_out_mm: 32.5}   # E7 = L7
+    - {front_mm: 81.61, length_mm: 15, plate_mm: 10, r_in_mm: 5, r_out_mm: 32.5}   # E8 = L8
+    - {front_mm: 93.84, length_mm: 15, plate_mm: 10, r_in_mm: 5, r_out_mm: 32.5}   # E9 = L9
+  deflectors:                # split cylinders (halves a/b); deleted from the models for cfg 1 and 2
+    - {name: d1, cfgs: [3], front_mm: 110.705, length_mm: 12.77, r_in_mm: 5, r_out_mm: 32.5}
+    - {name: d2, cfgs: [3], front_mm: 124.165, length_mm: 12.77, r_in_mm: 5, r_out_mm: 32.5}
+  deflectors_grounded: true  # Phase 1 (author, 2026-11-10): all deflector halves at 0 V
+  clearance_mm: 2.0          # smallest plate-to-plate gap (CAD: 2.23 axial between plates, ~2 radial
+                             # between a back lip and the next plate's groove); used by the field check
 
 supplies:
   low_voltage:
     channels: [LV1, LV2, LV3, LV4]
     range_V: [null, null]    # TBD, +/- a few hundred V
-    connectable: [tip, e1, e2, e3, e4, e5, e6, e7, e8, e9]   # each uses an LV channel or GND
+    connectable: [tip, e1, e2, e3, e4, e5, e6, e7, e8, e9]   # each on an LV channel or GND (unlisted = GND)
   high_voltage:
     range_V: [-10000, 10000]
     roles: {HV1: mcp_front, HV2: mcp_back, HV3: phosphor, HV4: mesh}   # fixed, one to one

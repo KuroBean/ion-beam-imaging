@@ -3,9 +3,8 @@
 Search space (bounds from constraints.yaml for the configuration's chamber setup):
   * voltages of the LV channels used by the wiring, the MCP-front and mesh HV ports
   * z_mcp and mesh_gap (fixed when their range has min == max)
-  * used electrode positions, reparameterized so ordering, spacing, the allowed range
-    and "upstream of the mesh" hold by construction: electrode j takes a fraction u_j of
-    the space left after the previous electrode, reserving room for the remaining ones.
+  * lens_gap (places the fixed lens stack), as a fraction of its feasible range so the
+    stack always stays upstream of the mesh
 
 Objective: minimize the checker score (max dtheta, degrees). Constraints (eta,
 fast fraction, monotonicity, evaluability, optional constraints) go to Optuna's
@@ -25,7 +24,7 @@ from . import units
 from .backends import SimulationBackend, make_backend
 from .checker import check
 from .config import Config, ConfigError, ConfigurationDef, range_known
-from .electrodes import check_structure, used_lv_channels
+from .electrodes import check_structure, stack_layout, used_lv_channels
 from .jobs import build_job
 from .runlog import RunLog
 
@@ -43,16 +42,13 @@ class SearchSpace:
     channels: dict[str, tuple[float, float]]               # V
     z_mcp: tuple[float, float]                             # m
     mesh_gap: tuple[float, float]                          # m
-    electrodes: list[int]
-    e1: tuple[float, float]                                # m, allowed E1 centre range
-    el: tuple[float, float]                                # m, allowed range for all centres
-    thickness: float                                       # m
-    min_gap: float                                         # m
+    lens_gap: tuple[float, float]                          # m
+    stack_length: float                                    # m, E1 front to the end of the last stack part
     names: list[str] = field(default_factory=list)
 
     @classmethod
     def from_config(cls, cfg: Config, conf: ConfigurationDef) -> "SearchSpace":
-        problems = check_structure(cfg, conf.cfg, conf.electrodes_used, conf.wiring)
+        problems = check_structure(cfg, conf.cfg, conf.wiring)
         if problems:
             raise ConfigError(f"configuration '{conf.config_id}' is invalid:\n  " + "\n  ".join(problems))
         s = cfg.constraints.supplies
@@ -67,59 +63,23 @@ class SearchSpace:
             chan[s.hv_port(role)] = (lo, hi)
         ck = f"constraints.chamber_setups.{conf.cfg}"
         mm = lambda r: (r[0] * units.MM, r[1] * units.MM)  # noqa: E731
-        z_mcp = mm(_rng(cfg, f"{ck}.z_mcp_mm"))
         lo_g, hi_g = _rng(cfg, f"{ck}.mesh_gap_mm")
         lo_g = max(lo_g, cfg.require("constraints.mesh.min_gap_to_mcp_mm"))
         if lo_g > hi_g:
             raise ConfigError(f"{ck}.mesh_gap_mm upper bound is below constraints.mesh.min_gap_to_mcp_mm")
-        sp = cls(conf=conf, channels=chan, z_mcp=z_mcp, mesh_gap=(lo_g * units.MM, hi_g * units.MM),
-                 electrodes=list(conf.electrodes_used),
-                 e1=mm(_rng(cfg, "constraints.electrodes.e1_z_mm")), el=mm(_rng(cfg, f"{ck}.electrode_z_mm")),
-                 thickness=cfg.require("constraints.electrodes.thickness_mm") * units.MM,
-                 min_gap=cfg.require("constraints.electrodes.min_gap_mm") * units.MM)
-        # worst case (mesh closest to the tip) must still fit every electrode
-        lo0, hi0 = sp._first_range(sp.z_mcp[0] - sp.mesh_gap[1])
-        if lo0 > hi0 + EPS_M:
-            raise ConfigError(f"configuration '{conf.config_id}': {len(sp.electrodes)} electrodes do not fit between "
-                              f"the E1 range and the mesh for every allowed z_mcp/mesh_gap")
+        parts = stack_layout(cfg, conf.cfg, 0.0)
+        sp = cls(conf=conf, channels=chan, z_mcp=mm(_rng(cfg, f"{ck}.z_mcp_mm")),
+                 mesh_gap=(lo_g * units.MM, hi_g * units.MM), lens_gap=mm(_rng(cfg, f"{ck}.lens_gap_mm")),
+                 stack_length=max(e["z_back_m"] for e in parts))
+        # worst case (mesh closest to the tip, stack furthest out) must still fit
+        if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - sp.mesh_gap[1] - EPS_M:
+            raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the mesh "
+                              f"even at the smallest lens_gap, z_mcp and largest mesh_gap")
         return sp
 
-    # ---- electrode placement
-    @property
-    def pitch(self) -> float:
-        return self.thickness + self.min_gap
-
-    def _hi_all(self, z_mesh: float) -> float:
-        return min(self.el[1], z_mesh - self.thickness / 2 - EPS_M)
-
-    def _first_range(self, z_mesh: float) -> tuple[float, float]:
-        n = len(self.electrodes)
-        lo = max(self.el[0], self.e1[0], self.thickness / 2 + EPS_M)
-        hi = min(self.e1[1], self._hi_all(z_mesh) - (n - 1) * self.pitch)
-        return lo, hi
-
-    def place(self, z_mesh: float, u: list[float] | Callable[[int], float]) -> dict[str, float]:
-        """Electrode centre positions from fractions in [0, 1].
-
-        u is a list (one fraction per used electrode) or a callable u(k) that is only
-        called for electrodes whose allowed range has nonzero width (so a fixed geometry
-        adds no search dimensions).
-        """
-        n = len(self.electrodes)
-        hi_all = self._hi_all(z_mesh)
-        get = (lambda j, k: u[j]) if isinstance(u, (list, tuple)) else (lambda j, k: u(k))
-        out = {}
-        lo, hi = self._first_range(z_mesh)
-        z_prev = None
-        for j, k in enumerate(self.electrodes):
-            if j > 0:
-                lo = z_prev + self.pitch
-                hi = hi_all - (n - 1 - j) * self.pitch
-            width = max(hi - lo, 0.0)
-            z = lo + (get(j, k) * width if width > 1e-12 else 0.0)
-            out[f"z_e{k}"] = z
-            z_prev = z
-        return out
+    def lens_gap_max(self, z_mesh: float) -> float:
+        """Largest lens_gap that keeps the whole stack upstream of the mesh plane."""
+        return min(self.lens_gap[1], z_mesh - self.stack_length - EPS_M)
 
     # ---- optuna
     def suggest(self, trial: optuna.Trial) -> tuple[dict[str, float], dict[str, float]]:
@@ -129,9 +89,10 @@ class SearchSpace:
         channels = {ch: f(ch, lo, hi) for ch, (lo, hi) in self.channels.items()}
         z_mcp = f("z_mcp_mm", self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM) * units.MM
         gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM
-        u = lambda k: trial.suggest_float(f"u_e{k}", 0.0, 1.0)  # noqa: E731
-        positions = {"z_mcp": z_mcp, "mesh_gap": gap, **self.place(z_mcp - gap, u)}
-        return channels, positions
+        # lens_gap as a fraction of its feasible range, so the stack never reaches the mesh
+        lo, hi = self.lens_gap[0], self.lens_gap_max(z_mcp - gap)
+        lens_gap = lo if hi - lo <= 1e-12 else lo + trial.suggest_float("u_lens_gap", 0.0, 1.0) * (hi - lo)
+        return channels, {"lens_gap": lens_gap, "z_mcp": z_mcp, "mesh_gap": gap}
 
 
 @dataclass

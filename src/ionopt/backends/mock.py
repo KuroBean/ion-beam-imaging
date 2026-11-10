@@ -26,7 +26,8 @@ import pandas as pd
 
 from .. import units
 from ..config import Config
-from ..electrodes import expand, expected_potentials, node_potentials, hv_potentials, used_lv_channels, validate_job
+from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, node_potentials,
+                          used_lv_channels, validate_job)
 from ..launch import make_launch
 from ..results import JobTimeout, execute, prepare_job_dir, read_bundle
 from ..schemas import FILES, FINAL_COLUMNS, JobSpec, ResultBundle
@@ -46,11 +47,7 @@ def _rng(cfg: Config, job: JobSpec) -> np.random.Generator:
 
 def mock_geometry(job: JobSpec, cfg: Config) -> dict:
     """geometry.json content (plan coordinates, SI) from the job and constraints."""
-    spec, cs = cfg.spec, cfg.constraints
-    el = cs.electrodes
-    t = None if el.thickness_mm is None else el.thickness_mm * units.MM
-    r_in = None if el.aperture_diameter_mm is None else el.aperture_diameter_mm / 2 * units.MM
-    r_out = None if el.outer_diameter_mm is None else el.outer_diameter_mm / 2 * units.MM
+    spec = cfg.spec
     z_mcp = job.positions["z_mcp"]
     z_mesh = z_mcp - job.positions["mesh_gap"]
     r_mesh = cfg.require("spec.detector.mesh_opening_diameter_mm") / 2 * units.MM
@@ -66,11 +63,7 @@ def mock_geometry(job: JobSpec, cfg: Config) -> dict:
         "r_mesh_open_m": r_mesh,
         "mesh_frame_z_m": [z_mesh, z_mesh],
         "mesh_frame_r_m": [r_mesh, None],
-        "electrodes": [
-            {"name": f"e{k}", "selection": f"sel_e{k}", "z_m": job.positions[f"z_e{k}"],
-             "thickness_m": t, "r_in_m": r_in, "r_out_m": r_out}
-            for k in job.electrodes_used
-        ],
+        "electrodes": geometry_electrodes(job, cfg),
         "t_end_s": job.launch.t_end_us * units.US if job.launch.t_end_us else None,
     }
 
@@ -203,9 +196,9 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
 
 def _axis_nodes(job: JobSpec, cfg: Config, geom: dict) -> tuple[np.ndarray, np.ndarray]:
     """Piecewise-linear toy axis potential through tip, electrodes, mesh and MCP."""
-    pots = node_potentials(job, cfg)
+    ep = expected_potentials(job, cfg)
     hv = hv_potentials(job, cfg)
-    pts = [(0.0, pots["tip"])] + [(e["z_m"], pots[e["name"]]) for e in geom["electrodes"]] + \
+    pts = [(0.0, ep["sel_tip"])] + [(e["z_m"], ep[e["selection"]]) for e in geom["electrodes"]] + \
           [(geom["z_mesh_m"], hv["mesh"]), (geom["z_mcp_m"], hv["mcp_front"])]
     z, v = map(np.array, zip(*sorted(pts)))
     return z, v

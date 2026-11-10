@@ -32,6 +32,8 @@ NOT_TBD = (
     "parameters.parameters.*.allowed",
     "spec.analysis.spline_smoothing",
     "backend.mock.fold_theta_deg",           # null = no fold
+    "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)
+    "constraints.electrodes.stack.*.plate_mm",
     "spec.requirements.impact_threshold_mps",   # alternative to impact_threshold_eV_per_charge
 )
 
@@ -214,26 +216,47 @@ class ChamberSetup(_Model):
     name: str = ""
     z_mcp_mm: Range = [None, None]
     mesh_gap_mm: Range = [None, None]
-    electrode_z_mm: Range = [None, None]
+    lens_gap_mm: Range = [None, None]      # tip apex to the L1 (E1) front face
 
 
 class MeshConstraints(_Model):
     min_gap_to_mcp_mm: float | None = Field(None, ge=0)
 
 
-class ElectrodeConstraints(_Model):
-    count: int = Field(9, ge=1)
-    outer_diameter_mm: float | None = Field(None, gt=0)
-    aperture_diameter_mm: float | None = Field(None, gt=0)
-    thickness_mm: float | None = Field(None, gt=0)
-    min_gap_mm: float | None = Field(None, ge=0)
-    e1_z_mm: Range = [None, None]
+class StackPart(_Model):
+    """One part of the fixed lens stack, positioned relative to the E1 (L1) front face."""
+    front_mm: float = Field(ge=0)          # front face, measured from the E1 front face along +z
+    length_mm: float = Field(gt=0)         # full axial extent including lips (bounding box)
+    plate_mm: float | None = Field(None, gt=0)   # plate thickness without lips (field checks)
+    r_in_mm: float = Field(ge=0)
+    r_out_mm: float = Field(gt=0)
 
     @model_validator(mode="after")
-    def _aperture(self):
-        if (self.outer_diameter_mm is not None and self.aperture_diameter_mm is not None
-                and self.aperture_diameter_mm >= self.outer_diameter_mm):
-            raise ValueError("aperture_diameter_mm must be smaller than outer_diameter_mm")
+    def _radii(self):
+        if self.r_in_mm >= self.r_out_mm:
+            raise ValueError("r_in_mm must be smaller than r_out_mm")
+        return self
+
+
+class Deflector(StackPart):
+    name: str                              # d1, d2; halves are <name>a / <name>b
+    cfgs: list[int]                        # chamber setups in which the deflector exists
+
+
+class ElectrodeConstraints(_Model):
+    count: int = Field(9, ge=1)
+    stack: list[StackPart] = []            # E1..E9 in order
+    deflectors: list[Deflector] = []
+    deflectors_grounded: bool = True       # Phase 1: every deflector half at 0 V
+    clearance_mm: float | None = Field(None, gt=0)   # smallest gap between neighbouring plates
+
+    @model_validator(mode="after")
+    def _stack(self):
+        if self.stack and len(self.stack) != self.count:
+            raise ValueError(f"electrodes.stack has {len(self.stack)} entries, count is {self.count}")
+        fr = [e.front_mm for e in self.stack]
+        if fr != sorted(fr) or (fr and fr[0] != 0):
+            raise ValueError("electrodes.stack front_mm must start at 0 (E1) and increase")
         return self
 
 
@@ -286,6 +309,8 @@ class ConstraintsConfig(_Model):
 class WorkerConfig(_Model):
     count: int = Field(1, ge=1)
     restart_after_jobs: int = Field(20, ge=1)
+    output_steps: int = Field(500, ge=10)        # particle output times per run: dt_out = t_end / output_steps
+    allow_3d_geometry_change: bool = False       # 3D models still have numeric selections (KNOWN_ISSUES #13)
 
 
 class SSHConfig(_Model):
@@ -334,13 +359,15 @@ class OptimizerConfig(_Model):
 
 
 class ConfigurationDef(_Model):
-    """A structural configuration: chamber setup, electrodes used and wiring (plan 7.2)."""
+    """A structural configuration: chamber setup and wiring (plan 7.2, fixed stack).
+
+    wiring maps the tip and electrodes e1..e9 to LV1..LV4 or GND; nodes not listed are GND.
+    """
 
     config_id: str
     description: str = ""
     cfg: int
-    electrodes_used: list[int]
-    wiring: dict[str, str]
+    wiring: dict[str, str] = {}
 
 
 class B0Config(_Model):

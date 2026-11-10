@@ -54,8 +54,11 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
     identical electrodes at free positions `z_e_k` with on/off flags `use_e_k`. The real
     assembly is a fixed stack. Its free variables are the voltages L1_v..L9_v and
     D1a_v..D2b_v, `lens_gap`, `mesh_gap` and z_mcp, and the deflectors are new.
-    *Fix:* rework `config/parameters.yaml`, `config/constraints.yaml`, `electrodes.py` and
-    `optimize.py` before task 9/11.
+    **Done 2026-11-10.** `JobSpec.positions` is now `{lens_gap, z_mcp, mesh_gap}`. The wiring
+    covers the tip and e1..e9 (unlisted nodes are GND), and the deflectors are grounded.
+    `constraints.electrodes.stack` holds the CAD geometry. The registry maps onto the model
+    names (`L<k>_v`, `V_screen`, ...). `electrodes.py`, `optimize.py`, the mock and the tests
+    were updated to match.
 11. **Placeholder voltages** (L1 -120 V, L2-L8 -40 V, L9 0 V). Only about 1% of ions reach
     the MCP. Real operating points come from the optimizer (task 11).
 

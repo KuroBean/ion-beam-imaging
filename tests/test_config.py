@@ -15,7 +15,7 @@ def test_repo_config_loads_with_tbds():
     tbd = cfg.list_tbd()
     assert "spec.detector.sigma_mcp_um" in tbd
     assert "constraints.chamber_setups.1.z_mcp_mm" in tbd
-    assert "parameters.parameters.z_mcp.comsol_name" in tbd
+    assert "parameters.parameters.v_phosphor.comsol_name" in tbd   # not modelled
     assert "spec.requirements.impact_threshold_eV_per_charge" in tbd
     assert "spec.launch.mass_Da" not in tbd
     assert not any(k.endswith(".unit") or k.endswith(".allowed") for k in tbd)
@@ -91,9 +91,9 @@ def test_registry_expansion():
     cfg = load_config(CONFIG_DIR)
     reg = cfg.registry()
     for k in range(1, 10):
-        assert f"z_e{k}" in reg and f"v_e{k}" in reg and f"use_e{k}" in reg
-    assert reg["use_e3"].type == "bool"
-    assert "z_e{k}" not in reg
+        assert f"v_e{k}" in reg and reg[f"v_e{k}"].comsol_name == f"L{k}_v"
+    assert "v_e{k}" not in reg and "z_e1" not in reg and "use_e1" not in reg
+    assert reg["lens_gap"].comsol_name == "lens_gap" and reg["v_mesh"].comsol_name == "V_screen"
 
 
 def test_sigma_from_hwhm():

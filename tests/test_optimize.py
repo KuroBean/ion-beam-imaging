@@ -16,27 +16,29 @@ from helpers import einzel_job
 def sharp(cfg_tmp):
     """Mock with a sharp optimum: small sigma_MCP, strong chromatic penalty."""
     return cfg_tmp.with_overrides(["spec.detector.sigma_mcp_um=5", "backend.mock.chroma_coeff_m_per_eV=1e-3",
-                                   # fixed electrode geometry (E1..E4 at 5, 9, 13, 17 mm): no position dimensions
-                                   "constraints.electrodes.e1_z_mm=[5, 5]",
-                                   "constraints.chamber_setups.1.electrode_z_mm=[5, 17]"])
+                                   # fixed stack position: no position dimensions
+                                   "constraints.chamber_setups.1.lens_gap_mm=[13.482, 13.482]"])
 
 
 def test_search_space_always_valid(cfg):
     conf = cfg.b0_configs.get("example_einzel_accel")
-    c = cfg.with_overrides(["constraints.chamber_setups.1.z_mcp_mm=[120, 145]",
-                            "constraints.chamber_setups.1.mesh_gap_mm=[6, 20]",
+    c = cfg.with_overrides(["constraints.chamber_setups.1.z_mcp_mm=[135, 145]",
+                            "constraints.chamber_setups.1.mesh_gap_mm=[6, 12.7]",
                             "constraints.electrical.max_field_kV_per_mm=null"])
     sp = SearchSpace.from_config(c, conf)
     assert set(sp.channels) == {"LV1", "LV2", "LV3", "HV1", "HV4"}
     study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=1))
+    seen = []
     for _ in range(300):
         ch, pos = sp.suggest(study.ask())
         validate_job(build_job(c, conf, ch, pos), c)          # raises if anything is violated
-    # extremes of the fractions are valid too
+        seen.append(pos["lens_gap"])
+    assert min(seen) < 0.0055 and max(seen) > 0.010           # lens_gap explores its range
+    # extremes of the lens_gap fraction are valid too (worst case: mesh closest to the tip)
     for u in (0.0, 1.0):
-        pos = sp.place(0.120 - 0.020, [u] * 6)
-        validate_job(build_job(c, conf, {"LV1": 0, "LV2": 0, "LV3": 0, "HV1": -5000, "HV4": 0},
-                               {"z_mcp": 0.120, "mesh_gap": 0.020, **pos}), c)
+        ch, pos = sp.suggest(optuna.trial.FixedTrial({"LV1": 0, "LV2": 0, "LV3": 0, "HV1": -5000, "HV4": 0,
+                                                      "z_mcp_mm": 135, "mesh_gap_mm": 12.7, "u_lens_gap": u}))
+        validate_job(build_job(c, conf, ch, pos), c)
 
 
 def test_search_space_needs_bounds(cfg):
@@ -47,16 +49,15 @@ def test_search_space_needs_bounds(cfg):
 
 def test_search_space_rejects_impossible_fit(cfg):
     conf = cfg.b0_configs.get("example_einzel_accel")
-    c = cfg.with_overrides(["constraints.chamber_setups.1.electrode_z_mm=[3, 20]"])
-    with pytest.raises(ConfigError, match="do not fit"):
+    c = cfg.with_overrides(["constraints.chamber_setups.1.z_mcp_mm=[110, 145]"])
+    with pytest.raises(ConfigError, match="does not fit"):
         SearchSpace.from_config(c, conf)
 
 
 def test_optimizer_finds_known_optimum(sharp):
     m = sharp.backend.mock
-    fixed = {"z_e1": 0.005, "z_e2": 0.009, "z_e3": 0.013, "z_e4": 0.017}
-    ref = check(MockBackend(sharp).run(einzel_job(sharp, channels={"LV2": m.lens_opt_V, "HV4": m.mesh_opt_V},
-                                                  positions=fixed)).result_dir, sharp)
+    ref = check(MockBackend(sharp).run(einzel_job(sharp, channels={"LV2": m.lens_opt_V, "HV4": m.mesh_opt_V}))
+                .result_dir, sharp)
     assert ref.feasible, ref.flags
     res = optimize(sharp, "example_einzel", budget=80)
     assert res.sampler in ("tpe", "gp")

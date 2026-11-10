@@ -53,10 +53,9 @@ class JobSpec(BaseModel):
     job_id: str = Field(default_factory=new_job_id)
     fidelity: Fidelity = "2d"
     cfg: int
-    electrodes_used: list[int]                 # E1 always included
-    wiring: dict[str, str]                     # tip / e<k> -> LV1..LV4 or GND (plan 7.2)
+    wiring: dict[str, str] = {}                # tip / e<k> -> LV1..LV4 or GND; unlisted nodes are GND
     channels: dict[str, float]                 # V, e.g. {"LV1": 100, "LV2": 85, "HV1": -10000, "HV4": 0}
-    positions: dict[str, float]                # m: z_e<k> for used electrodes, mesh_gap, z_mcp
+    positions: dict[str, float]                # m: lens_gap, z_mcp, mesh_gap (fixed lens stack)
     launch: LaunchConfig
     mesh_level: Literal["normal", "fine"] = "normal"
     ion_level: Literal["search", "convergence"] = "search"   # convergence = more ions

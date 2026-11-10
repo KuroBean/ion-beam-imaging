@@ -1,4 +1,4 @@
-﻿# PLACEHOLDER values for developing and testing the tools with the MOCK backend only.
+# PLACEHOLDER values for developing and testing the tools with the MOCK backend only.
 # These are NOT physical decisions. Use with:  ionopt --overrides config/dev_overrides.yaml ...
 # Every key here must already exist in the main config files (typos are rejected).
 
@@ -28,15 +28,9 @@ constraints:
     1:
       z_mcp_mm: [145, 145]
       mesh_gap_mm: [12.7, 12.7]
-      electrode_z_mm: [3, 100]
+      lens_gap_mm: [5, 15]
   mesh:
     min_gap_to_mcp_mm: 5
-  electrodes:
-    outer_diameter_mm: 65
-    aperture_diameter_mm: 10
-    thickness_mm: 2
-    min_gap_mm: 2
-    e1_z_mm: [3, 10]
   supplies:
     low_voltage:
       range_V: [-300, 300]

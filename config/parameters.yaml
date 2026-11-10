@@ -3,62 +3,88 @@
 # they come from constraints.yaml.
 #
 # Fields: name (code name), comsol_name (global parameter name in BOTH models; null =
-# TBD), type (float | int | bool, default float), unit (unit the value is written to
-# COMSOL with), allowed (optional list of allowed values), per_electrode (true =
+# not modelled), type (float | int | bool, default float), unit (unit the value is written
+# to COMSOL with), allowed (optional list of allowed values), per_electrode (true =
 # template expanded for k = 1..constraints.electrodes.count; use {k} in name and
 # comsol_name).
 #
-# comsol_name values are filled after the electrode rework + introspection (task 8).
-# Current 2-lens 2D model has: cfg, mcp_z (derived), V_lens1, V_lens2, V_mcp_front,
-# V_mcp_back, V_screen; the 3D model has only cfg as a parameter (voltages are set
-# directly on physics nodes).
+# comsol_name values confirmed by introspection (docs/comsol_api_notes.md, 2026-11-10).
+# Model status: 2D (build_axisym.py) has all of them. 3D v5 lacks mesh_gap (author adds it
+# in the GUI) and v_tip (scripted, new file); the worker refuses jobs that need a
+# parameter the loaded model does not have.
 
 parameters:
   - name: cfg
-    comsol_name: cfg           # confirmed in both current models
+    comsol_name: cfg
     type: int
     allowed: [1, 2, 3]
     description: "chamber setup: 1 = chamber 1 (tube), 2 = chamber 2 (sphere), 3 = both joined"
   - name: z_mcp
-    comsol_name: null          # TBD (current models: mcp_z is derived; free only for cfg 1 via z_mcp_c1)
-    unit: mm
-    description: MCP front face position
+    comsol_name: z_mcp_c1      # free only in cfg 1; for cfg 2/3 mcp_z is fixed (sphere centre) and the
+    unit: mm                   # worker checks the job's z_mcp against the model instead of setting it
+    description: MCP front face position (plan coordinates; the model adds tip_z)
   - name: mesh_gap
-    comsol_name: null          # TBD (current models hard-code 12.7 mm)
+    comsol_name: mesh_gap
     unit: mm
     description: mesh plane distance in front of the MCP face (mesh rides on the MCP holder)
+  - name: lens_gap
+    comsol_name: lens_gap
+    unit: mm
+    description: tip apex to the E1 (L1) front face; places the whole fixed stack
   - name: v_tip
-    comsol_name: null          # TBD (needle is grounded in the current models)
+    comsol_name: v_tip
     unit: V
-    description: tip potential
+    description: tip (needle) potential
   - name: v_mesh
-    comsol_name: null          # TBD (2D model: V_screen)
+    comsol_name: V_screen
     unit: V
-    description: mesh potential (HV4)
+    description: mesh potential (HV4); the 2D/3D screen cross is held at the same potential
   - name: v_mcp_front
-    comsol_name: null          # TBD (2D model: V_mcp_front)
+    comsol_name: V_mcp_front
     unit: V
     description: MCP front potential (HV1)
   - name: v_mcp_back
-    comsol_name: null          # TBD (2D model: V_mcp_back); only if the model includes it
+    comsol_name: V_mcp_back
     unit: V
     description: MCP back potential (HV2), from mcp_back_offset_V
   - name: v_phosphor
-    comsol_name: null          # TBD; only if the model includes it
+    comsol_name: null          # not modelled (no phosphor screen in either model)
     unit: V
     description: phosphor potential (HV3), from phosphor_offset_V
-  - name: use_e{k}
-    comsol_name: null          # TBD
-    type: bool
-    per_electrode: true
-    description: electrode k present in the geometry (E1 always present)
-  - name: z_e{k}
-    comsol_name: null          # TBD
-    unit: mm
-    per_electrode: true
-    description: axial position of electrode k (centre of disk)
   - name: v_e{k}
-    comsol_name: null          # TBD
+    comsol_name: L{k}_v
     unit: V
     per_electrode: true
-    description: potential of electrode k, set from the wiring map
+    description: potential of electrode k (L k), set from the wiring map
+  - name: v_d1a
+    comsol_name: D1a_v
+    unit: V
+    description: deflector 1 half a (2D uses the mean of a and b)
+  - name: v_d1b
+    comsol_name: D1b_v
+    unit: V
+    description: deflector 1 half b
+  - name: v_d2a
+    comsol_name: D2a_v
+    unit: V
+    description: deflector 2 half a
+  - name: v_d2b
+    comsol_name: D2b_v
+    unit: V
+    description: deflector 2 half b
+  - name: ion_mass
+    comsol_name: m_ion
+    unit: kg
+    description: particle mass, from spec.launch.mass_Da
+  - name: ion_charge
+    comsol_name: Z_ion
+    type: int
+    description: charge number (signed), from spec.launch.charge
+  - name: t_end
+    comsol_name: t_end
+    unit: us
+    description: particle tracing end time, from spec.launch.t_end_us
+  - name: dt_out
+    comsol_name: dt_out
+    unit: us
+    description: particle output interval, t_end / backend.worker.output_steps
