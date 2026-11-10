@@ -35,7 +35,9 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
 
 ## Model setup that does not match the plan yet
 
-5. **Particle species.** Both models still use m_ion = 1.7e-24 kg (about 1024 Da). Plan:
+5. **Particle species.** Both models still use m_ion = 1.7e-24 kg (about 1024 Da). Since
+   v5 (`scripts/add_3d_params.py`), it is the parameter `m_ion` in both models, along with
+   `Z_ion`, `t_end`, `dt_out`, `V_mcp_front`, `V_mcp_back` and `V_screen`. Plan:
    Na+ at 22.99 Da, set from config. Na+ arrives about 6.7 times sooner, so `t_end` can
    shrink (3D 250 µs, 2D 800 µs now).
 6. **Needle is grounded.** The plan needs a tip voltage parameter `v_tip` on an LV channel.

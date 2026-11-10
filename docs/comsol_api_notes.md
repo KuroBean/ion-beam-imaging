@@ -76,9 +76,17 @@ literal on a node.
 | t_end | `t_end`, `dt_out` | — (literal tlist) | |
 | 2D only | `R_cross`, `eps_holder`, `eps_surround`, `E_ion`, `N_ion` | | |
 
-The 3D model is missing the parameters `V_mcp_front`, `V_mcp_back`, `V_screen`, `m_ion`,
-`Z_ion`, `t_end` and `dt_out`. They should be added to the 3D model with the same names as
-in 2D. That is a small scripted edit that writes a new file (see section 9).
+The 3D v4 model is missing the parameters `V_mcp_front`, `V_mcp_back`, `V_screen`, `m_ion`,
+`Z_ion`, `t_end` and `dt_out`.
+
+**Done 2026-11-10:** `scripts/add_3d_params.py` wrote `lens8newMCP_ks_v5_params.mph`. It adds
+these 7 parameters with the 2D names and values equal to the old literals (`t_end = 250[us]`,
+`dt_out = 0.5[us]`). It rebinds `es/pot5.V0`, `pot6.V0`, `pot7.V0`, `pot8.V0`, `cpt/pp1.mp` and
+`pp1.Z`. Both `std2/time.tlist` and `sol2/t1.tlist` are now `range(0,dt_out,t_end)`. The
+physics is unchanged, so v5 keeps v4's mesh and solutions. v4 itself was not saved.
+
+**Note:** the solver copy `sol2/t1.tlist` has its own tlist. Set it together with the study
+step, as `run_3d_v4.py` and `add_3d_params.py` do.
 
 ## 4. Electrodes: selections and physics nodes
 
@@ -208,7 +216,7 @@ ev.set("expr", "qz"); arr = np.array([list(r) for r in ev.getReal()])   # [parti
 | 1 | Named selections `sel_tip`, `sel_e1..9`, `sel_mesh_plane`, `sel_mesh_frame`, `sel_mcp_face`, `sel_walls` don't exist | Adapter-side map per fidelity (section 4 tables), with 3D tags resolved by label. No model edit needed |
 | 2 | Studies are `std1`/`std2`, not `std_es`/`std_pt` | Adapter constants (section 2) |
 | 3 | 3D: no data-file release; `pbeam1` on a numeric boundary | Adapter disables `pbeam1` and creates `relf1` in memory per job (verified, section 5) |
-| 4 | 3D: MCP, screen, mass, charge and time are literals | Add the parameters `V_mcp_front`, `V_mcp_back`, `V_screen`, `m_ion`, `Z_ion`, `t_end`, `dt_out` with a script that writes a **new** file, v5 (needs your OK) |
+| 4 | 3D v4: MCP, screen, mass, charge and time are literals | Done in v5 (`scripts/add_3d_params.py`, section 3). `config/paths.yaml` still points `models.3d` at v4 |
 | 5 | `v_tip` and `mesh_gap` don't exist in either model | Geometry/physics edits (KNOWN_ISSUES #6, #8). Both are needed before those become search variables |
 | 6 | 3D numeric selections: `mat1`, `wall1`, `zc1`, `ccn1`/`init1`/`ef1` domains, `size3`, `pbeam1` | KNOWN_ISSUES #13. Safe while the geometry is unchanged; any cfg or geometry change can renumber them. The adapter only changes parameters that the geometry doesn't renumber (voltages, mass, tlist) |
 | 7 | Changing `cfg` or `lens_gap` rebuilds the geometry | Changing `cfg` deletes or adds chambers and deflectors, and the 3D numeric selections above are then **unchecked**. Treat 3D cfg changes as unsafe until #6 is fixed; 2D is safe (all selections named) |
