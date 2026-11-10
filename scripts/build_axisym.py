@@ -3,12 +3,15 @@
 The z axis is the beam axis.  Dimensions come from the 3D model
 (see logs/boundary_table.csv produced by boundary_table.py):
 
-  * needle, Einzel-type lens pair, MCP plate/holder, screen-mesh disc: taken
-    directly (they are axisymmetric in 3D)
+  * needle, MCP plate/holder, screen-mesh disc: taken directly (axisymmetric in 3D)
+  * lens assembly (L1..L9 = 4 lens + 5 accelerator plates, deflector pairs D1/D2): r-z
+    profiles of the real STEP parts, positioned by lens_gap; the deflectors are
+    deleted for cfg 1 and 2 (If node), as in the 3D model
   * chamber 1 (tube) and chamber 2 (sphere): idealised as bodies of revolution
     with the 3D inner/outer radii; side ports and small flange features dropped
   * NOT representable in 2D-axisymmetry (omitted): screen-mesh cross arms,
-    four polyimide posts, small holder tabs/bosses, chamber side ports
+    four polyimide posts, small holder tabs/bosses, chamber side ports,
+    lens-assembly rods and bracket (grounded), the split of each deflector into halves
 
 Conductors are domains excluded from the physics (their edges carry the
 potential / ground); the MCP plate, its Ultem holder and the polyimide ring are
@@ -46,11 +49,22 @@ PARAMS = [
     ("r_needle", "0.5[mm]", "needle shank radius"),
     ("r_tip", "0.1[mm]", "needle tip flat radius"),
     ("L_cone", "10[mm]", "needle cone length"),
-    # lenses
-    ("lens1_z", "110[mm]", "lens 1 front face z"),
-    ("lens_pitch", "11.23[mm]", "lens 2 offset from lens 1"),
-    ("V_lens1", "-120[V]", "lens 1 potential"),
-    ("V_lens2", "-40[V]", "lens 2 potential"),
+    # lens assembly (real part, "lens assembly stripped with rods.STEP"; same names as the 3D model)
+    ("lens_gap", "13.482[mm]", "needle tip to L1 entrance face (front plane closest to the tip)"),
+    ("z_asm", "tip_z+lens_gap+136.165[mm]", "model z of the assembly CAD origin (L1 front is at CAD z = -136.165 mm)"),
+    ("L1_v", "-120[V]", "L1 potential"),
+    ("L2_v", "-40[V]", "L2 potential"),
+    ("L3_v", "-40[V]", "L3 potential"),
+    ("L4_v", "-40[V]", "L4 potential"),
+    ("L5_v", "-40[V]", "L5 potential"),
+    ("L6_v", "-40[V]", "L6 potential"),
+    ("L7_v", "-40[V]", "L7 potential"),
+    ("L8_v", "-40[V]", "L8 potential"),
+    ("L9_v", "0[V]", "L9 potential"),
+    ("D1a_v", "0[V]", "deflector 1 half a potential (2D uses the mean of a and b)"),
+    ("D1b_v", "0[V]", "deflector 1 half b potential"),
+    ("D2a_v", "0[V]", "deflector 2 half a potential (2D uses the mean of a and b)"),
+    ("D2b_v", "0[V]", "deflector 2 half b potential"),
     # MCP / screen
     ("V_mcp_front", "-10000[V]", "MCP front potential"),
     ("V_mcp_back", "-5000[V]", "MCP back potential"),
@@ -66,6 +80,38 @@ PARAMS = [
     ("t_end", "800[us]", "particle tracing end time (3D model used 200 us)"),
     ("dt_out", "1[us]", "particle tracing output interval"),
 ]
+
+
+# Lens assembly, from the STEP part faces (r in mm; z in the assembly CAD frame, beam along +z).
+# The parts are bodies of revolution near the axis; slots, rod holes, spacer pockets and set-screw holes
+# (all at r > 14 mm) are dropped.  Rods and bracket (grounded, off-axis) are not axisymmetric -> omitted.
+ELECTRODES = [  # tag, profile, CAD z of the front face (the face closest to the needle)
+    ("L1", "lens", -136.165), ("L2", "lens", -124.935), ("L3", "lens", -113.705), ("L4", "lens", -102.475),
+    ("L5", "accel", -91.245), ("L6", "accel", -79.015), ("L7", "accel", -66.785), ("L8", "accel", -54.555),
+    ("L9", "accel", -42.325),
+]
+# Deflector pairs (D1 = halves a/b at CAD z -25.46..-12.69, D2 at -12.0..+0.77): each half is a 4.5 mm
+# plate plus a half-tube (r 5..6.5) reaching past the other half's plate.  2D: full tube + both plates.
+DEFLECTORS = [
+    ("D1", [("5", -25.46), ("6.5", -25.46), ("6.5", -24.69), ("32.5", -24.69), ("32.5", -20.19),
+            ("6.5", -20.19), ("6.5", -17.96), ("32.5", -17.96), ("32.5", -13.46), ("6.5", -13.46),
+            ("6.5", -12.69), ("5", -12.69)]),
+    ("D2", [("5", -12.0), ("6.5", -12.0), ("6.5", -11.23), ("32.5", -11.23), ("32.5", -6.73),
+            ("6.5", -6.73), ("6.5", -4.5), ("32.5", -4.5), ("32.5", 0.0), ("6.5", 0.0),
+            ("6.5", 0.77), ("5", 0.77)]),
+]
+ASM_TAGS = [t for t, _, _ in ELECTRODES] + [t for t, _ in DEFLECTORS]
+
+
+def profile(kind, z_cad):
+    """r-z polygon of one electrode; z offsets from its front face."""
+    if kind == "lens":      # 9 mm plate, aperture r 5, front groove r 10..15 (5 deep), back lip r 12..13 (5 long)
+        pts = [(5, 0), (10, 0), (10, 5), (15, 5), (15, 0), (32.5, 0), (32.5, 9), (13, 9), (13, 14),
+               (12, 14), (12, 9), (5, 9)]
+    else:                   # 10 mm plate, front recess r<15 (7 deep), 1 mm web with aperture r 5,
+        pts = [(5, 7), (15, 7), (15, 0), (32.5, 0), (32.5, 10), (13, 10), (13, 15),  # back recess r<12,
+               (12, 15), (12, 8), (5, 8)]                                          # lip r 12..13
+    return [[f"{r:g}", f"z_asm+({z_cad}+{dz:g})"] for r, dz in pts]
 
 
 def sarr2(rows):
@@ -148,13 +194,17 @@ def build_geometry(comp):
         ["r_tip", "tip_z"], ["0", "tip_z"],
     ], "Needle (gnd)", contribute="csel_cond")
 
-    # ---------------- lenses ----------------
-    def lens(z0):
-        return [["5", f"{z0}"], ["10", f"{z0}"], ["10", f"{z0}+5"], ["15", f"{z0}+5"], ["15", f"{z0}"],
-                ["32.5", f"{z0}"], ["32.5", f"{z0}+9"], ["13", f"{z0}+9"], ["13", f"{z0}+14"],
-                ["12", f"{z0}+14"], ["12", f"{z0}+9"], ["5", f"{z0}+9"]]
-    polygon(g, "lens1", lens("lens1_z"), "Lens 1", contribute="csel_cond")
-    polygon(g, "lens2", lens("(lens1_z+lens_pitch)"), "Lens 2", contribute="csel_cond")
+    # ---------------- lens assembly ----------------
+    for tag, kind, z_cad in ELECTRODES:
+        polygon(g, tag, profile(kind, z_cad), f"{tag} ({kind})", contribute="csel_cond")
+    # Deflectors: deleted for cfg 1 and 2 to make room (same as the 3D model's "If delete deflectors").
+    # Each split-cylinder pair is idealised as one axisymmetric body (full tube + both mounting plates).
+    g.create("if_defl", "If").set("condition", "cfg!=1&&cfg!=2")
+    g.feature("if_defl").label("If keep deflectors (deleted for cfg 1 and 2)")
+    for tag, pts in DEFLECTORS:
+        polygon(g, tag, [[r, f"z_asm+({z})"] for r, z in pts], f"{tag} (deflector pair, axisymmetric)",
+                contribute="csel_cond")
+    g.create("endif_defl", "EndIf")
 
     # ---------------- MCP stack (relative to mcp_z) ----------------
     m = "mcp_z"
@@ -188,7 +238,7 @@ def build_geometry(comp):
     ln.set("selresult", True)
 
     # expose domain + boundary selections of every object that creates one
-    for t in ("ch1", "ch2", "needle", "lens1", "lens2", "mcp", "holder", "ring", "hub", "meshline"):
+    for t in ("ch1", "ch2", "needle", *ASM_TAGS, "mcp", "holder", "ring", "hub", "meshline"):
         g.feature(t).set("selresultshow", "all")
 
     g.run("fin")
@@ -249,8 +299,10 @@ def build_physics(comp, release="file"):
     bc("gnd_needle", "Ground", "geom1_needle_bnd", "Ground needle")
     bc("gnd_ch1", "Ground", "geom1_ch1_bnd", "Ground chamber 1")
     bc("gnd_ch2", "Ground", "geom1_ch2_bnd", "Ground chamber 2")
-    bc("pot_lens1", "ElectricPotential", "geom1_lens1_bnd", "Lens 1", "V_lens1")
-    bc("pot_lens2", "ElectricPotential", "geom1_lens2_bnd", "Lens 2", "V_lens2")
+    for tag, _, _ in ELECTRODES:
+        bc(f"pot_{tag}", "ElectricPotential", f"geom1_{tag}_bnd", f"{tag} potential", f"{tag}_v")
+    bc("pot_D1", "ElectricPotential", "geom1_D1_bnd", "D1 potential (mean of halves)", "(D1a_v+D1b_v)/2")
+    bc("pot_D2", "ElectricPotential", "geom1_D2_bnd", "D2 potential (mean of halves)", "(D2a_v+D2b_v)/2")
     bc("pot_mcpf", "ElectricPotential", "geom1_bnd_mcpfront", "MCP front", "V_mcp_front")
     bc("pot_mcpb", "ElectricPotential", "geom1_bnd_mcpback", "MCP back", "V_mcp_back")
     bc("pot_hub", "ElectricPotential", "geom1_hub_bnd", "Screen hub", "V_screen")
@@ -303,9 +355,11 @@ def build_mesh(comp):
     sz.set("hgrad", "1.2")
     sz.set("hcurve", "0.2")
     ft = mesh.create("ftri1", "FreeTri")
-    for tag, sel, h in (("s_tip", "geom1_needle_bnd", "0.02"), ("s_lens1", "geom1_lens1_bnd", "0.3"),
-                        ("s_lens2", "geom1_lens2_bnd", "0.3"), ("s_mesh", "geom1_meshline_bnd", "0.2"),
-                        ("s_hub", "geom1_hub_bnd", "0.3"), ("s_mcp", "geom1_bnd_mcpfront", "0.5")):
+    sizes = [("s_tip", "geom1_needle_bnd", "0.02")]
+    sizes += [(f"s_{t}", f"geom1_{t}_bnd", "0.3") for t in ASM_TAGS]
+    sizes += [("s_mesh", "geom1_meshline_bnd", "0.2"), ("s_hub", "geom1_hub_bnd", "0.3"),
+              ("s_mcp", "geom1_bnd_mcpfront", "0.5")]
+    for tag, sel, h in sizes:
         s = ft.create(tag, "Size")
         s.selection().geom("geom1", 1)
         s.selection().named(sel)
