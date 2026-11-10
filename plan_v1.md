@@ -644,8 +644,7 @@ for agent proposals.
 - [ ] 8. COMSOL introspection script: print the model tree, parameters, selections,
          studies, release and export nodes, and electrode geometry features for both models.
          Record findings in docs/comsol_api_notes.md. (Requires COMSOL; author runs or
-         approves.) Blocked on the electrode rework (section 15); tasks 1-7 need no COMSOL
-         and proceed in parallel. Earlier introspection of the 2-lens models (logs/inspect.log,
+         approves.) Unblocked: the electrode rework is done (section 15). Earlier introspection of the 2-lens models (logs/inspect.log,
          scripts/inspect_model.py, dump_features.py, boundary_table.py) is reusable.
 - [ ] 9. model_adapter.py and comsol_worker.py; one 2D job end to end, compared to a
          manual GUI run with the same params.
@@ -663,7 +662,6 @@ Tests needing COMSOL are marked @pytest.mark.comsol and skipped by default.
   docs/comsol_api_notes.md. Do not rely on remembered API names.
 - No hard-coded physical values in code (dimensions, voltages, thresholds, tolerances).
   They come from config files.
-- 3D runs only when explicitly requested (flag or CLI command); default fidelity is 2D.
 - No credentials, keys or hostnames in the repo. SSH settings come from the user's SSH
   config or environment variables.
 - Every result must be reproducible from job.json, config_snapshot.yaml, the model hash
@@ -672,14 +670,14 @@ Tests needing COMSOL are marked @pytest.mark.comsol and skipped by default.
 
 ## 15. Open items (author)
 
-- [ ] Electrode rework (replaces the rough 2-lens model in both models): import the real
-      electrode STEP (one part, used for all 9) into 3D and place 9 copies by z_e_k inside
-      If/EndIf on use_e_k; 2D gets the axisymmetric r-z profile of the same part, generated
-      by build_axisym.py. Parameters use_e_k, z_e_k, v_e_k; selections sel_e1 to sel_e9;
-      also v_tip (needle is grounded now) and mesh_gap. Redo the 3D mesh refinement on named
-      selections, then re-validate 2D vs 3D with compare_axis.py / compare_particles.py.
-- [ ] Electrode STEP file, mounting hardware (rods, spacers, materials), minimum gap,
-      extractor position range.
+- [x] Electrode rework (2026-11-09). The real part is a fixed stack, not 9 movable copies:
+      L1-L4 lens + L5-L9 accelerator plates, plus deflector pairs D1/D2 (deleted for cfg 1, 2),
+      grounded rods and bracket; placed by lens_gap. Parameters L1_v..L9_v, D1a_v..D2b_v,
+      lens_gap in both models (3D: lens8newMCP_ks_v4_lens_voltages.mph, 2D: build_axisym.py).
+      3D mesh refinement on named/geometric selections (run_3d_v4.py); 2D vs 3D re-validated.
+      Not done: v_tip (needle still grounded), mesh_gap. See KNOWN_ISSUES.md.
+- [x] Electrode STEP file and mounting hardware (rods and bracket grounded, L9 insulated
+      from the bracket). Still open: minimum gap and extractor (lens_gap) range.
 - [ ] MCP back and phosphor operating offsets (models currently: front -10 kV, back -5 kV;
       no phosphor).
 - [ ] Mesh opening diameter (10 mm in this plan vs 11 mm in the model) and mesh_gap range.
