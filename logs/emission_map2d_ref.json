@@ -1,0 +1,18 @@
+{
+ "model": "lens8_axisym_asm.mph",
+ "set": [],
+ "plane_offset_mm": 0.5,
+ "z_plane_mm": 117.98199999999999,
+ "tip_z_mm": 105.0,
+ "lens_gap_mm": 13.482,
+ "E_ion_eV": 0.9999999917612081,
+ "m_ion_Da": 1023.7639295537908,
+ "v0_mps": 434.15592493128685,
+ "launch_z0_nm": 1.0,
+ "n_rays": 180,
+ "n_crossed": 180,
+ "t_end_us": 20.0,
+ "dt_out_us": 0.01,
+ "L1_v": -120.0,
+ "tag": "ref"
+}

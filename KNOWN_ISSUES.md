@@ -59,6 +59,22 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
 11. **Placeholder voltages** (L1 -120 V, L2-L8 -40 V, L9 0 V). Only about 1% of ions reach
     the MCP. Real operating points come from the optimizer (task 11).
 
+18. **Emission target not reachable at 1 eV (2026-11-10).** The target is a Gaussian-like
+    beam with 20 deg HWHM (40 deg FWHM) just in front of L1. With E_ion = 1 eV, L1 at -120 V
+    and a grounded tip, the ions reach about 114 eV at L1. Even a launch at 89.5 deg arrives at
+    only 10.3 deg, so no launch spread can meet the target. 2D maps (`scripts/calibrate_emission.py`,
+    `logs/emission_fit.*`) give the best match vs the initial energy:
+    - 1 eV: impossible (max 10.3 deg).
+    - 5 eV: max 21.5 deg; best is about 15-16 deg HWHM.
+    - 15 eV: launch HWHM 52 deg (launch.py style, no cut) gives 19.2 deg.
+    - 40 eV: launch HWHM 34 deg gives 19.9 deg, a good match.
+
+    Only the ratio of voltage to energy matters, so the calibration is tied to the
+    extraction voltages. The 2D map transfers to 3D: per ion, angles agree within about 3%.
+    COMSOL's "Gaussian" Particle Beam slopes have heavier tails than a true Gaussian, and the
+    slope std per axis is 0.611 x xmp. *Fix:* decision needed (initial energy, emitter model,
+    or where the 20 deg applies).
+
 ## Geometry and configuration
 
 12. **cfg 2 is unusable.** The MCP (z = 215.9 mm) sits inside L8/L9. cfg 1 fits with the
