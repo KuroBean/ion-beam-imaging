@@ -1,0 +1,4 @@
+loaded lens8newMCP_ks_v5_params.mph in 9 s
+check ok  es/gnd2 'Ground needle' on adj5 ('sel_needle'), active=True
+set       es/pot_tip on adj5, V0 = v_tip (0 V); es/gnd2 disabled
+saved lens8newMCP_ks_v6_tip.mph in 2 s (input lens8newMCP_ks_v5_params.mph not saved)

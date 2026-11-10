@@ -167,8 +167,10 @@ def cmd_worker(a) -> int:
         from .backends.mock import run_mock
         runner = run_mock
     else:
-        print("the COMSOL runner arrives with task 9 (model_adapter.py / comsol_worker.py)", file=sys.stderr)
-        return 2
+        from .worker.comsol_worker import run_worker
+        n = run_worker(cfg, max_jobs=a.max_jobs, stop_when_empty=a.stop_when_empty)
+        print(f"worker processed {n} jobs")
+        return 0
     w = QueueWorker(cfg.path("queue_dir"), runner, f"{a.runner}-worker", root_dir=cfg.root_dir,
                     poll_s=cfg.backend.poll_interval_s)
     n = w.run(max_jobs=a.max_jobs, stop_when_empty=a.stop_when_empty)

@@ -8,6 +8,10 @@ job_timeout_s: 1800          # per-job timeout (2D ~30 s, refined 3D ~8 min on t
 worker:
   count: 1                   # COMSOL workers on this machine
   restart_after_jobs: 20     # restart the COMSOL client after this many jobs
+  output_steps: 500          # particle output times per run (dt_out = t_end / output_steps)
+  allow_3d_geometry_change: false   # 3D still has numeric selections a rebuild can break (KNOWN_ISSUES #13)
+  particle_rtol: 1.0e-9      # particle solver rel. tolerance. 2D test job, MCP energy error: 1e-5 -> max 135 eV,
+                             # 1e-7 -> 57 eV, 1e-9 -> 19 eV (of 10.1 keV), same runtime (2026-11-10)
 
 ssh:                         # never put hostnames or credentials here
   host_env_var: IONOPT_SSH_HOST            # env var holding an alias from ~/.ssh/config

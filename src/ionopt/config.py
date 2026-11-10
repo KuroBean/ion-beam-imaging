@@ -311,6 +311,7 @@ class WorkerConfig(_Model):
     restart_after_jobs: int = Field(20, ge=1)
     output_steps: int = Field(500, ge=10)        # particle output times per run: dt_out = t_end / output_steps
     allow_3d_geometry_change: bool = False       # 3D models still have numeric selections (KNOWN_ISSUES #13)
+    particle_rtol: float = Field(1e-9, gt=0, lt=1)   # particle solver relative tolerance (sol2/t1 rtol)
 
 
 class SSHConfig(_Model):

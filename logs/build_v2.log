@@ -1,0 +1,9 @@
+COMSOL 5.5 started in 8.6 s
+geometry: 19 domains, 194 boundaries
+E_src options: ['root.comp1.es.Er', 'userdef', 'fromCommonDef']
+release: data file release_from_3d.txt
+mesh: 211726 elements, 107227 vertices (24.7 s)
+saved lens8_axisym_v2.mph
+std1 solved in 6.9 s
+std2 solved in 6.0 s
+saved lens8_axisym_v2.mph

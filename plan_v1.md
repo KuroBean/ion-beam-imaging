@@ -648,8 +648,13 @@ for agent proposals.
          scripts/inspect_model.py, dump_features.py, boundary_table.py) is reusable.
          Done 2026-11-10: scripts/introspect_models.py, scripts/verify_release_file.py (2D and
          3D release formats verified), findings and task 9 gaps in docs/comsol_api_notes.md.
-- [ ] 9. model_adapter.py and comsol_worker.py; one 2D job end to end, compared to a
+- [x] 9. model_adapter.py and comsol_worker.py; one 2D job end to end, compared to a
          manual GUI run with the same params.
+         Done 2026-11-10: src/ionopt/worker/{model_adapter,comsol_worker}.py,
+         scripts/run_2d_job.py (queue -> worker -> checker -> plots, ~50 s) and
+         scripts/reference_run_2d.py (independent plain-MPh run: results identical).
+         GUI spot check: the checklist is in results/<job>/gui_reference.txt (author, optional).
+         Prerequisite KNOWN_ISSUES #10 (fixed-stack search space) is done; 3D needs mesh_gap (GUI).
 - [ ] 10. Fidelity check (2D vs 3D on about 5 settings).
 - [ ] 11. baseline.py: B0 on at least one chamber setup, with promotion of top results to 3D.
 - [ ] 12. SSHTransport stub with the same interface and a test using a local directory.

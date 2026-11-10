@@ -22,7 +22,7 @@ parameters:
   - name: z_mcp
     comsol_name: z_mcp_c1      # free only in cfg 1; for cfg 2/3 mcp_z is fixed (sphere centre) and the
     unit: mm                   # worker checks the job's z_mcp against the model instead of setting it
-    description: MCP front face position (plan coordinates; the model adds tip_z)
+    description: MCP front face position (plan coordinates; the adapter writes z_mcp + tip_z)
   - name: mesh_gap
     comsol_name: mesh_gap
     unit: mm

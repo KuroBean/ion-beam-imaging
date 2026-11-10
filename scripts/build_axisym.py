@@ -53,6 +53,7 @@ PARAMS = [
     ("L_cone", "10[mm]", "needle cone length"),
     # lens assembly (real part, "lens assembly stripped with rods.STEP"; same names as the 3D model)
     ("lens_gap", "13.482[mm]", "needle tip to L1 entrance face (front plane closest to the tip)"),
+    ("v_tip", "0[V]", "tip (needle) potential"),
     ("z_asm", "tip_z+lens_gap+136.165[mm]", "model z of the assembly CAD origin (L1 front is at CAD z = -136.165 mm)"),
     ("L1_v", "-120[V]", "L1 potential"),
     ("L2_v", "-40[V]", "L2 potential"),
@@ -71,6 +72,7 @@ PARAMS = [
     ("V_mcp_front", "-10000[V]", "MCP front potential"),
     ("V_mcp_back", "-5000[V]", "MCP back potential"),
     ("V_screen", "-1000[V]", "screen mesh potential"),
+    ("mesh_gap", "12.7[mm]", "screen mesh plane distance in front of the MCP face (the cross hub moves with it)"),
     ("R_cross", "24.5[mm]", "effective -1 kV screen-cross ring outer radius, fitted to the 3D potential on r = 0 and 10 mm "
                           "(calibrate_2d.py; 8.485 = hub only; 3D arms reach 45.4)"),
     ("eps_holder", "3.15", "rel. permittivity of the MCP holder ring (Ultem 1000 polyetherimide)"),
@@ -229,7 +231,7 @@ def build_geometry(comp):
     ring.set("contributeto", "csel_diel")
     hub = g.create("hub", "Rectangle")
     hub.label("Screen cross hub / effective cross ring (r 5.5..R_cross)")
-    hub.set("pos", jpype.JArray(jpype.JString)(["5.5", f"{m}-15.6"]))
+    hub.set("pos", jpype.JArray(jpype.JString)(["5.5", f"{m}-mesh_gap-2.9"]))   # hub top 0.1 mm past the mesh
     hub.set("size", jpype.JArray(jpype.JString)(["max(R_cross,8.485[mm])-5.5[mm]", "3"]))
     hub.set("selresult", True)
     hub.set("contributeto", "csel_cond")
@@ -237,7 +239,7 @@ def build_geometry(comp):
     ln.label("Screen mesh (transparent, -1 kV)")
     ln.set("type", "open")
     ln.set("source", "table")
-    ln.set("table", sarr2([["0", f"{m}-12.7"], ["5.5", f"{m}-12.7"]]))
+    ln.set("table", sarr2([["0", f"{m}-mesh_gap"], ["5.5", f"{m}-mesh_gap"]]))
     ln.set("selresult", True)
 
     # expose domain + boundary selections of every object that creates one
@@ -299,7 +301,7 @@ def build_physics(comp, release="file"):
             f.set("V0", V)
         return f
 
-    bc("gnd_needle", "Ground", "geom1_needle_bnd", "Ground needle")
+    bc("pot_needle", "ElectricPotential", "geom1_needle_bnd", "Needle (tip) potential", "v_tip")
     bc("gnd_ch1", "Ground", "geom1_ch1_bnd", "Ground chamber 1")
     bc("gnd_ch2", "Ground", "geom1_ch2_bnd", "Ground chamber 2")
     for tag, _, _ in ELECTRODES:

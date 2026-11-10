@@ -220,3 +220,76 @@ ev.set("expr", "qz"); arr = np.array([list(r) for r in ev.getReal()])   # [parti
 | 5 | `v_tip` and `mesh_gap` don't exist in either model | Geometry/physics edits (KNOWN_ISSUES #6, #8). Both are needed before those become search variables |
 | 6 | 3D numeric selections: `mat1`, `wall1`, `zc1`, `ccn1`/`init1`/`ef1` domains, `size3`, `pbeam1` | KNOWN_ISSUES #13. Safe while the geometry is unchanged; any cfg or geometry change can renumber them. The adapter only changes parameters that the geometry doesn't renumber (voltages, mass, tlist) |
 | 7 | Changing `cfg` or `lens_gap` rebuilds the geometry | Changing `cfg` deletes or adds chambers and deflectors, and the 3D numeric selections above are then **unchecked**. Treat 3D cfg changes as unsafe until #6 is fixed; 2D is safe (all selections named) |
+
+## 10. Task 9 additions (2026-11-10)
+
+### Models
+
+| key | file | change | how |
+|---|---|---|---|
+| 2d | `lens8_axisym_v2.mph` | adds `v_tip` (`es/pot_needle`, ElectricPotential on `geom1_needle_bnd`, replaces `gnd_needle`) and `mesh_gap` (`meshline` at `mcp_z-mesh_gap`, `hub` at `mcp_z-mesh_gap-2.9`) | `scripts/build_axisym.py --solve --particles --out lens8_axisym_v2.mph` |
+| 3d | `lens8newMCP_ks_v6_tip.mph` | v5 + `v_tip` (`es/pot_tip` on `adj5`, `es/gnd2` disabled) | `scripts/add_3d_tip.py` |
+
+- The 2D field is unchanged: v2 vs `lens8_axisym_asm.mph` differ by at most 0.004 V on the axis and 0.03 V at r = 10 mm.
+- Neither v6 change alters the physics, so v6 keeps v5's mesh and solutions.
+- `config/paths.yaml` points at both new files.
+
+### API patterns confirmed while building `src/ionopt/worker/model_adapter.py`
+
+**Numerical features.** These types are used on `dset1`:
+- 2D: `MinLine`, `MaxLine`, `AvLine`
+- 3D: `MinSurface`, `MaxSurface`, `AvSurface`
+
+Set them up with `n.selection().named(tag)`, or `n.selection().geom("geom1", dim)` plus `.set(int[])`. Pass several expressions with `n.set("expr", String[])`; `getReal()` returns one row per expression. 2D coordinates are `r`, `z`; in 3D use `sqrt(x^2+y^2)`, `z`.
+
+**Expressions.** `j.param().evaluate("mcp_z-tip_z")` accepts expressions and returns SI.
+
+**Rebuild.** Call `j.component("comp1").geom("geom1").run()` (2D: 1.5 s), then `.mesh("mesh1").run()` (2D: 24 s, about 177k-212k elements depending on cfg).
+
+**V and KE at particle positions.** Evaluate `V` and `cpt.Ep` with a Particle dataset and a Particle numerical feature (`innerinput=all`, `evaluate=all`). These come back defined at every output time. A CutPoint right at a conductor surface fails instead: "Undefined variable comp1.V ... Operator mean", because it averages in the excluded conductor domain. So the adapter takes `V_start`, `V_end` and `KE` from the particle evaluation.
+
+**Averages over a selection.** Averaging `V` over a selection fails if the selection contains a boundary that touches only excluded domains, for example the needle's edge on the symmetry axis. The fix is to keep only boundaries whose up or down domain is an es domain:
+- adjacency: `comp.geom("geom1").getUpDown()` returns `int[2][nbnd]`, with 0 meaning outside
+- es domains: `comp.physics("es").selection().entities(sdim)`
+
+**Solver node handles go stale.** Running a study regenerates the solver features, so a held handle to `sol2/t1` goes stale ("Variable refers to an object which is no longer in the model"). Re-fetch it with `j.sol("sol2").feature("t1")` each time. Values set before a run do persist.
+
+**Particle tolerance.** The property is `sol2/t1 rtol`; its default is 1e-5.
+- Max-step properties: `maxstepconstraintgenalpha` (`auto`, `const` or `expr`) and `maxstepgenalpha`.
+- Test job (2D, Na+, tip +100 V, MCP −10 kV), energy error at the MCP:
+
+  | rtol | max error at the MCP |
+  |---|---|
+  | 1e-5 | 135 eV |
+  | 1e-7 | 57 eV |
+  | 1e-9 | 19 eV (0.2%) |
+
+- Ions that end on electrodes improve from 4.8 eV to 0.05 eV.
+- A 5 ns max step did not help.
+- Runtime did not change.
+- The worker sets `rtol` from `backend.worker.particle_rtol` (1e-9).
+
+### 3D screen geometry, measured in v6 (z relative to `mcp_z`)
+
+| part | selection | z (mm) | r (mm) |
+|---|---|---|---|
+| MCP front face | `geom1_sel3` | 0 | 0..20 |
+| mesh disc | `geom1_sel5` / `adj3` | −12.8..−12.6 (centre −12.7 = 2D `mesh_gap`) | 0..7 |
+| cross | `geom1_sel6` / `adj2` | −15.6..−12.6 | 5.5..45.4 |
+| posts (Al2O3) | `geom1_sel13` | +5.9..−14.1 | 36.6..42.6 |
+| holder ring (Ultem) | `geom1_sel12_dom` | +7.9..+15.4 | 27.5..69.9 |
+
+These parts are built on work plane `wp2`, which sits on face `mov5(1)`, reversed, at the MCP back plane `mcp_z + 5.9`. Distances along `wp2` point toward the tip:
+- `cyl23` (disc) at z = 18.5, h = 0.2
+- `blk1`/`blk2` (cross) at z = 20, centred, 3 mm thick
+- `cyl22` (cross hole) at z = 15, h = 10
+- `cyl21` (posts) at z = 0, h = 20, ending at the middle of the cross
+
+**Proposed GUI edit for `mesh_gap` in 3D** (author, to be saved as a new file):
+1. Parameter `mesh_gap = 12.7[mm]`.
+2. `cyl23` z → `mesh_gap+5.8`.
+3. `blk1` and `blk2` z → `mesh_gap+7.3`.
+4. `cyl22` z → `mesh_gap+2.3`.
+5. `cyl21` h → `mesh_gap+7.3` (the posts stretch; change this if the real spacer works differently).
+6. Rebuild and check that the disc sits at `mcp_z-mesh_gap`, e.g. by re-running `scripts/introspect_models.py 3d`, which reports the boxes.
+7. The numeric selections (KNOWN_ISSUES #13) may renumber; re-check the materials on `sel13`/`sel14` and on the Ultem ring.

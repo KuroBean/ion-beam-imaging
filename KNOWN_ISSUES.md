@@ -41,9 +41,12 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
    Na+ at 22.99 Da, set from config. Na+ arrives about 6.7 times sooner, so `t_end` can
    shrink (3D 250 µs, 2D 800 µs now).
 6. **Needle is grounded.** The plan needs a tip voltage parameter `v_tip` on an LV channel.
+   **Done 2026-11-10:** `v_tip` now exists in 2D v2 (`es/pot_needle`) and in 3D v6 (`es/pot_tip`).
 7. **MCP back is at -5 kV with the front at -10 kV.** Set both from the constraints offset
    (plan section 12). Phosphor not modelled.
-8. **Screen-mesh offset `mesh_gap` is not a model parameter yet.** The mesh sits at
+8. **Screen-mesh offset `mesh_gap` is not a model parameter yet.** 2D done (v2,
+   2026-11-10). 3D is pending the author's GUI edit; the checklist is in
+   docs/comsol_api_notes.md §10. Until then the worker refuses 3D jobs. The mesh sits at
    mcp_z - 12.7 mm. The opening diameter also differs: 11 mm in the model, 10 mm in the
    plan.
 9. **3D release.** The 3D model uses a Particle Beam (1000 ions, Gaussian), not the plan's
@@ -77,6 +80,15 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
     COMSOL's "Gaussian" Particle Beam slopes have heavier tails than a true Gaussian, and the
     slope std per axis is 0.611 x xmp. *Fix:* decision needed (initial energy, emitter model,
     or where the 20 deg applies).
+
+19. **Particle solver tolerance (2026-11-10).** The default `rtol` of 1e-5 gave errors of
+    up to 135 eV (1.3%) at the MCP. It also gave up to 4.8 eV for ions ending on electrodes,
+    and some 2D ions picked up about 10 eV within the first mm after the tip. At 1e-9 these
+    drop to 19 eV and 0.05 eV, with the same runtime in 2D. The worker now sets
+    `backend.worker.particle_rtol` (1e-9).
+    - **Hypothesis to test:** the ±1 eV 3D energy error in #1 may also be partly a tolerance
+      effect, not only the mesh. Test it with a 3D job once mesh_gap exists, and check the
+      3D runtime at 1e-9.
 
 ## Geometry and configuration
 
