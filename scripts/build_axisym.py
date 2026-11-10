@@ -3,19 +3,21 @@
 The z axis is the beam axis.  Dimensions come from the 3D model
 (see logs/boundary_table.csv produced by boundary_table.py):
 
-  * needle, MCP plate/holder, screen-mesh disc: taken directly (axisymmetric in 3D)
+  * needle, MCP plate, MCP surround (Al2O3), MCP holder ring (Ultem 1000), screen-mesh
+    disc: taken directly (axisymmetric in 3D)
   * lens assembly (L1..L9 = 4 lens + 5 accelerator plates, deflector pairs D1/D2): r-z
     profiles of the real STEP parts, positioned by lens_gap; the deflectors are
     deleted for cfg 1 and 2 (If node), as in the 3D model
   * chamber 1 (tube) and chamber 2 (sphere): idealised as bodies of revolution
     with the 3D inner/outer radii; side ports and small flange features dropped
   * NOT representable in 2D-axisymmetry (omitted): screen-mesh cross arms,
-    four polyimide posts, small holder tabs/bosses, chamber side ports,
+    four Al2O3 posts (a smeared ring made the 2D/3D match worse: in 3D the cross arms shield them),
+    small surround tabs/bosses, chamber side ports,
     lens-assembly rods and bracket (grounded), the split of each deflector into halves
 
 Conductors are domains excluded from the physics (their edges carry the
-potential / ground); the MCP plate, its Ultem holder and the polyimide ring are
-kept as dielectric domains.  The screen mesh is an idealised transparent
+potential / ground); the MCP plate (eps 1, as in 3D), its Al2O3 surround and the
+Ultem holder ring are kept as dielectric domains.  The screen mesh is an idealised transparent
 -1 kV disc (mesh resolution unknown).
 
 Usage:
@@ -69,9 +71,10 @@ PARAMS = [
     ("V_mcp_front", "-10000[V]", "MCP front potential"),
     ("V_mcp_back", "-5000[V]", "MCP back potential"),
     ("V_screen", "-1000[V]", "screen mesh potential"),
-    ("R_cross", "21[mm]", "effective -1 kV screen-cross ring outer radius, tuned to 3D on-axis V (8.485 = hub only; 3D arms reach 45.4)"),
-    ("eps_polyimide", "3", "rel. permittivity of polyimide ring (P25N)"),
-    ("eps_holder", "3.15", "rel. permittivity of MCP holder (Ultem 1000 polyetherimide)"),
+    ("R_cross", "24.5[mm]", "effective -1 kV screen-cross ring outer radius, fitted to the 3D potential on r = 0 and 10 mm "
+                          "(calibrate_2d.py; 8.485 = hub only; 3D arms reach 45.4)"),
+    ("eps_holder", "3.15", "rel. permittivity of the MCP holder ring (Ultem 1000 polyetherimide)"),
+    ("eps_surround", "9.4", "rel. permittivity of the MCP surround around the active area (Al2O3 ceramic)"),
     # particles
     ("m_ion", "1.7e-24[kg]", "particle mass"),
     ("Z_ion", "1", "charge number"),
@@ -139,7 +142,7 @@ def build_geometry(comp):
 
     # cumulative selections
     g.selection().create("csel_cond", "CumulativeSelection").label("Conductors (excluded)")
-    g.selection().create("csel_diel", "CumulativeSelection").label("Dielectrics (MCP, holder, ring)")
+    g.selection().create("csel_diel", "CumulativeSelection").label("Dielectrics (MCP plate, MCP surround, holder ring)")
 
     r = g.create("dom", "Rectangle")
     r.label("Vacuum domain")
@@ -214,12 +217,12 @@ def build_geometry(comp):
     mcp.set("size", jpype.JArray(jpype.JString)(["20", "5.9"]))
     mcp.set("selresult", True)
     mcp.set("contributeto", "csel_diel")
-    polygon(g, "holder", [
+    polygon(g, "surround", [
         ["25", f"{m}-4"], ["33", f"{m}-4"], ["33", f"{m}+4.9"], ["43", f"{m}+4.9"], ["43", f"{m}+7.9"],
         ["25", f"{m}+7.9"], ["25", f"{m}+4.9"], ["20", f"{m}+4.9"], ["20", f"{m}-1"], ["25", f"{m}-1"],
-    ], "MCP holder (Ultem)", contribute="csel_diel")
+    ], "MCP surround (Al2O3 ceramic)", contribute="csel_diel")
     ring = g.create("ring", "Rectangle")
-    ring.label("Polyimide ring")
+    ring.label("MCP holder ring (Ultem 1000)")
     ring.set("pos", jpype.JArray(jpype.JString)(["27.5", f"{m}+7.9"]))
     ring.set("size", jpype.JArray(jpype.JString)(["69.862-27.5", "7.5"]))
     ring.set("selresult", True)
@@ -238,7 +241,7 @@ def build_geometry(comp):
     ln.set("selresult", True)
 
     # expose domain + boundary selections of every object that creates one
-    for t in ("ch1", "ch2", "needle", *ASM_TAGS, "mcp", "holder", "ring", "hub", "meshline"):
+    for t in ("ch1", "ch2", "needle", *ASM_TAGS, "mcp", "surround", "ring", "hub", "meshline"):
         g.feature(t).set("selresultshow", "all")
 
     g.run("fin")
@@ -278,15 +281,15 @@ def build_physics(comp, release="file"):
     es.feature("ccn1").set("epsilonr_mat", "userdef")
     es.feature("ccn1").set("epsilonr", jpype.JArray(jpype.JString)(["1", "0", "0", "0", "1", "0", "0", "0", "1"]))
     c2 = es.create("ccn2", "ChargeConservation", 2)
-    c2.label("Polyimide ring")
+    c2.label("MCP holder ring (Ultem 1000)")
     c2.selection().named("geom1_ring_dom")
     c2.set("epsilonr_mat", "userdef")
-    c2.set("epsilonr", jpype.JArray(jpype.JString)(["eps_polyimide", "0", "0", "0", "eps_polyimide", "0", "0", "0", "eps_polyimide"]))
+    c2.set("epsilonr", jpype.JArray(jpype.JString)(["eps_holder", "0", "0", "0", "eps_holder", "0", "0", "0", "eps_holder"]))
     c3 = es.create("ccn3", "ChargeConservation", 2)
-    c3.label("MCP holder")
-    c3.selection().named("geom1_holder_dom")
+    c3.label("MCP surround (Al2O3)")
+    c3.selection().named("geom1_surround_dom")
     c3.set("epsilonr_mat", "userdef")
-    c3.set("epsilonr", jpype.JArray(jpype.JString)(["eps_holder", "0", "0", "0", "eps_holder", "0", "0", "0", "eps_holder"]))
+    c3.set("epsilonr", jpype.JArray(jpype.JString)(["eps_surround", "0", "0", "0", "eps_surround", "0", "0", "0", "eps_surround"]))
 
     def bc(tag, typ, sel, label, V=None):
         f = es.create(tag, typ, 1)
