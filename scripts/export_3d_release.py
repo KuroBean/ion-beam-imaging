@@ -1,4 +1,4 @@
-"""Export the 3D model's particle initial conditions (t = 0 of Study 2) as an
+﻿"""Export the 3D model's particle initial conditions (t = 0 of Study 2) as an
 equivalent 2D-axisymmetric release file.
 
 The 3D beam starts within ~50 nm of the axis, so each 3D particle is an
@@ -9,8 +9,10 @@ Writes data/release_from_3d.txt with columns:  r[mm]  z[mm]  vr  vz [m/s]
 (COMSOL reads 2D-axisymmetric velocity columns in the order vr, vz)
 (also keeps the raw 3D values in data/release_3d_raw.txt)
 
-Usage:  .venv\\Scripts\\python.exe scripts\\export_3d_release.py
+Usage:  .venv\\Scripts\\python.exe scripts\\export_3d_release.py [3d.mph]
 """
+import sys
+
 import numpy as np
 
 from comsol_session import MODEL_FILE, PROJECT_DIR, load, start
@@ -23,7 +25,7 @@ R0 = 1e-6  # mm, start just off the axis
 def main():
     DATA.mkdir(exist_ok=True)
     client = start()
-    m = load(client, MODEL_FILE)
+    m = load(client, sys.argv[1] if len(sys.argv) > 1 else MODEL_FILE)
     a = particle_data(m, ["qx", "qy", "qz", "cpt.vx", "cpt.vy", "cpt.vz"])[:, :, 0]  # t = 0
     client.clear()
     x, y, z, vx, vy, vz = a
@@ -43,3 +45,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
