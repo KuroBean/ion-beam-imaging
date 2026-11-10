@@ -111,7 +111,8 @@ def write_release_file(df: pd.DataFrame, path: Path | str, fidelity: Fidelity, z
     z_shift_m converts plan coordinates (origin at tip apex) to model coordinates
     (z_model = z + z_shift); the adapter passes the model's tip_z.
     2D (verified in COMSOL 5.5): columns r[mm] z[mm] vr vz [m/s]; r >= axis_offset.
-    3D (format NOT yet verified, task 8): columns x y z [mm] vx vy vz [m/s].
+    3D (verified in COMSOL 5.5, task 8): columns x y z [mm] vx vy vz [m/s].
+    Both checked by scripts/verify_release_file.py (see docs/comsol_api_notes.md).
     """
     d = df.sort_values("ion_id")
     z_mm = (d["z_m"].to_numpy() + z_shift_m) / units.MM

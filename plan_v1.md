@@ -641,11 +641,13 @@ for agent proposals.
 - [x] 5. checker.py (derived table, spot statistics, metrics, recheck) with analytic tests.
 - [x] 6. runlog.py and plots.py.
 - [x] 7. optimize.py tested on the mock (must find the known optimum).
-- [ ] 8. COMSOL introspection script: print the model tree, parameters, selections,
+- [x] 8. COMSOL introspection script: print the model tree, parameters, selections,
          studies, release and export nodes, and electrode geometry features for both models.
          Record findings in docs/comsol_api_notes.md. (Requires COMSOL; author runs or
          approves.) Unblocked: the electrode rework is done (section 15). Earlier introspection of the 2-lens models (logs/inspect.log,
          scripts/inspect_model.py, dump_features.py, boundary_table.py) is reusable.
+         Done 2026-11-10: scripts/introspect_models.py, scripts/verify_release_file.py (2D and
+         3D release formats verified), findings and task 9 gaps in docs/comsol_api_notes.md.
 - [ ] 9. model_adapter.py and comsol_worker.py; one 2D job end to end, compared to a
          manual GUI run with the same params.
 - [ ] 10. Fidelity check (2D vs 3D on about 5 settings).

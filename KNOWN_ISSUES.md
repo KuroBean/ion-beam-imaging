@@ -45,8 +45,9 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
    mcp_z - 12.7 mm. The opening diameter also differs: 11 mm in the model, 10 mm in the
    plan.
 9. **3D release.** The 3D model uses a Particle Beam (1000 ions, Gaussian), not the plan's
-   launch grid from a release file. The 2D release-file format has been checked; the 3D
-   format has not (task 8).
+   launch grid from a release file. The release-file format is now verified for both 2D
+   and 3D (task 8, `scripts/verify_release_file.py`). *Fix:* the adapter disables `pbeam1`
+   and adds a `ReleaseFromDataFile` node in memory for each job (docs/comsol_api_notes.md §5).
 10. **The search space no longer matches the hardware.** Plan and `optimize.py` assume 9
     identical electrodes at free positions `z_e_k` with on/off flags `use_e_k`. The real
     assembly is a fixed stack. Its free variables are the voltages L1_v..L9_v and
