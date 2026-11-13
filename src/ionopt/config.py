@@ -35,6 +35,7 @@ NOT_TBD = (
     "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)
     "constraints.electrodes.stack.*.plate_mm",
     "spec.requirements.impact_threshold_mps",   # alternative to impact_threshold_eV_per_charge
+    "spec.launch.emission_distance_um",         # null = model_tip_radius_um / tan(hwhm_deg)
 )
 
 
@@ -136,6 +137,11 @@ class LaunchConfig(_Model):
     axis_offset_nm: float = Field(1.0, ge=0)
     t_end_us: float | None = Field(None, gt=0)
     convergence_ion_factor: int = Field(2, ge=1)
+    # pre-acceleration between the real emitter and the model's launch point (launch.preacceleration)
+    preaccel: bool = False
+    emitter_radius_nm: float | None = Field(None, gt=0)
+    model_tip_radius_um: float | None = Field(None, gt=0)
+    emission_distance_um: float | None = Field(None, gt=0)
 
     @field_validator("charge")
     @classmethod

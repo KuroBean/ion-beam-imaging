@@ -114,3 +114,14 @@ def test_tbd_limits_give_warnings_not_errors(cfg):
     w = validate_job(einzel_job(c, channels={"LV2": 500.0}), c)
     assert any("low_voltage.range_V is TBD" in x for x in w)
     assert any("clearance_mm is TBD" in x for x in w)
+
+
+def test_launch_preaccel_uses_tip_e1_and_lens_gap(cfg):
+    from ionopt.electrodes import launch_preaccel
+    from ionopt.launch import preacceleration
+    assert launch_preaccel(einzel_job(cfg), cfg) == {"preaccel_eV": 0.0}       # pinned off in tests
+    c = cfg.with_overrides(["spec.launch.preaccel=true"])
+    job = einzel_job(c, positions={"lens_gap": 10 * MM})
+    p = launch_preaccel(job, c)
+    ref = preacceleration(job.launch, 100.0, 0.0, 10 * MM)        # tip on LV1 = 100 V, E1 grounded
+    assert p == ref and p["preaccel_eV"] > 0

@@ -9,12 +9,17 @@ from ionopt.config import load_config
 REPO = Path(__file__).resolve().parent.parent
 CONFIG_DIR = REPO / "config"
 DEV_OVERRIDES = CONFIG_DIR / "dev_overrides.yaml"
+TEST_PINS = ["spec.detector.sigma_mcp_um=80", "spec.detector.mesh_open_fraction=0.8", "spec.launch.preaccel=false"]
 
 
 @pytest.fixture
 def cfg():
-    """Repo config with the mock-development placeholder values filled in."""
-    return load_config(CONFIG_DIR, override_files=[DEV_OVERRIDES])
+    """Repo config with the mock-development placeholder values filled in.
+
+    TEST_PINS fix the values the analytic checker tests were written for, independent of the
+    physical values in config/spec.yaml; pre-acceleration has its own tests.
+    """
+    return load_config(CONFIG_DIR, overrides=TEST_PINS, override_files=[DEV_OVERRIDES])
 
 
 @pytest.fixture

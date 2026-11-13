@@ -55,9 +55,53 @@ def energy_grid(E0_eV: float, dE_eV: float, n_E: int,
     return ke, w / w.sum()
 
 
+def emission_distance_m(launch: LaunchConfig) -> float:
+    """Distance s from the real emitter to the model launch point.
+
+    Explicit spec.launch.emission_distance_um, else the distance at which a cone with the launch
+    HWHM half angle has widened to the model tip radius: s = R_tip / tan(hwhm).
+    """
+    if launch.emission_distance_um is not None:
+        return launch.emission_distance_um * units.UM
+    return _req(launch, "model_tip_radius_um") * units.UM / math.tan(launch.hwhm_deg * units.DEG)
+
+
+def preacceleration(launch: LaunchConfig, v_tip: float, v_ext: float, gap_m: float) -> dict:
+    """Kinetic energy (eV) an ion gains between the real emitter and the model launch point.
+
+    The model tip (flat face of radius R_tip, ~0.1 mm) stands in for a much sharper emitter
+    (nanopore meniscus, radius r_e ~ 50 nm). Ions leave the meniscus with E0 +- dE/2 and are
+    accelerated along the axis by the emitter's own field until the beam (half angle hwhm) has
+    widened to R_tip, i.e. over s = R_tip / tan(hwhm). The model launches them at its tip with the
+    energy they have there.
+
+    Field model: hyperboloid-of-revolution emitter of apex radius r_e at distance D from a planar
+    counter electrode (the extractor E1, D = lens_gap), potential difference U = V_tip - V_E1.
+    In prolate spheroidal coordinates the axial potential is exact:
+        V(s) = V_E1 + U * ln[(1 + eta)/(1 - eta)] / ln[(1 + eta0)/(1 - eta0)],  eta = (D - s)/a,
+    and for r_e << D, s << D:
+        V_tip - V(s) = U * ln(1 + 2 s / r_e) / ln(4 D / r_e)
+    (apex field 2U / (r_e ln(4D/r_e)), the classic sharp-emitter result). So
+        E_gain = q * U * ln(1 + 2 s / r_e) / ln(4 D / r_e)     [eV, q = signed charge number]
+    The dependence on r_e is only logarithmic.
+    """
+    r_e = _req(launch, "emitter_radius_nm") * units.NM
+    s = emission_distance_m(launch)
+    if not (0 < s < gap_m):
+        raise ValueError(f"emission distance {s / units.MM:.3g} mm must be inside the tip-extractor gap "
+                         f"{gap_m / units.MM:.3g} mm")
+    frac = math.log1p(2 * s / r_e) / math.log(4 * gap_m / r_e)
+    U = v_tip - v_ext
+    return {"preaccel_eV": launch.charge * U * frac, "potential_fraction": frac, "emission_distance_m": s,
+            "emitter_radius_m": r_e, "U_tip_extractor_V": U, "gap_m": gap_m}
+
+
 def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "search",
-                energy_weight: EnergyWeight | None = None) -> pd.DataFrame:
-    """Ion table with columns LAUNCH_COLUMNS (SI positions/velocities, plan coordinates)."""
+                energy_weight: EnergyWeight | None = None, preaccel_eV: float = 0.0) -> pd.DataFrame:
+    """Ion table with columns LAUNCH_COLUMNS (SI positions/velocities, plan coordinates).
+
+    preaccel_eV (see preacceleration) shifts every launch energy: KE0 = meniscus energy + preaccel_eV.
+    """
     n_theta = _req(launch, "n_theta")
     n_E = _req(launch, "n_E")
     E0 = _req(launch, "E0_eV")
@@ -70,6 +114,10 @@ def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "sear
 
     theta, w_theta = theta_grid(n_theta, launch.theta_max_deg * units.DEG, launch.sigma_rad)
     ke, w_E = energy_grid(E0, launch.dE_eV, n_E, energy_weight)
+    ke = ke + preaccel_eV
+    if np.any(ke <= 0):
+        raise ValueError(f"launch energies {ke.min():.3g}..{ke.max():.3g} eV after pre-acceleration "
+                         f"{preaccel_eV:.3g} eV: the field at the emitter is retarding")
 
     rows = []
     if fidelity == "2d":

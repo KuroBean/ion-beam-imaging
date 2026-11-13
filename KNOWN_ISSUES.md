@@ -96,9 +96,21 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
       0.2% (20 eV) and at most 1.5% (147 eV); ions ending on electrodes are off by up to
       2.8 eV. That is still several times 2D, so the remainder is mesh (#1). Particle solve:
       79 s at 1e-5 vs 1060 s at 1e-9; whole job about 1230 s with the stored mesh (+260 s
-      if the mesh must be built). 1e-7 untested.
+      if the mesh must be built). 1e-7: particle solve 255 s, energy error similar to 1e-9
+      (median 0.28%), but landings move by a median of 62 µm (p90 230 µm) vs 1e-9, 1.5% of
+      ions change fate, and the score jumps from 36 to 100. The score amplifies landing noise,
+      so 3D stays at 1e-9.
     - Remeshing alone (plus ULTEM -> lead-glass MCP plate) moved MCP landings by a median of
       27 µm (p90 100 µm): a rough floor for 3D-to-3D differences.
+
+20. **Pre-acceleration counts energy twice (2026-11-12).** `spec.launch.preaccel` launches ions
+    with E0 + q(V_tip - V(s)), the energy gained near the real (nanopore) emitter before the beam
+    reaches the 0.1 mm model tip (`ionopt.launch.preacceleration`, about 67% of V_tip - V_E1).
+    The model launch point still sits at V_tip, so the total energy is high by that amount along
+    the whole path. Example: a 100 V tip with grounded E1 gives about 169 eV at E1 instead of
+    102 eV, and 0.7% extra at the MCP. *Possible fix:* hold the model tip at V_tip - q^-1 * gain,
+    so the model needle acts as the real emitter's equipotential at distance s (that equipotential
+    has an apex radius of about 2s = 0.55 mm, the needle's size). Waiting on the author's decision.
 
 ## Geometry and configuration
 

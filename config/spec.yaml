@@ -8,21 +8,29 @@ launch:
   n_theta: null              # TBD, number of theta grid points incl. 0 (e.g. 41 for search)
   n_E: null                  # TBD, number of energy points across the spread (e.g. 3)
   n_phi: null                # TBD, 3D only, number of azimuth points (e.g. 8)
-  E0_eV: null                # TBD, mean initial kinetic energy
-  dE_eV: 2                   # full width of the uniform energy spread (1 to 2)
+  E0_eV: 2                   # mean kinetic energy leaving the meniscus (author 2026-11-12, lit. review)
+  dE_eV: 2                   # full width of the uniform energy spread: 1..3 eV around E0 (author 2026-11-12)
   charge: 1                  # signed charge number; +1 for Na+, -1 would be Cl-
   mass_Da: 22.99             # Na+ (NaCl solutions first); 175.1 for protonated arginine later
   launch_offset_um: null     # TBD, distance of the launch point from the model tip apex (along +z)
   axis_offset_nm: 1          # 2D release: start this far off the axis (verified: r = 1e-6 mm)
   t_end_us: null             # TBD, particle tracing end time (Na+ ~30 us vs ~200 us at 1024 Da)
   convergence_ion_factor: 2  # ion_level=convergence multiplies n_theta by this
+  # Pre-acceleration (author 2026-11-12): the model tip (0.1 mm flat) stands in for a <100 nm nanopore.
+  # Ions are launched with the energy gained over the distance s at which the HWHM cone reaches the
+  # model tip radius: KE0 = E0 +- dE/2 + q (V_tip - V_E1) ln(1 + 2s/r_e) / ln(4 lens_gap / r_e)
+  # (hyperboloid emitter; ionopt.launch.preacceleration).
+  preaccel: true
+  emitter_radius_nm: 50      # r_e, apex radius of the real emitter (<100 nm nanopore); enters only via ln()
+  model_tip_radius_um: 100   # R_tip, flat tip face radius in both models (r_tip = 0.1 mm)
+  emission_distance_um: null # s; null = model_tip_radius_um / tan(hwhm_deg) (275 um at 20 deg)
 
 detector:
   model: Hamamatsu F2225-21P
   mcp_active_diameter_mm: 40 # plate diameter
-  sigma_mcp_um: null         # TBD, MCP + phosphor + camera resolution (1 sigma)
+  sigma_mcp_um: 70           # MCP + phosphor + camera resolution, 1 sigma (author 2026-11-12, lit.; plausible 30-100)
   mesh_opening_diameter_mm: 10   # TBD: current model has 11
-  mesh_open_fraction: null   # TBD, wire transmission (0..1)
+  mesh_open_fraction: 0.7    # electroformed Ni mesh, 200 wires/inch (author 2026-11-12, approx.)
 
 requirements:
   eta_min: null              # TBD, minimum collection efficiency (0..1)

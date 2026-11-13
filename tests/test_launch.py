@@ -95,3 +95,36 @@ def test_negative_charge_allowed(cfg):
     L = cfg.with_overrides(["spec.launch.charge=-1"]).spec.launch
     df = make_launch(L, "2d")
     assert (df["vz_mps"] > 0).all()
+
+
+def test_preacceleration_formula(cfg):
+    import math
+
+    from ionopt.launch import emission_distance_m, preacceleration
+    L = cfg.spec.launch.model_copy(update={"hwhm_deg": 20.0, "emitter_radius_nm": 50.0,
+                                           "model_tip_radius_um": 100.0, "emission_distance_um": None})
+    s = emission_distance_m(L)
+    assert s == pytest.approx(100e-6 / math.tan(math.radians(20)))
+    D, re = 13.482e-3, 50e-9
+    p = preacceleration(L, 100.0, 0.0, D)
+    # exact axial potential of a hyperboloid emitter facing a plane (prolate spheroidal coordinates)
+    eta0 = 1 / math.sqrt(1 + re / D)
+    f = lambda e: math.log((1 + e) / (1 - e))   # noqa: E731
+    exact = 1 - f((D - s) * eta0 / D) / f(eta0)
+    assert p["potential_fraction"] == pytest.approx(exact, rel=2e-3)
+    assert p["preaccel_eV"] == pytest.approx(100.0 * p["potential_fraction"])
+    # signed charge and potential difference; explicit distance overrides the cone construction
+    assert preacceleration(L.model_copy(update={"charge": -1}), 0.0, 100.0, D)["preaccel_eV"] == pytest.approx(p["preaccel_eV"])
+    assert preacceleration(L.model_copy(update={"emission_distance_um": 10.0}), 100.0, 0.0, D)["emission_distance_m"] == pytest.approx(10e-6)
+    with pytest.raises(ValueError):
+        preacceleration(L.model_copy(update={"emission_distance_um": 2e4}), 100.0, 0.0, D)
+
+
+def test_make_launch_preaccel_shift(cfg):
+    L = cfg.spec.launch
+    base = make_launch(L, "3d")
+    shifted = make_launch(L, "3d", preaccel_eV=50.0)
+    assert np.allclose(shifted["KE0_eV"], base["KE0_eV"] + 50.0)
+    assert np.allclose(shifted["weight"], base["weight"])
+    with pytest.raises(ValueError, match="retarding"):
+        make_launch(L, "3d", preaccel_eV=-L.E0_eV)

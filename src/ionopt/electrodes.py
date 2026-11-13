@@ -327,3 +327,15 @@ def expected_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
     out["sel_mesh_frame"] = hv["mesh"]
     out["sel_mcp_face"] = hv["mcp_front"]
     return out
+
+
+def launch_preaccel(job: JobSpec, cfg: Config) -> dict:
+    """Pre-acceleration for this job (launch.preacceleration): tip vs extractor E1, gap = lens_gap.
+
+    Returns {'preaccel_eV': 0.0} when job.launch.preaccel is off.
+    """
+    if not job.launch.preaccel:
+        return {"preaccel_eV": 0.0}
+    from .launch import preacceleration  # noqa: PLC0415
+    pots = node_potentials(job, cfg)
+    return preacceleration(job.launch, pots["tip"], pots["e1"], job.positions["lens_gap"])

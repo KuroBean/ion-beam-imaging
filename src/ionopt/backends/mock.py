@@ -2,7 +2,7 @@
 
 Toy optics for an ion launched at angle theta with energy KE0:
     rho(theta) = z_mcp * f0 * tan(theta)          (folded above fold_theta_deg if set)
-    r_land     = rho + chroma * (KE0 - E0)
+    r_land     = rho + chroma * (KE0 - E0 - preacceleration)
     chroma     = chroma_min + chroma_coeff * (((V_lens - lens_opt)/lens_scale)^2
                                               + ((V_mesh - mesh_opt)/mesh_scale)^2)
 V_lens is the voltage of backend.mock.lens_channel (0 if the wiring does not use it),
@@ -26,8 +26,8 @@ import pandas as pd
 
 from .. import units
 from ..config import Config
-from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, node_potentials,
-                          used_lv_channels, validate_job)
+from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, launch_preaccel,
+                          node_potentials, used_lv_channels, validate_job)
 from ..launch import make_launch
 from ..results import JobTimeout, execute, prepare_job_dir, read_bundle
 from ..schemas import FILES, FINAL_COLUMNS, JobSpec, ResultBundle
@@ -97,7 +97,8 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     t_end = launch.t_end_us * units.US
     q = launch.charge
     mass = launch.mass_Da * units.DALTON
-    ions = make_launch(launch, job.fidelity, job.ion_level)
+    pre = launch_preaccel(job, cfg)["preaccel_eV"]
+    ions = make_launch(launch, job.fidelity, job.ion_level, preaccel_eV=pre)
     ions.to_csv(out_dir / FILES["ions_launch"], index=False)
     geom = mock_geometry(job, cfg)
     write_json(out_dir / FILES["geometry"], geom)
@@ -118,7 +119,7 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
         tf = math.tan(math.radians(m.fold_theta_deg))
         tan = np.where(tan > tf, 2 * tf - tan, tan)
     rho = z_mcp * m.f0 * tan
-    r_land = rho + chroma * (ke0 - launch.E0_eV) + rng.normal(0, m.noise_r_um * units.UM, len(th))
+    r_land = rho + chroma * (ke0 - launch.E0_eV - pre) + rng.normal(0, m.noise_r_um * units.UM, len(th))
     rho_mesh = z_mesh * m.f0 * tan
 
     n = len(ions)
