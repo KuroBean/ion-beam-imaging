@@ -89,9 +89,16 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
     and some 2D ions picked up about 10 eV within the first mm after the tip. At 1e-9 these
     drop to 19 eV and 0.05 eV, with the same runtime in 2D. The worker now sets
     `backend.worker.particle_rtol` (1e-9).
-    - **Hypothesis to test:** the ±1 eV 3D energy error in #1 may also be partly a tolerance
-      effect, not only the mesh. Test it with a 3D job once mesh_gap exists, and check the
-      3D runtime at 1e-9.
+    - **3D, tested 2026-11-12** (`scripts/run_3d_job.py`, cfg 3, 603 Na+ ions, placeholder
+      voltages). Tolerance matters even more in 3D. At 1e-5, MCP ions are off by a median
+      of 2.5% (255 eV) and at most 8.4%, landing positions move by a median of 270 µm
+      (p90 970 µm) vs 1e-9, and 5.5% of ions change fate. At 1e-9 the error is a median of
+      0.2% (20 eV) and at most 1.5% (147 eV); ions ending on electrodes are off by up to
+      2.8 eV. That is still several times 2D, so the remainder is mesh (#1). Particle solve:
+      79 s at 1e-5 vs 1060 s at 1e-9; whole job about 1230 s with the stored mesh (+260 s
+      if the mesh must be built). 1e-7 untested.
+    - Remeshing alone (plus ULTEM -> lead-glass MCP plate) moved MCP landings by a median of
+      27 µm (p90 100 µm): a rough floor for 3D-to-3D differences.
 
 ## Geometry and configuration
 
