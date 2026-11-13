@@ -44,13 +44,14 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
    **Done 2026-11-10:** `v_tip` now exists in 2D v2 (`es/pot_needle`) and in 3D v6 (`es/pot_tip`).
 7. **MCP back is at -5 kV with the front at -10 kV.** Set both from the constraints offset
    (plan section 12). Phosphor not modelled.
-8. **Screen-mesh offset `mesh_gap` is not a model parameter yet.** 2D done (v2,
-   2026-11-10). 3D: on 2026-11-12 the author made the GUI edit in `lens8newMCP_ks_v6_tip.mph`, saved
-   in place. It is **not yet verified**. Next session: re-run `scripts/introspect_models.py 3d`
-   and check that `mesh_gap` exists, that the disc sits at `mcp_z-mesh_gap`, and that the
-   materials on sel13/sel14 and the Ultem ring survived. Then run one 3D job. The mesh sits at
-   mcp_z - 12.7 mm. The opening diameter also differs: 11 mm in the model, 10 mm in the
-   plan.
+8. **Screen-mesh offset `mesh_gap`.** **Done 2026-11-12.** 2D since v2. 3D: the author's GUI edit
+   in `lens8newMCP_ks_v6_tip.mph` is verified (`scripts/verify_3d_geometry.py`): after a geometry
+   rebuild, all 58 domains match v5 and the disc sits at `mcp_z - mesh_gap` (503.1-503.3 mm).
+   The file was saved without a mesh and with a stale geometry state; the adapter now rebuilds
+   when the stored mesh is empty. The edit put the MCP plate under ULTEM; it is now lead glass
+   (`mat3`, eps 8) on the box selection `sel_mcp_plate` (`scripts/set_mcp_material_3d.py`,
+   saved in place with a mesh; backup `lens8newMCP_ks_v6_tip_backup_20261112.mph`).
+   Still open: the opening diameter is 11 mm in the model, 10 mm in the plan.
 9. **3D release.** The 3D model uses a Particle Beam (1000 ions, Gaussian), not the plan's
    launch grid from a release file. The release-file format is now verified for both 2D
    and 3D (task 8, `scripts/verify_release_file.py`). *Fix:* the adapter disables `pbeam1`

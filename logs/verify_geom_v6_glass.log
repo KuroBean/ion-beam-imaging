@@ -1,0 +1,73 @@
+loaded lens8newMCP_ks_v6_tip.mph in 10 s
+tet entity ids 1..58 (n_dom 58), tri ids 1..2454
+
+== lens8newMCP_ks_v6_tip.mph ==  params (mm): {'tip_z': 105.0, 'mcp_z': 515.9, 'lens_gap': 13.482, 'mesh_gap': 12.7}
+mesh elements: stored 2409756, used 2409756  {}
+  mesh plane (adj3, V_screen)          n= 24 z=[503.1, 503.3] r_max=7.0
+  mesh cross/frame (adj2, V_screen)    n= 42 z=[500.3, 503.3] r_max=45.398
+  MCP front (geom1_sel3)               n=  1 z=[515.9, 515.9] r_max=20.0
+  MCP back (geom1_sel4)                n=  1 z=[521.8, 521.8] r_max=20.0
+  tip (adj5)                           n= 10 z=[65.0, 105.0] r_max=0.5
+  expected mesh plane z = mcp_z - mesh_gap = 503.2000 mm
+  domains (non-vacuum by size order is not implied):
+     1    11341 tets  bbox=[[-177.8, -142.547], [-126.619, 126.619], [389.281, 642.519]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     2  1347268 tets  bbox=[[-175.0, 175.0], [-175.0, 175.0], [-50.0, 781.8]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=[]
+     3   105190 tets  bbox=[[-175.0, 175.0], [-175.0, 175.0], [300.0, 731.8]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     4    11802 tets  bbox=[[-101.219, 101.219], [-215.9, -157.594], [414.681, 617.119]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     5    11971 tets  bbox=[[-101.219, 101.219], [157.594, 215.9], [414.681, 617.119]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     6     4616 tets  bbox=[[-69.862, 69.862], [-69.862, 69.862], [523.8, 531.3]]  mat=mat6 (ULTEM 1000 [solid]) all=['mat6'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_uni7_dom']
+     7     2741 tets  bbox=[[-52.938, 52.938], [-192.447, -166.801], [616.569, 654.295]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     8     2730 tets  bbox=[[-52.938, 52.938], [166.801, 192.447], [377.505, 415.231]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+     9     8601 tets  bbox=[[-52.863, 52.863], [-43.0, 52.863], [509.9, 523.8]]  mat=mat8 (Al2O3 - Aluminum oxide 1) all=['mat8'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_sel14', 'geom1_uni7_dom']
+    10      674 tets  bbox=[[-36.062, 0.0], [-36.062, -0.0], [500.3, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel6']
+    11      704 tets  bbox=[[-36.062, -0.0], [-0.0, 36.062], [500.3, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel6']
+    12    18559 tets  bbox=[[-32.5, 32.5], [-38.1, 38.1], [210.264, 227.727]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    13    28994 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [229.957, 241.957]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    14    29103 tets  bbox=[[-32.5, 32.5], [-32.499, 32.5], [229.187, 241.187]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    15       36 tets  bbox=[[-31.0, -25.0], [-31.0, -25.0], [501.8, 503.3]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel6', 'geom1_sel13']
+    16      231 tets  bbox=[[-31.0, -25.0], [-31.0, -25.0], [503.3, 521.8]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel13']
+    17      108 tets  bbox=[[-31.0, -25.0], [-31.0, -25.0], [520.8, 521.8]]  mat=mat8 (Al2O3 - Aluminum oxide 1) all=['mat8'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_sel13', 'geom1_sel14', 'geom1_uni7_dom']
+    18       52 tets  bbox=[[-31.0, -25.0], [25.0, 31.0], [501.8, 503.3]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel6', 'geom1_sel13']
+    19      209 tets  bbox=[[-31.0, -25.0], [25.0, 31.0], [503.3, 521.8]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel13']
+    20       89 tets  bbox=[[-31.0, -25.0], [25.0, 31.0], [520.8, 521.8]]  mat=mat8 (Al2O3 - Aluminum oxide 1) all=['mat8'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_sel13', 'geom1_sel14', 'geom1_uni7_dom']
+    21    72353 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [118.482, 132.482]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    22    77970 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [129.712, 143.712]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    23    72244 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [140.942, 154.942]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    24    77676 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [152.172, 166.172]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    25    73180 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [163.402, 178.402]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    26    73684 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [175.632, 190.632]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    27    73335 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [187.862, 202.862]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    28    73320 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [200.092, 215.092]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    29    73024 tets  bbox=[[-32.5, 32.5], [-32.5, 32.5], [212.322, 227.322]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    30    29289 tets  bbox=[[-32.499, 32.5], [-32.5, 32.5], [243.417, 255.417]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    31    29144 tets  bbox=[[-32.5, 32.498], [-32.5, 32.5], [242.647, 254.647]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    32    10438 tets  bbox=[[-16.826, -14.286], [-16.826, -14.286], [114.18, 259.18]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    33    10536 tets  bbox=[[-16.826, -14.286], [14.286, 16.826], [114.18, 259.18]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    34     1305 tets  bbox=[[-8.485, 8.485], [-8.485, 8.485], [500.3, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel6']
+    35      669 tets  bbox=[[-7.0, 7.0], [-7.0, 7.0], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5', 'geom1_sel6']
+    36       39 tets  bbox=[[-6.792, -1.693], [-6.792, -1.693], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5', 'geom1_sel6']
+    37       40 tets  bbox=[[-6.792, -1.693], [1.693, 6.792], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5', 'geom1_sel6']
+    38      545 tets  bbox=[[-5.5, 5.5], [-5.5, 5.5], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5']
+    39     2014 tets  bbox=[[-0.5, 0.5], [-0.5, 0.5], [65.0, 95.0]]  mat=mat2 (Corning 7740 (Pyrex) [solid,1.05 mm thick]) all=['mat2'] sels=['geom1_sel1']
+    40     8348 tets  bbox=[[-0.5, 0.5], [-0.5, 0.5], [95.0, 105.0]]  mat=mat2 (Corning 7740 (Pyrex) [solid,1.05 mm thick]) all=['mat2'] sels=['geom1_sel1']
+    41    20209 tets  bbox=[[-20.0, 20.0], [-20.0, 20.0], [515.9, 521.8]]  mat=mat3 (Leaded 1 [solid]) all=['mat3'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_uni7_dom']
+    42      692 tets  bbox=[[0.0, 36.062], [-36.062, 0.0], [500.3, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel6']
+    43      663 tets  bbox=[[-0.0, 36.062], [0.0, 36.062], [500.3, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel6']
+    44       40 tets  bbox=[[1.693, 6.792], [-6.792, -1.693], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5', 'geom1_sel6']
+    45       39 tets  bbox=[[1.693, 6.792], [1.693, 6.792], [503.1, 503.3]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel5', 'geom1_sel6']
+    46    10737 tets  bbox=[[14.286, 16.826], [-16.826, -14.286], [114.18, 259.18]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    47    10644 tets  bbox=[[14.286, 16.826], [14.286, 16.826], [114.18, 259.18]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_uni6_dom']
+    48       45 tets  bbox=[[25.0, 31.0], [-31.0, -25.0], [501.8, 503.3]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel6', 'geom1_sel13']
+    49      210 tets  bbox=[[25.0, 31.0], [-31.0, -25.0], [503.3, 521.8]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel13']
+    50       72 tets  bbox=[[25.0, 31.0], [-31.0, -25.0], [520.8, 521.8]]  mat=mat8 (Al2O3 - Aluminum oxide 1) all=['mat8'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_sel13', 'geom1_sel14', 'geom1_uni7_dom']
+    51       43 tets  bbox=[[25.0, 31.0], [25.0, 31.0], [501.8, 503.3]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel6', 'geom1_sel13']
+    52      243 tets  bbox=[[25.0, 31.0], [25.0, 31.0], [503.3, 521.8]]  mat=mat7 (Al2O3 - Aluminum oxide) all=['mat7'] sels=['geom1_sel13']
+    53      108 tets  bbox=[[25.0, 31.0], [25.0, 31.0], [520.8, 521.8]]  mat=mat8 (Al2O3 - Aluminum oxide 1) all=['mat8'] sels=['geom1_sel7', 'geom1_sel12_dom', 'geom1_sel13', 'geom1_sel14', 'geom1_uni7_dom']
+    54     2537 tets  bbox=[[107.071, 158.758], [-143.575, -86.198], [433.294, 485.108]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+    55     2641 tets  bbox=[[107.071, 158.758], [-143.636, -86.198], [546.692, 598.506]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+    56     2567 tets  bbox=[[107.071, 158.758], [86.198, 143.636], [433.294, 485.108]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+    57     2473 tets  bbox=[[107.071, 158.758], [86.198, 143.575], [546.692, 598.506]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+    58    11621 tets  bbox=[[157.594, 215.9], [-101.219, 101.219], [414.681, 617.119]]  mat=mat1 (304L [solid,polished]) all=['mat1'] sels=['geom1_sel9_dom']
+
+wrote D:\Users\kshimojo\projects\ion_beam_measurement\logs\verify_geom_lens8newMCP_ks_v6_tip.json
+Total 24 s

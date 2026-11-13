@@ -1,0 +1,1583 @@
+{
+ "file": "lens8newMCP_ks_v6_tip.mph",
+ "params_mm": {
+  "tip_z": 105.0,
+  "mcp_z": 515.9,
+  "lens_gap": 13.482,
+  "mesh_gap": 12.7
+ },
+ "n_elem_stored": 0,
+ "mesh_built_here": true,
+ "n_elem": 2409775,
+ "timings": {
+  "geometry_s": 4.3,
+  "mesh_s": 276.0
+ },
+ "n_dom": 58,
+ "materials": [
+  {
+   "tag": "mat1",
+   "label": "304L [solid,polished]",
+   "n": 41
+  },
+  {
+   "tag": "mat2",
+   "label": "Corning 7740 (Pyrex) [solid,1.05 mm thick]",
+   "n": 2
+  },
+  {
+   "tag": "mat3",
+   "label": "Leaded 1 [solid]",
+   "n": 0
+  },
+  {
+   "tag": "mat5",
+   "label": "P25N Polyimide-based No Flow Prepreg",
+   "n": 0
+  },
+  {
+   "tag": "mat6",
+   "label": "ULTEM 1000 [solid]",
+   "n": 2
+  },
+  {
+   "tag": "mat7",
+   "label": "Al2O3 - Aluminum oxide",
+   "n": 8
+  },
+  {
+   "tag": "mat8",
+   "label": "Al2O3 - Aluminum oxide 1",
+   "n": 5
+  }
+ ],
+ "domains": [
+  {
+   "dom": 1,
+   "n_tet": 11294,
+   "bbox_mm": [
+    [
+     -177.8,
+     -142.547
+    ],
+    [
+     -126.619,
+     126.619
+    ],
+    [
+     389.281,
+     642.519
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 2,
+   "n_tet": 1347233,
+   "bbox_mm": [
+    [
+     -175.0,
+     175.0
+    ],
+    [
+     -175.0,
+     175.0
+    ],
+    [
+     -50.0,
+     781.8
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": []
+  },
+  {
+   "dom": 3,
+   "n_tet": 105302,
+   "bbox_mm": [
+    [
+     -175.0,
+     175.0
+    ],
+    [
+     -175.0,
+     175.0
+    ],
+    [
+     300.0,
+     731.8
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 4,
+   "n_tet": 11802,
+   "bbox_mm": [
+    [
+     -101.219,
+     101.219
+    ],
+    [
+     -215.9,
+     -157.594
+    ],
+    [
+     414.681,
+     617.119
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 5,
+   "n_tet": 11971,
+   "bbox_mm": [
+    [
+     -101.219,
+     101.219
+    ],
+    [
+     157.594,
+     215.9
+    ],
+    [
+     414.681,
+     617.119
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 6,
+   "n_tet": 4616,
+   "bbox_mm": [
+    [
+     -69.862,
+     69.862
+    ],
+    [
+     -69.862,
+     69.862
+    ],
+    [
+     523.8,
+     531.3
+    ]
+   ],
+   "materials": [
+    "mat6"
+   ],
+   "material": "mat6",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 7,
+   "n_tet": 2736,
+   "bbox_mm": [
+    [
+     -52.938,
+     52.938
+    ],
+    [
+     -192.447,
+     -166.801
+    ],
+    [
+     616.569,
+     654.295
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 8,
+   "n_tet": 2730,
+   "bbox_mm": [
+    [
+     -52.938,
+     52.938
+    ],
+    [
+     166.801,
+     192.447
+    ],
+    [
+     377.505,
+     415.231
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 9,
+   "n_tet": 8601,
+   "bbox_mm": [
+    [
+     -52.863,
+     52.863
+    ],
+    [
+     -43.0,
+     52.863
+    ],
+    [
+     509.9,
+     523.8
+    ]
+   ],
+   "materials": [
+    "mat8"
+   ],
+   "material": "mat8",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_sel14",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 10,
+   "n_tet": 674,
+   "bbox_mm": [
+    [
+     -36.062,
+     0.0
+    ],
+    [
+     -36.062,
+     -0.0
+    ],
+    [
+     500.3,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 11,
+   "n_tet": 704,
+   "bbox_mm": [
+    [
+     -36.062,
+     -0.0
+    ],
+    [
+     -0.0,
+     36.062
+    ],
+    [
+     500.3,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 12,
+   "n_tet": 18559,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -38.1,
+     38.1
+    ],
+    [
+     210.264,
+     227.727
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 13,
+   "n_tet": 28994,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     229.957,
+     241.957
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 14,
+   "n_tet": 29103,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.499,
+     32.5
+    ],
+    [
+     229.187,
+     241.187
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 15,
+   "n_tet": 36,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     501.8,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel6",
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 16,
+   "n_tet": 231,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     503.3,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 17,
+   "n_tet": 108,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     520.8,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat8"
+   ],
+   "material": "mat8",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_sel13",
+    "geom1_sel14",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 18,
+   "n_tet": 52,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     501.8,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel6",
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 19,
+   "n_tet": 209,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     503.3,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 20,
+   "n_tet": 89,
+   "bbox_mm": [
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     520.8,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat8"
+   ],
+   "material": "mat8",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_sel13",
+    "geom1_sel14",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 21,
+   "n_tet": 72353,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     118.482,
+     132.482
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 22,
+   "n_tet": 77970,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     129.712,
+     143.712
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 23,
+   "n_tet": 72244,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     140.942,
+     154.942
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 24,
+   "n_tet": 77676,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     152.172,
+     166.172
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 25,
+   "n_tet": 73180,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     163.402,
+     178.402
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 26,
+   "n_tet": 73684,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     175.632,
+     190.632
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 27,
+   "n_tet": 73335,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     187.862,
+     202.862
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 28,
+   "n_tet": 73320,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     200.092,
+     215.092
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 29,
+   "n_tet": 73024,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     212.322,
+     227.322
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 30,
+   "n_tet": 29289,
+   "bbox_mm": [
+    [
+     -32.499,
+     32.5
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     243.417,
+     255.417
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 31,
+   "n_tet": 29144,
+   "bbox_mm": [
+    [
+     -32.5,
+     32.498
+    ],
+    [
+     -32.5,
+     32.5
+    ],
+    [
+     242.647,
+     254.647
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 32,
+   "n_tet": 10438,
+   "bbox_mm": [
+    [
+     -16.826,
+     -14.286
+    ],
+    [
+     -16.826,
+     -14.286
+    ],
+    [
+     114.18,
+     259.18
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 33,
+   "n_tet": 10536,
+   "bbox_mm": [
+    [
+     -16.826,
+     -14.286
+    ],
+    [
+     14.286,
+     16.826
+    ],
+    [
+     114.18,
+     259.18
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 34,
+   "n_tet": 1305,
+   "bbox_mm": [
+    [
+     -8.485,
+     8.485
+    ],
+    [
+     -8.485,
+     8.485
+    ],
+    [
+     500.3,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 35,
+   "n_tet": 669,
+   "bbox_mm": [
+    [
+     -7.0,
+     7.0
+    ],
+    [
+     -7.0,
+     7.0
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5",
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 36,
+   "n_tet": 39,
+   "bbox_mm": [
+    [
+     -6.792,
+     -1.693
+    ],
+    [
+     -6.792,
+     -1.693
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5",
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 37,
+   "n_tet": 40,
+   "bbox_mm": [
+    [
+     -6.792,
+     -1.693
+    ],
+    [
+     1.693,
+     6.792
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5",
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 38,
+   "n_tet": 545,
+   "bbox_mm": [
+    [
+     -5.5,
+     5.5
+    ],
+    [
+     -5.5,
+     5.5
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5"
+   ]
+  },
+  {
+   "dom": 39,
+   "n_tet": 2014,
+   "bbox_mm": [
+    [
+     -0.5,
+     0.5
+    ],
+    [
+     -0.5,
+     0.5
+    ],
+    [
+     65.0,
+     95.0
+    ]
+   ],
+   "materials": [
+    "mat2"
+   ],
+   "material": "mat2",
+   "sels": [
+    "geom1_sel1"
+   ]
+  },
+  {
+   "dom": 40,
+   "n_tet": 8348,
+   "bbox_mm": [
+    [
+     -0.5,
+     0.5
+    ],
+    [
+     -0.5,
+     0.5
+    ],
+    [
+     95.0,
+     105.0
+    ]
+   ],
+   "materials": [
+    "mat2"
+   ],
+   "material": "mat2",
+   "sels": [
+    "geom1_sel1"
+   ]
+  },
+  {
+   "dom": 41,
+   "n_tet": 20209,
+   "bbox_mm": [
+    [
+     -20.0,
+     20.0
+    ],
+    [
+     -20.0,
+     20.0
+    ],
+    [
+     515.9,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat6"
+   ],
+   "material": "mat6",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 42,
+   "n_tet": 692,
+   "bbox_mm": [
+    [
+     0.0,
+     36.062
+    ],
+    [
+     -36.062,
+     0.0
+    ],
+    [
+     500.3,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 43,
+   "n_tet": 663,
+   "bbox_mm": [
+    [
+     -0.0,
+     36.062
+    ],
+    [
+     0.0,
+     36.062
+    ],
+    [
+     500.3,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 44,
+   "n_tet": 40,
+   "bbox_mm": [
+    [
+     1.693,
+     6.792
+    ],
+    [
+     -6.792,
+     -1.693
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5",
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 45,
+   "n_tet": 39,
+   "bbox_mm": [
+    [
+     1.693,
+     6.792
+    ],
+    [
+     1.693,
+     6.792
+    ],
+    [
+     503.1,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel5",
+    "geom1_sel6"
+   ]
+  },
+  {
+   "dom": 46,
+   "n_tet": 10737,
+   "bbox_mm": [
+    [
+     14.286,
+     16.826
+    ],
+    [
+     -16.826,
+     -14.286
+    ],
+    [
+     114.18,
+     259.18
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 47,
+   "n_tet": 10644,
+   "bbox_mm": [
+    [
+     14.286,
+     16.826
+    ],
+    [
+     14.286,
+     16.826
+    ],
+    [
+     114.18,
+     259.18
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_uni6_dom"
+   ]
+  },
+  {
+   "dom": 48,
+   "n_tet": 45,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     501.8,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel6",
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 49,
+   "n_tet": 210,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     503.3,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 50,
+   "n_tet": 72,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     -31.0,
+     -25.0
+    ],
+    [
+     520.8,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat8"
+   ],
+   "material": "mat8",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_sel13",
+    "geom1_sel14",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 51,
+   "n_tet": 43,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     501.8,
+     503.3
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel6",
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 52,
+   "n_tet": 243,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     503.3,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat7"
+   ],
+   "material": "mat7",
+   "sels": [
+    "geom1_sel13"
+   ]
+  },
+  {
+   "dom": 53,
+   "n_tet": 108,
+   "bbox_mm": [
+    [
+     25.0,
+     31.0
+    ],
+    [
+     25.0,
+     31.0
+    ],
+    [
+     520.8,
+     521.8
+    ]
+   ],
+   "materials": [
+    "mat8"
+   ],
+   "material": "mat8",
+   "sels": [
+    "geom1_sel7",
+    "geom1_sel12_dom",
+    "geom1_sel13",
+    "geom1_sel14",
+    "geom1_uni7_dom"
+   ]
+  },
+  {
+   "dom": 54,
+   "n_tet": 2526,
+   "bbox_mm": [
+    [
+     107.071,
+     158.758
+    ],
+    [
+     -143.575,
+     -86.198
+    ],
+    [
+     433.294,
+     485.108
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 55,
+   "n_tet": 2624,
+   "bbox_mm": [
+    [
+     107.071,
+     158.758
+    ],
+    [
+     -143.636,
+     -86.198
+    ],
+    [
+     546.692,
+     598.506
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 56,
+   "n_tet": 2567,
+   "bbox_mm": [
+    [
+     107.071,
+     158.758
+    ],
+    [
+     86.198,
+     143.636
+    ],
+    [
+     433.294,
+     485.108
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 57,
+   "n_tet": 2495,
+   "bbox_mm": [
+    [
+     107.071,
+     158.758
+    ],
+    [
+     86.198,
+     143.575
+    ],
+    [
+     546.692,
+     598.506
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  },
+  {
+   "dom": 58,
+   "n_tet": 11621,
+   "bbox_mm": [
+    [
+     157.594,
+     215.9
+    ],
+    [
+     -101.219,
+     101.219
+    ],
+    [
+     414.681,
+     617.119
+    ]
+   ],
+   "materials": [
+    "mat1"
+   ],
+   "material": "mat1",
+   "sels": [
+    "geom1_sel9_dom"
+   ]
+  }
+ ],
+ "boundaries": {
+  "mesh plane (adj3, V_screen)": {
+   "sel": "adj3",
+   "n": 24,
+   "z_mm": [
+    503.1,
+    503.3
+   ],
+   "r_max_mm": 7.0
+  },
+  "mesh cross/frame (adj2, V_screen)": {
+   "sel": "adj2",
+   "n": 42,
+   "z_mm": [
+    500.3,
+    503.3
+   ],
+   "r_max_mm": 45.398
+  },
+  "MCP front (geom1_sel3)": {
+   "sel": "geom1_sel3",
+   "n": 1,
+   "z_mm": [
+    515.9,
+    515.9
+   ],
+   "r_max_mm": 20.0
+  },
+  "MCP back (geom1_sel4)": {
+   "sel": "geom1_sel4",
+   "n": 1,
+   "z_mm": [
+    521.8,
+    521.8
+   ],
+   "r_max_mm": 20.0
+  },
+  "tip (adj5)": {
+   "sel": "adj5",
+   "n": 10,
+   "z_mm": [
+    65.0,
+    105.0
+   ],
+   "r_max_mm": 0.5
+  }
+ }
+}

@@ -1,7 +1,7 @@
-# Introspection: lens8newMCP_ks_v4_lens_voltages.mph  (3d)
-COMSOL 5.5, loaded in 19.2 s, size 1101 MB
+# Introspection: lens8newMCP_ks_v6_tip.mph  (3d)
+COMSOL 5.5, loaded in 12.9 s, size 1107 MB
 MPh tree:
-lens8newMCP_ks_v4_lens_voltages
+lens8newMCP_ks_v6_tip
 ├─ parameters
 ├─ functions
 ├─ components
@@ -49,10 +49,19 @@ lens8newMCP_ks_v4_lens_voltages
   D1b_v            = 0[V]                                                         -> 0.0   D1b potential
   D2a_v            = 0[V]                                                         -> 0.0   D2a potential
   D2b_v            = 0[V]                                                         -> 0.0   D2b potential
+  V_mcp_front      = -10000[V]                                                    -> -10000.0   MCP front potential
+  V_mcp_back       = -5000[V]                                                     -> -5000.0   MCP back potential
+  V_screen         = -1000[V]                                                     -> -1000.0   screen mesh potential (mesh disc and cross)
+  m_ion            = 1.7e-24[kg]                                                  -> 1.7e-24   particle mass
+  Z_ion            = 1                                                            -> 1.0   charge number
+  t_end            = 250[us]                                                      -> 0.00025   particle tracing end time
+  dt_out           = 0.5[us]                                                      -> 5e-07   particle tracing output interval
+  v_tip            = 0[V]                                                         -> 0.0   tip (needle) potential
+  mesh_gap         = 12.7[mm]                                                     -> 0.0127   distance between mesh and mcp front screen
 
 ######## component comp1 ########
 
-== Geometry geom1 (sdim 3): 58 domains, 2454 boundaries ==
+== Geometry geom1 (sdim 3): 54 domains, 2434 boundaries ==
   cyl2             Cylinder                 'Needle Tube'
       contributeto = none
       selresult = off
@@ -398,20 +407,27 @@ lens8newMCP_ks_v4_lens_voltages
       importtype = full3d
   wp1              WorkPlane                'mcp front face'
       contributeto = none
-      selresult = off
+      selresult = on
       selresultshow = bnd
       face = imp6.BossExtrude8
       workplane = xyplane
       displ = ['0', '0']
       rot = 0
+  uni7             Union                    'mcp and holder'
+      contributeto = none
+      selresult = on
+      selresultshow = dom
+      input = ['imp6', 'wp1']
+      keep = off
+      face = none
   mov5             Move                     'Move mcp'
       contributeto = none
       selresult = off
       selresultshow = dom
-      input = ['imp6', 'wp1']
+      input = uni7(1)
       keep = off
       workplane = xyplane
-      oldposvertex = wp1.pt1
+      oldposvertex = uni7(1)
       newposz = mcp_z
   cyl16            Cylinder                 'MCP Cylinder 16'  [DISABLED]
       contributeto = none
@@ -499,7 +515,7 @@ lens8newMCP_ks_v4_lens_voltages
       contributeto = none
       selresult = off
       selresultshow = dom
-      input = mov5(3)
+      input = mov5(1)
       keep = off
       face = none
   cyl20            Cylinder                 'Test Mesh Screen Cylinder 20'  [DISABLED]
@@ -519,7 +535,7 @@ lens8newMCP_ks_v4_lens_voltages
       contributeto = none
       selresult = off
       selresultshow = bnd
-      face = mov5(1)
+      face = dif8(1)
       workplane = xyplane
       displ = ['0', '0']
       rot = 0
@@ -535,17 +551,17 @@ lens8newMCP_ks_v4_lens_voltages
       rot = 0
       axis = ['0', '0', '1']
       r = 3
-      h = 20
+      h = mesh_gap+7.3
   arr4             Array                    'Post Array 4'
   blk1             Block                    'Cross Block 1'
       contributeto = none
       selresult = off
       selresultshow = dom
       workplane = wp2
-      pos = ['0', '0', '20']
+      pos = ['0', '0', 'mesh_gap+7.3']
       x = 0
       y = 0
-      z = 20
+      z = mesh_gap+7.3
       rot = 45
       axis = ['0', '0', '1']
       size = ['12', '90', '3']
@@ -554,10 +570,10 @@ lens8newMCP_ks_v4_lens_voltages
       selresult = off
       selresultshow = dom
       workplane = wp2
-      pos = ['0', '0', '20']
+      pos = ['0', '0', 'mesh_gap+7.3']
       x = 0
       y = 0
-      z = 20
+      z = mesh_gap+7.3
       rot = -45
       axis = ['0', '0', '1']
       size = ['12', '90', '3']
@@ -573,10 +589,10 @@ lens8newMCP_ks_v4_lens_voltages
       selresult = off
       selresultshow = dom
       workplane = wp2
-      pos = ['0', '0', '15']
+      pos = ['0', '0', 'mesh_gap+2.3']
       x = 0
       y = 0
-      z = 15
+      z = mesh_gap+2.3
       rot = 0
       axis = ['0', '0', '1']
       r = 5.5
@@ -593,10 +609,10 @@ lens8newMCP_ks_v4_lens_voltages
       selresult = off
       selresultshow = dom
       workplane = wp2
-      pos = ['0', '0', '18.5']
+      pos = ['0', '0', 'mesh_gap+5.8']
       x = 0
       y = 0
-      z = 18.5
+      z = mesh_gap+5.8
       rot = 0
       axis = ['0', '0', '1']
       r = 7
@@ -810,6 +826,15 @@ lens8newMCP_ks_v4_lens_voltages
   sel12.bnd        ?                        'dom_holder'
   sel13            ?                        'dom_cross_posts'
   sel14            ?                        'mcp_surrounding'
+  wp1              ?                        'mcp front face'
+  wp1.pnt          ?                        'mcp front face'
+  wp1.edg          ?                        'mcp front face'
+  wp1.bnd          ?                        'mcp front face'
+  uni7             ?                        'mcp and holder'
+  uni7.pnt         ?                        'mcp and holder'
+  uni7.edg         ?                        'mcp and holder'
+  uni7.bnd         ?                        'mcp and holder'
+  uni7.dom         ?                        'mcp and holder'
 
 == Geometry pgeom_cpt (sdim 1): 0 domains, 1 boundaries ==
   pt1              Point                    'Point 1'
@@ -825,16 +850,16 @@ lens8newMCP_ks_v4_lens_voltages
   geom1_csel1_bnd  FromGeom       dim2 n=0  'Cumulative Selection 1'
   geom1_csel1_dom  FromGeom       dim3 n=0  'Cumulative Selection 1'
   geom1_imp5_dom   FromGeom       dim3 n=0  'Import Ultem MCP Holder 5'
-  sel4             Explicit       dim2 n=42  'Explicit 4'
-  sel5             Explicit       dim2 n=44  'Explicit 5'
+  sel4             Explicit       dim2 n=32  'Explicit 4'
+  sel5             Explicit       dim2 n=34  'Explicit 5'
   geom1_sel1       FromGeom       dim3 n=2  'dom_needle'
   geom1_sel2       FromGeom       dim3 n=0  'dom_lens_2'
   geom1_sel3       FromGeom       dim2 n=1  'sel_mcp_front'
   geom1_sel4       FromGeom       dim2 n=1  'sel_mcp_back'
   geom1_sel5       FromGeom       dim3 n=6  'dom_mesh'
-  geom1_sel6       FromGeom       dim3 n=14  'dom_mesh_cross'
+  geom1_sel6       FromGeom       dim3 n=10  'dom_mesh_cross'
   adj1             Adjacent       dim2 n=0  'sel_lens_2'
-  adj2             Adjacent       dim2 n=42  'sel_mesh_cross'
+  adj2             Adjacent       dim2 n=38  'sel_mesh_cross'
   adj3             Adjacent       dim2 n=24  'sel_mesh'
   geom1_sel7       FromGeom       dim3 n=7  'dom_mcp_and_holder'
   adj4             Adjacent       dim2 n=124  'sel_mcp_and_holder'
@@ -965,16 +990,16 @@ lens8newMCP_ks_v4_lens_voltages
   geom1_imp8_Imported1_3_dom FromGeom       dim3 n=1  'L9 (Import lens assembly)'
   geom1_unisel2    FromGeom       dim3 n=4  'Rods Selection'
   geom1_sel11      FromGeom       dim2 n=1  'needle_tip'
-  geom1_sel12_pnt  FromGeom       dim0 n=56  'dom_holder'
-  geom1_sel12_edg  FromGeom       dim1 n=92  'dom_holder'
-  geom1_sel12_bnd  FromGeom       dim2 n=39  'dom_holder'
-  geom1_sel12_dom  FromGeom       dim3 n=1  'dom_holder'
+  geom1_sel12_pnt  FromGeom       dim0 n=179  'dom_holder'
+  geom1_sel12_edg  FromGeom       dim1 n=284  'dom_holder'
+  geom1_sel12_bnd  FromGeom       dim2 n=127  'dom_holder'
+  geom1_sel12_dom  FromGeom       dim3 n=7  'dom_holder'
   adj_rods         Adjacent       dim2 n=16  'sel_rods (boundaries)'
   sel_asm_gnd      Union          dim2 n=48  'sel_rods_bracket (grounded)'
   cyl_beam         Cylinder       dim2 n=41  'Boundaries reaching r < 7.0 mm (tip..end of L9)'
   adj_asm          Adjacent       dim2 n=995  'Lens assembly boundaries'
   sel_apertures    Intersection   dim2 n=36  'sel_apertures (lens assembly near the beam axis)'
-  geom1_sel13      FromGeom       dim3 n=12  'dom_cross_posts'
+  geom1_sel13      FromGeom       dim3 n=0  'dom_cross_posts'
   geom1_sel14      FromGeom       dim3 n=5  'mcp_surrounding'
   box_tip          Box            dim2 n=6  'Boundaries fully inside the needle cone/tip box'
   sel_needle_tip   Intersection   dim2 n=5  'sel_needle_tip (needle cone + tip face)'
@@ -982,32 +1007,34 @@ lens8newMCP_ks_v4_lens_voltages
   cyl_beam_all     Union          dim2 n=41  'Beam-region boundaries (lenses + deflector tubes)'
   box_tipface      Box            dim2 n=1  'Boundaries fully inside a box around the tip face'
   sel_tipface      Intersection   dim2 n=1  'sel_tipface (needle tip face, particle release)'
+  geom1_wp1_bnd    FromGeom       dim2 n=0  'mcp front face'
+  geom1_uni7_dom   FromGeom       dim3 n=7  'mcp and holder'
 
 == Materials ==
-  mat1       '304L [solid,polished]' eps_r=['1'] sel[dim3 n=42 [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14]]
+  mat1       '304L [solid,polished]' eps_r=['1'] sel[dim3 n=45 [1, 2, 3, 4, 5, 7, 8, 10, 11, 12, 13, 14]]
   mat2       'Corning 7740 (Pyrex) [solid,1.05 mm thick]' eps_r=['4.6'] sel[dim3 named=geom1_sel1 n=2]
   mat3       'Leaded 1 [solid]' eps_r=['8'] sel[dim3 n=0 []]
   mat5       'P25N Polyimide-based No Flow Prepreg' eps_r=['3'] sel[dim3 named=geom1_sel13 n=0]
-  mat6       'ULTEM 1000 [solid]' eps_r=['3.15'] sel[dim3 named=geom1_sel12_dom n=1]
-  mat7       'Al2O3 - Aluminum oxide' eps_r=['9.4'] sel[dim3 named=geom1_sel13 n=8]
+  mat6       'ULTEM 1000 [solid]' eps_r=['3.15'] sel[dim3 named=geom1_sel12_dom n=2]
+  mat7       'Al2O3 - Aluminum oxide' eps_r=['9.4'] sel[dim3 named=geom1_sel13 n=0]
   mat8       'Al2O3 - Aluminum oxide 1' eps_r=['9.4'] sel[dim3 named=geom1_sel14 n=5]
 
 == Physics ==
   [es] Electrostatics 'Electrostatics'
-     ccn1         ChargeConservation         'Charge Conservation 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+     ccn1         ChargeConservation         'Charge Conservation 1' sel[dim3 n=54 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
      zc1          ZeroCharge                 'Zero Charge 1' sel[dim2 n=38 [63, 64, 65, 69, 70, 74, 75, 78, 81, 84, 87, 90]]
-     init1        init                       'Initial Values 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+     init1        init                       'Initial Values 1' sel[dim3 n=54 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
      gnd1         Ground                     'ground chamber 1' sel[dim2 named=geom1_mov1_bnd n=0]
      gnd3         Ground                     'Ground Chamber 2' sel[dim2 named=geom1_sel9_bnd n=1070]
-     gnd2         Ground                     'Ground needle' sel[dim2 named=adj5 n=10]
+     gnd2         Ground                     'Ground needle'  [DISABLED] sel[dim2 named=adj5 n=0]
      pot5         ElectricPotential          'MCP Front Electric Potential' sel[dim2 named=geom1_sel3 n=1]
-         V0 = -10000
+         V0 = V_mcp_front
      pot6         ElectricPotential          'MCP Back Electric Potential' sel[dim2 named=geom1_sel4 n=1]
-         V0 = -5000
-     pot7         ElectricPotential          'Screen Mesh Cross Electric Potential' sel[dim2 named=adj2 n=37]
-         V0 = -1000
+         V0 = V_mcp_back
+     pot7         ElectricPotential          'Screen Mesh Cross Electric Potential' sel[dim2 named=adj2 n=33]
+         V0 = V_screen
      pot8         ElectricPotential          'Screen Mesh Electric Potential 1' sel[dim2 named=adj3 n=24]
-         V0 = -1000
+         V0 = V_screen
      gnd4         Ground                     'Ground 4' sel[dim2 named=geom1_sel8_bnd n=68]
      pot3         ElectricPotential          'Lens 1 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_8_bnd n=74]
          V0 = L1_v
@@ -1036,6 +1063,8 @@ lens8newMCP_ks_v4_lens_voltages
      gnd_asm      Ground                     'Ground rods and bracket' sel[dim2 named=sel_asm_gnd n=48]
      pot16        ElectricPotential          'Lens 9 Electric Potential' sel[dim2 named=geom1_imp8_Imported1_3_bnd n=71]
          V0 = L9_v
+     pot_tip      ElectricPotential          'Needle (tip) potential' sel[dim2 named=adj5 n=10]
+         V0 = v_tip
   [cpt] ChargedParticleTracing 'Charged Particle Tracing'
      prop(ParticleReleaseSpecification): {'ParticleReleaseSpecification': 'SpecifyReleaseTimes'}
      wall1        Wall                       'Wall 1' sel[dim2 n=38 [63, 64, 65, 69, 70, 74, 75, 78, 81, 84, 87, 90]]
@@ -1058,11 +1087,11 @@ lens8newMCP_ks_v4_lens_voltages
          L = 0
          v = [['0'], ['0'], ['0']]
          ParticleSpecies = UserDefined
-         mp = 1.7e-24
+         mp = m_ion
          mprest = me_const
-         Z = 1
+         Z = Z_ion
          StudyStep = std1/stat
-     ef1          ElectricForce              'Electric Force 1' sel[dim3 n=58 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
+     ef1          ElectricForce              'Electric Force 1' sel[dim3 n=54 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]
          SpecifyForceUsing = ElectricField
          TimeDependenceOfField = StationaryOrTimeDependent
          FrequencySpecification = FromSolution
@@ -1080,7 +1109,7 @@ lens8newMCP_ks_v4_lens_voltages
          ei = 1
          coordinateSystem = GlobalSystem
          StudyStep = std1/stat
-     pbeam1       ParticleBeam               'Particle Beam 1' sel[dim2 n=1 [1013]]
+     pbeam1       ParticleBeam               'Particle Beam 1' sel[dim2 n=1 [1003]]
          rc = 1[nA]
          TimeDistributionFunction = ListOfValues
          SamplingFromTimeDistribution = Deterministic
@@ -1153,7 +1182,7 @@ lens8newMCP_ks_v4_lens_voltages
          Otherwise = Freeze
          i = 1
          StudyStep = std1/stat
-     wall6        Wall                       'Mesh Holder' sel[dim2 named=adj2 n=42]
+     wall6        Wall                       'Mesh Holder' sel[dim2 named=adj2 n=38]
          WallCondition = Freeze
          WallContactCondition = UseWallCond
          gammas = 0
@@ -1359,7 +1388,7 @@ lens8newMCP_ks_v4_lens_voltages
          StudyStep = std1/stat
 
 == Meshes ==
-  mesh1 'Mesh 1' n_elem=2409830
+  mesh1 'Mesh 1' n_elem=0
      size         MeshSizeDefault 'Size'
      ftet4        FreeTet        'Free Tetrahedral 4' sel[dim[0, 1, 2, 3]]
          size1        Size       'Size 1 needle' sel[dim3 named=geom1_sel1 n=2]
@@ -1368,7 +1397,7 @@ lens8newMCP_ks_v4_lens_voltages
          size4        Size       'Size 4 tube chamber' sel[dim2 named=geom1_sel8_bnd n=68]
          size5        Size       'Size 5 lenses' sel[dim3 named=geom1_uni6_dom n=18]
          size6        Size       'Size 6 mcp holder' sel[dim3 named=geom1_sel7 n=7]
-         size7        Size       'Size 7 mesh cross' sel[dim3 named=geom1_sel6 n=14]
+         size7        Size       'Size 7 mesh cross' sel[dim3 named=geom1_sel6 n=10]
          size_asm     Size       'Lens assembly surfaces (coarse, ignore small off-axis features)' sel[dim2 named=adj_asm n=995]
          size_ap      Size       'Beam region: lens apertures' sel[dim2 named=sel_apertures n=36]
          size_needle  Size       'Needle shank' sel[dim2 named=adj5 n=10]
@@ -1380,7 +1409,7 @@ lens8newMCP_ks_v4_lens_voltages
   std1 'Study 1'
      stat       Stationary     {'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'on', 'cpt', 'off', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'off', 'notsolmethod': 'init', 'notstudy': 'zero', 'notsol': 'current'}
   std2 'Study 2'
-     time       Transient      {'tlist': 'range(0,0.5[us],250[us])', 'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'off', 'cpt', 'on', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'on', 'notsolmethod': 'sol', 'notstudy': 'std1', 'notsol': 'current'}
+     time       Transient      {'tlist': 'range(0,dt_out,t_end)', 'geometricNonlinearity': 'off', 'plot': 'off', 'activate': ['es', 'off', 'cpt', 'on', 'frame:spatial1', 'on', 'frame:material1', 'on'], 'useadvanceddisable': 'off', 'disabledvariables': [], 'disabledphysics': [], 'useinitsol': 'off', 'initmethod': 'init', 'initstudy': 'zero', 'solnum': '1', 'usesol': 'on', 'notsolmethod': 'sol', 'notstudy': 'std1', 'notsol': 'current'}
 
 == Solutions ==
   sol1 'Solution 1' study=std1  features=['st1:StudyStep', 'v1:Variables', 's1:Stationary']
@@ -1390,7 +1419,7 @@ lens8newMCP_ks_v4_lens_voltages
   sol2 'Solution 2' study=std2  features=['st1:StudyStep', 'v1:Variables', 't1:Time']
        st1: {'studystep': 'time'}
        v1: {'initmethod': 'init', 'initsol': 'zero', 'initsoluse': 'current', 'solnum': '1', 'notsolmethod': 'sol', 'notsol': 'sol1', 'notsoluse': 'current'}
-       t1: {'tlist': 'range(0,0.5e-6,250e-6)', 'rtol': '1.0E-5', 'atolglobal': '0.001', 'timemethod': 'genalpha', 'tstepsbdf': 'free', 'storeudot': 'on'}
+       t1: {'tlist': 'range(0,dt_out,t_end)', 'rtol': '1.0E-5', 'atolglobal': '0.001', 'timemethod': 'genalpha', 'tstepsbdf': 'free', 'storeudot': 'on'}
 
 == Datasets ==
   dset1      Solution             'Study 1/Solution 1' {'solution': 'sol1', 'geom': 'geom1'}

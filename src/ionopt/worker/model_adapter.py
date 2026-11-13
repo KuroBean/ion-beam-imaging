@@ -336,6 +336,11 @@ class ModelAdapter:
         set_exprs, notes, rebuild = self.set_params(params, job)
         pos = self.check_positions(job)
         done("params")
+        if not rebuild and int(self.j.component(COMP).mesh(MESH).getNumElem()) == 0:
+            # saved without a mesh (e.g. after a GUI edit): the stored geometry state may also be stale
+            # (3D v6 as saved: 54 domains, empty dom_cross_posts; 58 and correct after geom.run())
+            rebuild = True
+            notes.append("model had no stored mesh: rebuilt geometry and mesh (same parameters)")
         if rebuild:
             stage("geometry_mesh")
             self.j.component(COMP).geom(GEOM).run()
