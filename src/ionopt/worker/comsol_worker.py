@@ -76,6 +76,14 @@ class ComsolRunner:
         if self.client is None:
             self._start()
         if fidelity not in self.adapters:
+            # one model in memory at a time: the 3D model needs most of an 8 GB machine
+            # (2026-11-12: a 3D solve with the 2D model still loaded was killed for low memory)
+            for other in list(self.adapters):
+                log.info("unloading the %s model before loading %s", other, fidelity)
+                try:
+                    self.client.remove(self.adapters.pop(other).model)
+                except Exception:  # noqa: BLE001
+                    self.dirty = True
             a = ModelAdapter(self.client, self.cfg, fidelity)
             a.load()
             self.adapters[fidelity] = a

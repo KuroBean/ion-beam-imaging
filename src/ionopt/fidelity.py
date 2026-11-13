@@ -11,6 +11,7 @@ two r(theta) curves are directly comparable on the shared theta grid.
 from __future__ import annotations
 
 import json
+import time
 from pathlib import Path
 
 import numpy as np
@@ -121,22 +122,43 @@ def load_settings(path: Path) -> list[dict]:
     return s
 
 
-def run_fidelity_check(cfg, settings: list[dict], run_worker_inline: bool = True, log=print) -> dict:
+def run_fidelity_check(cfg, settings: list[dict], run_worker_inline: bool = True, log=None,
+                       resume: Path | None = None) -> dict:
     """Submit every setting as a 2D and a 3D job, run them, check them, compare each pair.
 
     With the queue backend and run_worker_inline, a COMSOL worker in this process works the queue until
-    it is empty (2D jobs are submitted first). Writes results/fidelity_<timestamp>.json.
+    it is empty (2D jobs are submitted first). The job ids go to results/fidelity_<timestamp>_jobs.json
+    right after submission; pass that file as resume to finish an interrupted check without
+    resubmitting. Writes results/fidelity_<timestamp>.json.
     """
-    import time
-
-    from . import units
     from .backends import make_backend
-    from .checker import check
+
+    log = log or (lambda m: print(m, flush=True))
+    backend = make_backend(cfg)
+    stamp = time.strftime('%Y%m%d_%H%M%S')
+    if resume is not None:
+        man = json.loads(Path(resume).read_text())
+        settings, jobs = man["settings"], man["jobs"]
+        log(f"resuming {resume}: {len(settings)} settings")
+    else:
+        jobs = _submit(cfg, backend, settings, log)
+        man_path = cfg.path("results_dir") / f"fidelity_{stamp}_jobs.json"
+        man_path.parent.mkdir(parents=True, exist_ok=True)
+        man_path.write_text(json.dumps({"settings": settings, "jobs": jobs}, indent=1))
+        log(f"job manifest: {man_path}")
+    if getattr(backend, "name", "") == "queue" and run_worker_inline:
+        from .worker.comsol_worker import run_worker
+        t = time.time()
+        n = run_worker(cfg, stop_when_empty=True)
+        log(f"worker processed {n} jobs in {time.time() - t:.0f} s")
+    return _compare_all(cfg, backend, settings, jobs, stamp, log)
+
+
+def _submit(cfg, backend, settings, log) -> dict:
+    from . import units
     from .config import ConfigurationDef
     from .jobs import build_job
-    from .plots import make_plots
 
-    backend = make_backend(cfg)
     jobs = {"2d": [], "3d": []}
     for fid in ("2d", "3d"):
         for s in settings:
@@ -147,11 +169,12 @@ def run_fidelity_check(cfg, settings: list[dict], run_worker_inline: bool = True
                             tags={"purpose": "fidelity_check", "setting": s["name"]})
             jobs[fid].append(backend.submit(job))
             log(f"submitted {fid} {s['name']}: {jobs[fid][-1]}")
-    if getattr(backend, "name", "") == "queue" and run_worker_inline:
-        from .worker.comsol_worker import run_worker
-        t = time.time()
-        n = run_worker(cfg, stop_when_empty=True)
-        log(f"worker processed {n} jobs in {time.time() - t:.0f} s")
+    return jobs
+
+
+def _compare_all(cfg, backend, settings, jobs, stamp, log) -> dict:
+    from .checker import check
+    from .plots import make_plots
 
     pairs, failed = [], []
     for s, j2, j3 in zip(settings, jobs["2d"], jobs["3d"]):
@@ -172,7 +195,7 @@ def run_fidelity_check(cfg, settings: list[dict], run_worker_inline: bool = True
             log(f"{s['name']}: eta 2D {c['eta']['2d']:.3f} 3D {c['eta']['3d']:.3f}, fate agreement "
                 f"{c['fate_agreement']['weighted']:.3f}, dr max {c['mapping']['dr_max_mm']} mm")
     report = {"settings": settings, "pairs": pairs, "failed": failed, "summary": summarize(pairs) if pairs else None}
-    out = cfg.path("results_dir") / f"fidelity_{time.strftime('%Y%m%d_%H%M%S')}.json"
+    out = cfg.path("results_dir") / f"fidelity_{stamp}.json"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, indent=1, default=str))
     report["path"] = str(out)

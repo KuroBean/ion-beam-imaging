@@ -187,7 +187,10 @@ def cmd_fidelity_check(a) -> int:
     if not a.allow_3d:
         print("the fidelity check runs 3D jobs: add --allow-3d (plan section 14)", file=sys.stderr)
         return 2
-    rep = run_fidelity_check(cfg, load_settings(a.settings))
+    if not a.settings and not a.resume:
+        print("give --settings FILE or --resume results/fidelity_<time>_jobs.json", file=sys.stderr)
+        return 2
+    rep = run_fidelity_check(cfg, load_settings(a.settings) if a.settings else [], resume=a.resume)
     print(json.dumps(rep["summary"], indent=1, default=str))
     return 0 if not rep["failed"] else 1
 
@@ -229,8 +232,10 @@ def _args_optimize(p):
 
 
 def _args_fidelity(p):
-    p.add_argument("--settings", type=Path, required=True,
+    p.add_argument("--settings", type=Path, default=None,
                    help="JSON list of {name, cfg, wiring, channels, positions_mm}")
+    p.add_argument("--resume", type=Path, default=None,
+                   help="job manifest of an interrupted check (results/fidelity_<time>_jobs.json): no resubmission")
     p.add_argument("--allow-3d", action="store_true")
 
 

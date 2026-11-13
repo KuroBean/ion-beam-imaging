@@ -48,3 +48,17 @@ def test_run_fidelity_check_mock(cfg_tmp, tmp_path):
     rep = run_fidelity_check(cfg_tmp, load_settings(f), log=lambda *a: None)
     assert not rep["failed"] and len(rep["pairs"]) == 1
     assert rep["summary"]["fate_agreement"]["median"] == pytest.approx(1.0)
+
+
+def test_resume_from_manifest(cfg_tmp, tmp_path):
+    import json
+
+    from ionopt.fidelity import load_settings, run_fidelity_check
+    f = tmp_path / "settings.json"
+    f.write_text(json.dumps([{"name": "einzel", "cfg": 1, "wiring": {"tip": "LV1", "e3": "LV2"},
+                              "channels": {"LV1": 100.0, "LV2": 85.0, "HV1": -5000.0, "HV4": -200.0},
+                              "positions_mm": {"lens_gap": 13.482, "z_mcp": 145, "mesh_gap": 12.7}}]))
+    first = run_fidelity_check(cfg_tmp, load_settings(f), log=lambda *a: None)
+    man = sorted((tmp_path / "results").glob("fidelity_*_jobs.json"))[-1]
+    again = run_fidelity_check(cfg_tmp, [], log=lambda *a: None, resume=man)
+    assert [p["job_3d"] for p in again["pairs"]] == [p["job_3d"] for p in first["pairs"]]
