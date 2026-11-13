@@ -142,6 +142,7 @@ def derive_ions(launch: pd.DataFrame, final: pd.DataFrame, geom: dict, job: JobS
         "above_threshold": above,
         "tof_us": t / units.US,
         "energy_error_rel": err_rel,
+        "energy_error_eV": ke - expected,
     })
 
 
@@ -312,12 +313,19 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
     if not validity["fate_counts_complete"]:
         flags.append(f"ion bookkeeping: {n_missing} launched ions missing from ions_final, "
                      f"{len(extra_ids)} unknown ids, {dup} duplicates")
+    # an ion passes if its error is within the relative OR the absolute tolerance (low-energy ions that
+    # end on electrodes have tiny expected energies, so a relative limit alone is too strict there)
+    e_abs = tol.energy_conservation_abs_eV
     err = np.abs(dv["energy_error_rel"].to_numpy())
-    err = err[np.isfinite(err)]
+    err_eV = np.abs(dv["energy_error_eV"].to_numpy())
+    ok = np.isfinite(err)
+    err, err_eV = err[ok], err_eV[ok]
     max_err = float(err.max()) if len(err) else 0.0
-    validity["energy_conserved"] = max_err <= e_tol
-    if not validity["energy_conserved"]:
-        flags.append(f"energy conservation error {max_err:.3g} > {e_tol} (relative)")
+    bad = (err > e_tol) & (err_eV > e_abs)
+    validity["energy_conserved"] = not bad.any()
+    if bad.any():
+        flags.append(f"energy conservation error: {int(bad.sum())} ions exceed {e_tol} (relative) and {e_abs} eV "
+                     f"(worst {err[bad].max():.3g} relative, {err_eV[bad].max():.3g} eV)")
     validity["potentials_match"], pflag = _potentials_ok(d, bundle, job, cfg, v_tol)
     if pflag:
         flags.append(pflag)

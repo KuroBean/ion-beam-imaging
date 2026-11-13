@@ -132,3 +132,21 @@ def test_ssh_transport_is_stub():
     t = SSHTransport("NOPE_HOST", "NOPE_DIR")
     with pytest.raises(NotImplementedError):
         t.list_done()
+
+
+def test_mock_preaccel_compensates_tip(cfg_tmp):
+    """With pre-acceleration the model tip sits at V_tip - gain/q: total energy E0 + q V_tip is kept."""
+    from ionopt.checker import check
+    from ionopt.electrodes import expand, expected_potentials, launch_preaccel
+    c = cfg_tmp.with_overrides(["spec.launch.preaccel=true"])
+    job = einzel_job(c)
+    gain = launch_preaccel(job, c)["preaccel_eV"]
+    v_model = 100.0 - gain / c.spec.launch.charge
+    assert gain > 0
+    assert expand(job, c)["v_tip"] == pytest.approx(v_model)
+    assert expected_potentials(job, c)["sel_tip"] == pytest.approx(v_model)
+    res = MockBackend(c).run(job)
+    f = pd.read_csv(res.files["ions_final"]).merge(pd.read_csv(res.files["ions_launch"]), on="ion_id")
+    total = f["KE0_eV"] + c.spec.launch.charge * f["V_start_V"]
+    np.testing.assert_allclose(total, f["KE0_eV"] - gain + 100.0 * c.spec.launch.charge, rtol=1e-12)
+    assert check(res.result_dir, c).validity["potentials_match"]

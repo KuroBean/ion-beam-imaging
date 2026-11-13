@@ -27,7 +27,7 @@ import pandas as pd
 from .. import units
 from ..config import Config
 from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, launch_preaccel,
-                          node_potentials, used_lv_channels, validate_job)
+                          model_tip_potential, node_potentials, used_lv_channels, validate_job)
 from ..launch import make_launch
 from ..results import JobTimeout, execute, prepare_job_dir, read_bundle
 from ..schemas import FILES, FINAL_COLUMNS, JobSpec, ResultBundle
@@ -130,13 +130,13 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     z_end[at_mesh] = z_mesh
     r_end[at_mesh] = rho_mesh[at_mesh]
     v_end_pot[at_mesh] = hv["mesh"]
-    v_start = np.full(n, pots["tip"])
+    v_start = np.full(n, model_tip_potential(job, cfg))
 
     ke_end = ke0 + q * (v_start - v_end_pot)
     reflected = ke_end <= 0                    # cannot reach the surface: falls back onto the tip
     z_end[reflected] = 0.0
     r_end[reflected] = 0.0
-    v_end_pot[reflected] = pots["tip"]
+    v_end_pot[reflected] = v_start[reflected]
     ke_end[reflected] = ke0[reflected]
     ke_end = ke_end + rng.normal(0, m.energy_noise_eV, n) if m.energy_noise_eV else ke_end
     if inject == "energy_error":

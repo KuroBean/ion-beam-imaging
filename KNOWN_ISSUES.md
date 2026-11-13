@@ -103,14 +103,20 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
     - Remeshing alone (plus ULTEM -> lead-glass MCP plate) moved MCP landings by a median of
       27 µm (p90 100 µm): a rough floor for 3D-to-3D differences.
 
-20. **Pre-acceleration counts energy twice (2026-11-12).** `spec.launch.preaccel` launches ions
-    with E0 + q(V_tip - V(s)), the energy gained near the real (nanopore) emitter before the beam
-    reaches the 0.1 mm model tip (`ionopt.launch.preacceleration`, about 67% of V_tip - V_E1).
-    The model launch point still sits at V_tip, so the total energy is high by that amount along
-    the whole path. Example: a 100 V tip with grounded E1 gives about 169 eV at E1 instead of
-    102 eV, and 0.7% extra at the MCP. *Possible fix:* hold the model tip at V_tip - q^-1 * gain,
-    so the model needle acts as the real emitter's equipotential at distance s (that equipotential
-    has an apex radius of about 2s = 0.55 mm, the needle's size). Waiting on the author's decision.
+20. **Pre-acceleration (2026-11-12).** **Double counting fixed:** with `spec.launch.preaccel`, the model
+    tip is held at V_tip - gain/q (`electrodes.model_tip_potential`), so E0 + q V_tip is conserved.
+    Model tip size (2D, `scripts/study_2d.py tip`, B tip +200 V L3 -300 V): r_tip 200/100/50/25 um
+    give the same fate for 96-100% of rays and MCP landings within ~0.1-0.2 mm (one edge ray
+    ~1 mm), while the 2D mesh grows 212k -> 578k and remeshing 26 s -> 196 s. Keep 100 um.
+21. **The emission model decides transmission (2026-11-12).** With pre-acceleration, ions leave the
+    tip region nearly ballistic (energy ~0.67 of V_tip - V_E1, field scale-invariant), so the
+    launch cone reaches E1 almost unchanged. E1's aperture (r 5 mm, 9 mm plate, 13.48 mm away)
+    then accepts only ~12.5 deg (23% of a 20 deg HWHM beam), and the 5 mm bore of the stack stops
+    most of the rest: in 33 cfg 3 settings (tip +10..+200 V, E1 -110 V, Einzel L2-L4 families,
+    `logs/study_2d_scan.json`, `logs/study_2d_grid.json`) at most 8% reaches the MCP (theta <= 6 deg).
+    Without pre-acceleration the same setting sends 96% to the MCP: 2 eV ions at the blunt 0.1 mm
+    tip are bent strongly by its field. Which picture holds depends on the real emitter shape.
+    Moving the stack closer helps: straight-ray acceptance 14.7/17.4/19.7 deg at lens_gap 10/7/5 mm.
 
 ## Geometry and configuration
 

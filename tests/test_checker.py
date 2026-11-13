@@ -167,3 +167,16 @@ def test_convergence_check(cfg_tmp):
     out = convergence_check(m, m2, cfg_tmp)
     assert out["rel_change_eta"] < 0.05
     assert "passed" in out
+
+
+def test_energy_abs_tolerance(cfg_tmp):
+    # +10% injected error: fails the relative limit; passes only if the absolute floor covers it
+    res, m = run(cfg_tmp, tags={"mock_inject": "energy_error"})
+    from pathlib import Path
+    d = pd.read_csv(Path(res.result_dir) / "ions_derived.csv")
+    worst = float(d["energy_error_eV"].abs().max())
+    assert not m.validity["energy_conserved"]
+    loose = check(res.result_dir, cfg_tmp.with_overrides([f"spec.tolerances.energy_conservation_abs_eV={worst * 1.01}"]))
+    assert loose.validity["energy_conserved"]
+    tight = check(res.result_dir, cfg_tmp.with_overrides([f"spec.tolerances.energy_conservation_abs_eV={worst * 0.5}"]))
+    assert not tight.validity["energy_conserved"]

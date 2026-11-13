@@ -1,0 +1,1242 @@
+[
+ {
+  "case": "A tip=+10 L3=-300",
+  "job_id": "2c907b6d7bd6469a97356cd29cdd34cd",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "electrode": 1.0
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.0008642461841907251,
+  "E_err_eV_max": 8.652832763867991,
+  "tof_mcp_us": [
+   19.8,
+   19.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.011
+  },
+  "timings_s": {
+   "params": 0.56,
+   "release": 0.42,
+   "solve_es": 6.78,
+   "solve_pt": 8.97,
+   "export": 4.98
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "A tip=+10 L3=-150",
+  "job_id": "8ca9999df7ce4d359554d3bfe06030de",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "electrode": 1.0
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.0018068600152009763,
+  "E_err_eV_max": 18.090282407352788,
+  "tof_mcp_us": [
+   19.8,
+   19.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.005
+  },
+  "timings_s": {
+   "params": 0.94,
+   "release": 0.07,
+   "solve_es": 4.95,
+   "solve_pt": 7.46,
+   "export": 3.2
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "A tip=+10 L3=+0",
+  "job_id": "ab704e6b446748f9adacde1ae23aa09b",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "electrode": 1.0
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.003309965215462101,
+  "E_err_eV_max": 33.13937162316142,
+  "tof_mcp_us": [
+   20.2,
+   20.2
+  ],
+  "r_land_mm": {
+   "0.0": 0.02
+  },
+  "timings_s": {
+   "params": 0.26,
+   "release": 0.05,
+   "solve_es": 4.74,
+   "solve_pt": 8.55,
+   "export": 2.65
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "B tip=+10 L3=-300",
+  "job_id": "ec0c7936c3604c36a3deb54e14bda24b",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.5831155413835017,
+  "flags": [
+   "collection efficiency 0.0297 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.042,
+   "electrode": 0.958
+  },
+  "eta": 0.029722755118320662,
+  "spot": {
+   "rms_axis_mm": 0.5627237266416731,
+   "r90_mm": 0.6323183602408586,
+   "r_max_mm": 0.6323183602408586
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 4.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.002682546815113684,
+  "E_err_eV_max": 26.85765862187327,
+  "tof_mcp_us": [
+   21.0,
+   21.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.01,
+   "2.0": 0.392,
+   "4.0": 0.632
+  },
+  "timings_s": {
+   "params": 0.2,
+   "release": 0.08,
+   "solve_es": 4.84,
+   "solve_pt": 9.71,
+   "export": 2.49
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "B tip=+10 L3=-150",
+  "job_id": "fd17f7ca2041438b95914f06bd6feecd",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "electrode": 1.0
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.000786178530132274,
+  "E_err_eV_max": 3.110172155451437,
+  "tof_mcp_us": [
+   21.2,
+   21.2
+  ],
+  "r_land_mm": {
+   "0.0": 0.01
+  },
+  "timings_s": {
+   "params": 0.23,
+   "release": 0.05,
+   "solve_es": 4.5,
+   "solve_pt": 8.5,
+   "export": 2.58
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "B tip=+10 L3=+0",
+  "job_id": "a5c64023936c4c24ad2cd3b7ff9ab51a",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.7765417255119005,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 0.1993219187986858,
+   "r90_mm": 0.1993219187986858,
+   "r_max_mm": 0.1993219187986858
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 82.38066486813433,
+  "E_err_rel_max": 0.002950449044236191,
+  "E_err_eV_max": 29.539895739193526,
+  "tof_mcp_us": [
+   22.6,
+   22.6
+  ],
+  "r_land_mm": {
+   "0.0": 0.019,
+   "2.0": 0.199
+  },
+  "timings_s": {
+   "params": 0.23,
+   "release": 0.04,
+   "solve_es": 4.53,
+   "solve_pt": 6.86,
+   "export": 2.45
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 80.38066486813433,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 120.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-70.38066486813433[V]"
+ },
+ {
+  "case": "A tip=+50 L3=-300",
+  "job_id": "c84a593cc1d84f09a08b9823c5f12986",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.12872673418502045,
+  "flags": [
+   "collection efficiency 0.0297 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.042,
+   "mesh_frame": 0.041,
+   "electrode": 0.917
+  },
+  "eta": 0.029722755118320662,
+  "spot": {
+   "rms_axis_mm": 2.5007989071290053,
+   "r90_mm": 2.968975333290302,
+   "r_max_mm": 2.968975333290302
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 4.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.0018465815656858147,
+  "E_err_eV_max": 18.561837758896218,
+  "tof_mcp_us": [
+   12.4,
+   12.4
+  ],
+  "r_land_mm": {
+   "0.0": 0.026,
+   "2.0": 1.114,
+   "4.0": 2.969
+  },
+  "timings_s": {
+   "params": 0.16,
+   "release": 0.05,
+   "solve_es": 4.31,
+   "solve_pt": 8.63,
+   "export": 2.81
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "A tip=+50 L3=-150",
+  "job_id": "f1ba363293184f2c9966e4bb7766c353",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 3.500115989925509,
+  "flags": [
+   "collection efficiency 0.0297 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.042,
+   "electrode": 0.958
+  },
+  "eta": 0.029722755118320662,
+  "spot": {
+   "rms_axis_mm": 1.7083763700808174,
+   "r90_mm": 2.0996181235920863,
+   "r_max_mm": 2.0996181235920863
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 4.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.004976627341187242,
+  "E_err_eV_max": 50.025057665101485,
+  "tof_mcp_us": [
+   12.6,
+   12.6
+  ],
+  "r_land_mm": {
+   "0.0": 0.004,
+   "2.0": 0.044,
+   "4.0": 2.1
+  },
+  "timings_s": {
+   "params": 0.18,
+   "release": 0.04,
+   "solve_es": 4.29,
+   "solve_pt": 7.04,
+   "export": 2.13
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "A tip=+50 L3=+0",
+  "job_id": "19da9273d2804936bfe4cc5fed14a11c",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.06986511964661776,
+  "flags": [
+   "collection efficiency 0.0297 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.042,
+   "electrode": 0.958
+  },
+  "eta": 0.029722755118320662,
+  "spot": {
+   "rms_axis_mm": 4.130107841293915,
+   "r90_mm": 4.856084372981462,
+   "r_max_mm": 4.856084372981462
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 4.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.0021168965266290325,
+  "E_err_eV_max": 21.27904373194906,
+  "tof_mcp_us": [
+   12.8,
+   12.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.067,
+   "2.0": 2.07,
+   "4.0": 4.856
+  },
+  "timings_s": {
+   "params": 0.14,
+   "release": 0.03,
+   "solve_es": 4.24,
+   "solve_pt": 7.16,
+   "export": 2.1
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "B tip=+50 L3=-300",
+  "job_id": "3e308677c8f44776971a7a246786d790",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "electrode": 1.0
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.0008234261811431837,
+  "E_err_eV_max": 8.27707991347961,
+  "tof_mcp_us": [
+   12.8,
+   12.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.054
+  },
+  "timings_s": {
+   "params": 0.14,
+   "release": 0.03,
+   "solve_es": 4.28,
+   "solve_pt": 7.25,
+   "export": 2.19
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "B tip=+50 L3=-150",
+  "job_id": "481349fad28e4f8f9c3a507bc8aad140",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.06445870919144628,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 2.2332450004281617,
+   "r90_mm": 2.2332450004281617,
+   "r_max_mm": 2.2332450004281617
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.0005328105073325346,
+  "E_err_eV_max": 5.355811182051184,
+  "tof_mcp_us": [
+   13.0,
+   13.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.061,
+   "2.0": 2.233
+  },
+  "timings_s": {
+   "params": 0.17,
+   "release": 0.04,
+   "solve_es": 4.26,
+   "solve_pt": 7.31,
+   "export": 1.99
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "B tip=+50 L3=+0",
+  "job_id": "a37586df11934096824c989ba1e884a7",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.10700874189207511,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 1.3354863548002858,
+   "r90_mm": 1.3354863548002858,
+   "r_max_mm": 1.3354863548002858
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 109.1742198241791,
+  "E_err_rel_max": 0.0028481152052416635,
+  "E_err_eV_max": 28.62925384587652,
+  "tof_mcp_us": [
+   13.4,
+   13.4
+  ],
+  "r_land_mm": {
+   "0.0": 0.027,
+   "2.0": 1.335
+  },
+  "timings_s": {
+   "params": 0.14,
+   "release": 0.03,
+   "solve_es": 4.2,
+   "solve_pt": 5.89,
+   "export": 2.19
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 107.1742198241791,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 160.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-57.174219824179104[V]"
+ },
+ {
+  "case": "A tip=+100 L3=-300",
+  "job_id": "9da7d1bb1a314b8aa69b18c2bd9bbe4e",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.4170983010627672,
+  "flags": [
+   "collection efficiency 0.0297 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.042,
+   "electrode": 0.958
+  },
+  "eta": 0.029722755118320662,
+  "spot": {
+   "rms_axis_mm": 1.2121701212274643,
+   "r90_mm": 1.315211510514098,
+   "r_max_mm": 1.315211510514098
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 4.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.0007885619904587018,
+  "E_err_eV_max": 2.905321246227686,
+  "tof_mcp_us": [
+   10.0,
+   10.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.043,
+   "2.0": 0.98,
+   "4.0": 1.315
+  },
+  "timings_s": {
+   "params": 0.15,
+   "release": 0.03,
+   "solve_es": 4.42,
+   "solve_pt": 6.78,
+   "export": 2.13
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "A tip=+100 L3=-150",
+  "job_id": "322cc6003cbf46c3b688bf4d14ee427d",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.052626609113130364,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 2.666220161698543,
+   "r90_mm": 2.666220161698543,
+   "r_max_mm": 2.666220161698543
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.0017900449077485586,
+  "E_err_eV_max": 18.083033440132567,
+  "tof_mcp_us": [
+   10.0,
+   10.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.006,
+   "2.0": 2.666
+  },
+  "timings_s": {
+   "params": 0.15,
+   "release": 0.02,
+   "solve_es": 4.06,
+   "solve_pt": 6.69,
+   "export": 2.06
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "A tip=+100 L3=+0",
+  "job_id": "366ab8e3735041bfb45a7f53a73f920f",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 3.9046902345647414,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "electrode": 0.917
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.5263582212789624,
+   "r90_mm": 3.58484747124227,
+   "r_max_mm": 3.58484747124227
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.002009735966789047,
+  "E_err_eV_max": 20.302352494685692,
+  "tof_mcp_us": [
+   10.2,
+   10.2
+  ],
+  "r_land_mm": {
+   "0.0": 0.12,
+   "2.0": 0.69,
+   "4.0": 0.191,
+   "6.000000000000001": 3.585
+  },
+  "timings_s": {
+   "params": 0.15,
+   "release": 0.03,
+   "solve_es": 4.16,
+   "solve_pt": 6.79,
+   "export": 2.06
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "B tip=+100 L3=-300",
+  "job_id": "ed88346929404b21aae17bf3d1b9a1cf",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.04328535122020048,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 3.342369660140404,
+   "r90_mm": 3.342369660140404,
+   "r_max_mm": 3.342369660140404
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.0021993885655791135,
+  "E_err_eV_max": 22.21822302597684,
+  "tof_mcp_us": [
+   10.2,
+   10.2
+  ],
+  "r_land_mm": {
+   "0.0": 0.108,
+   "2.0": 3.342
+  },
+  "timings_s": {
+   "params": 0.2,
+   "release": 0.04,
+   "solve_es": 4.1,
+   "solve_pt": 6.62,
+   "export": 2.13
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "B tip=+100 L3=-150",
+  "job_id": "25ac9f3d0fbe482282bdcd7b4d9d5145",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 2.363788330789044,
+  "flags": [
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "electrode": 0.917
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.6570206236708223,
+   "r90_mm": 3.7612249028047406,
+   "r_max_mm": 3.7612249028047406
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.0019084344632481248,
+  "E_err_eV_max": 19.27900472181682,
+  "tof_mcp_us": [
+   10.2,
+   10.2
+  ],
+  "r_land_mm": {
+   "0.0": 0.112,
+   "2.0": 0.171,
+   "4.0": 0.627,
+   "6.000000000000001": 3.761
+  },
+  "timings_s": {
+   "params": 0.13,
+   "release": 0.03,
+   "solve_es": 4.06,
+   "solve_pt": 6.93,
+   "export": 2.06
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "B tip=+100 L3=+0",
+  "job_id": "0b3d3d969a934e07b03ebceb7edd07bd",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.0394034234957779,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 3.5771751616120477,
+   "r90_mm": 3.5771751616120477,
+   "r_max_mm": 3.5771751616120477
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 142.66616351923508,
+  "E_err_rel_max": 0.0017648016129029704,
+  "E_err_eV_max": 17.828025687156696,
+  "tof_mcp_us": [
+   10.4,
+   10.4
+  ],
+  "r_land_mm": {
+   "0.0": 0.024,
+   "2.0": 3.577
+  },
+  "timings_s": {
+   "params": 0.16,
+   "release": 0.02,
+   "solve_es": 4.09,
+   "solve_pt": 5.22,
+   "export": 2.02
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 140.66616351923508,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 210.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-40.666163519235084[V]"
+ },
+ {
+  "case": "A tip=+200 L3=-300",
+  "job_id": "2ddee4daf91e4d26b09d4232aba0cadd",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.03564994682370526,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 3.9827953722602563,
+   "r90_mm": 3.9827953722602563,
+   "r_max_mm": 3.9827953722602563
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.0016063168232289455,
+  "E_err_eV_max": 16.387643879454117,
+  "tof_mcp_us": [
+   7.8,
+   7.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.056,
+   "2.0": 3.983
+  },
+  "timings_s": {
+   "params": 0.15,
+   "release": 0.04,
+   "solve_es": 3.95,
+   "solve_pt": 6.2,
+   "export": 1.96
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "A tip=+200 L3=-150",
+  "job_id": "6984038cc3fa41ea9d50caa05e0c695a",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "mesh_frame": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.009147288876260687,
+  "E_err_eV_max": 93.32063912917147,
+  "tof_mcp_us": [
+   7.8,
+   7.8
+  ],
+  "r_land_mm": {
+   "0.0": 0.002
+  },
+  "timings_s": {
+   "params": 0.18,
+   "release": 0.03,
+   "solve_es": 3.85,
+   "solve_pt": 5.63,
+   "export": 1.8
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "A tip=+200 L3=+0",
+  "job_id": "d522600783214495aa76b685a68ff5e1",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.032200289846844685,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 4.362211773317636,
+   "r90_mm": 4.362211773317636,
+   "r_max_mm": 4.362211773317636
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.0004004824228845069,
+  "E_err_eV_max": 3.4866684580374567,
+  "tof_mcp_us": [
+   7.8,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.014,
+   "2.0": 4.362
+  },
+  "timings_s": {
+   "params": 0.12,
+   "release": 0.07,
+   "solve_es": 4.28,
+   "solve_pt": 6.42,
+   "export": 1.93
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300",
+  "job_id": "a1f043f1ae9d4f90ad5234837c2f4ac4",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 6.07889331152118,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "electrode": 0.917
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.692354889636763,
+   "r90_mm": 3.823626610608029,
+   "r_max_mm": 3.823626610608029
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.0031825189752339583,
+  "E_err_eV_max": 32.468057900407075,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.173,
+   "2.0": 0.677,
+   "4.0": 0.219,
+   "6.000000000000001": 3.824
+  },
+  "timings_s": {
+   "params": 0.14,
+   "release": 0.02,
+   "solve_es": 4.0,
+   "solve_pt": 6.22,
+   "export": 1.98
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-150",
+  "job_id": "5b1c2c9b287c4532b8ee16285aa4bc7e",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.03671433740652216,
+  "flags": [
+   "collection efficiency 0.01 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.010049458869933059,
+  "spot": {
+   "rms_axis_mm": 3.9417092799707927,
+   "r90_mm": 3.9417092799707927,
+   "r_max_mm": 3.9417092799707927
+  },
+  "monotonic": true,
+  "theta_eval_max_deg": 2.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.0001706234181467209,
+  "E_err_eV_max": 0.9610774832617608,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.128,
+   "2.0": 3.942
+  },
+  "timings_s": {
+   "params": 0.13,
+   "release": 0.05,
+   "solve_es": 3.9,
+   "solve_pt": 6.01,
+   "export": 2.15
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "B tip=+200 L3=+0",
+  "job_id": "b1656c7389cf4b56b0b441a36add8d1c",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": null,
+  "flags": [
+   "evaluation range has 1 theta points (need 2): too few ions land",
+   "collection efficiency 0 < eta_min 0.3",
+   "fast fraction 0 < frac_fast_min 0.9"
+  ],
+  "fates": {
+   "mesh_frame": 0.014,
+   "electrode": 0.986
+  },
+  "eta": 0.0,
+  "spot": {
+   "rms_axis_mm": null,
+   "r90_mm": null,
+   "r_max_mm": null
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 0.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.008866924637971929,
+  "E_err_eV_max": 90.46036327364345,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.022
+  },
+  "timings_s": {
+   "params": 0.14,
+   "release": 0.02,
+   "solve_es": 3.91,
+   "solve_pt": 4.63,
+   "export": 2.02
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ }
+]

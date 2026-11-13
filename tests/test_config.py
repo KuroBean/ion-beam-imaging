@@ -13,7 +13,7 @@ from conftest import CONFIG_DIR, DEV_OVERRIDES
 def test_repo_config_loads_with_tbds():
     cfg = load_config(CONFIG_DIR)
     tbd = cfg.list_tbd()
-    assert "spec.launch.n_theta" in tbd
+    assert "spec.requirements.eta_min" in tbd
     assert "constraints.chamber_setups.1.z_mcp_mm" in tbd
     assert "parameters.parameters.v_phosphor.comsol_name" in tbd   # not modelled
     assert "spec.requirements.impact_threshold_eV_per_charge" in tbd
@@ -28,8 +28,8 @@ def test_repo_config_loads_with_tbds():
 def test_require_names_exact_key():
     cfg = load_config(CONFIG_DIR)
     with pytest.raises(TBDError) as e:
-        cfg.require("spec.launch.n_theta")
-    assert str(e.value) == "spec.launch.n_theta is TBD; set it in config/spec.yaml"
+        cfg.require("spec.requirements.eta_min")
+    assert str(e.value) == "spec.requirements.eta_min is TBD; set it in config/spec.yaml"
     with pytest.raises(TBDError):
         cfg.require("constraints.chamber_setups.1.z_mcp_mm")   # [null, null]
     assert cfg.require("spec.launch.hwhm_deg") == 20
@@ -122,5 +122,5 @@ def test_spec_hash_changes_only_with_spec():
 def test_cli_config_check(capsys):
     assert main(["config-check", "--config-dir", str(CONFIG_DIR)]) == 0
     out = capsys.readouterr().out
-    assert "TBD keys" in out and "spec.launch.n_theta" in out
+    assert "TBD keys" in out and "spec.requirements.eta_min" in out
     assert main(["config-check", "--config-dir", str(CONFIG_DIR), "--set", "spec.bad=1"]) == 2

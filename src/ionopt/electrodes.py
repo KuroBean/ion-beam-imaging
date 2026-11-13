@@ -287,7 +287,7 @@ def expand(job: JobSpec, cfg: Config) -> dict[str, Any]:
         "z_mcp": job.positions["z_mcp"],
         "mesh_gap": job.positions["mesh_gap"],
         "lens_gap": job.positions["lens_gap"],
-        "v_tip": pots["tip"],
+        "v_tip": model_tip_potential(job, cfg),
         "v_mesh": hv["mesh"],
         "v_mcp_front": hv["mcp_front"],
         "ion_mass": la.mass_Da * units.DALTON,
@@ -315,7 +315,7 @@ def expected_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
     """Assigned potential per named selection (plan section 8 names), for the checker."""
     pots = node_potentials(job, cfg)
     hv = hv_potentials(job, cfg)
-    out = {"sel_tip": pots["tip"]}
+    out = {"sel_tip": model_tip_potential(job, cfg)}
     for name in electrode_names(cfg):
         out[f"sel_{name}"] = pots[name]
     defl = deflector_potentials(job, cfg)
@@ -339,3 +339,15 @@ def launch_preaccel(job: JobSpec, cfg: Config) -> dict:
     from .launch import preacceleration  # noqa: PLC0415
     pots = node_potentials(job, cfg)
     return preacceleration(job.launch, pots["tip"], pots["e1"], job.positions["lens_gap"])
+
+
+def model_tip_potential(job: JobSpec, cfg: Config) -> float:
+    """Potential the MODEL tip is held at.
+
+    Without pre-acceleration: the tip supply voltage. With it, V_tip - gain/q: the model needle
+    then stands for the real emitter's equipotential at the emission distance s (where the
+    pre-accelerated ions are launched), so total energy E0 + q V_tip is conserved along the path.
+    """
+    v = node_potentials(job, cfg)["tip"]
+    gain = launch_preaccel(job, cfg)["preaccel_eV"]
+    return v - gain / job.launch.charge

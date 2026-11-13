@@ -9,7 +9,14 @@ from ionopt.config import load_config
 REPO = Path(__file__).resolve().parent.parent
 CONFIG_DIR = REPO / "config"
 DEV_OVERRIDES = CONFIG_DIR / "dev_overrides.yaml"
-TEST_PINS = ["spec.detector.sigma_mcp_um=80", "spec.detector.mesh_open_fraction=0.8", "spec.launch.preaccel=false"]
+TEST_PINS = [   # values the analytic tests were written for (not the physical spec values)
+    "spec.detector.sigma_mcp_um=80", "spec.detector.mesh_open_fraction=0.8", "spec.launch.preaccel=false",
+    "spec.launch.n_theta=26", "spec.launch.n_E=3", "spec.launch.dE_eV=2", "spec.launch.n_phi=8",
+    "spec.launch.launch_offset_um=0.0", "spec.launch.t_end_us=100",
+    "spec.tolerances.energy_conservation_rel=0.01", "spec.tolerances.energy_conservation_abs_eV=0",
+    "spec.tolerances.potential_match_V=1.0", "spec.tolerances.monotonic_tol_um=1.0",
+    "spec.tolerances.convergence_rel=0.05", "spec.tolerances.fate_position_tol_um=50",
+]
 
 
 @pytest.fixture

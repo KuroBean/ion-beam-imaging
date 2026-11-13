@@ -3,21 +3,9 @@
 # Every key here must already exist in the main config files (typos are rejected).
 
 spec:
-  launch:
-    n_theta: 26
-    n_E: 3
-    n_phi: 8
-    launch_offset_um: 0.0
-    t_end_us: 100
   requirements:
     eta_min: 0.3
     impact_threshold_eV_per_charge: 1000
-  tolerances:
-    energy_conservation_rel: 0.01
-    potential_match_V: 1.0
-    monotonic_tol_um: 1.0
-    convergence_rel: 0.05
-    fate_position_tol_um: 50
 
 constraints:
   chamber_setups:

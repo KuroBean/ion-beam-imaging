@@ -195,6 +195,7 @@ class RequirementsConfig(_Model):
 
 class TolerancesConfig(_Model):
     energy_conservation_rel: float | None = Field(None, gt=0)
+    energy_conservation_abs_eV: float = Field(0.0, ge=0)   # an ion passes if within rel OR abs
     potential_match_V: float | None = Field(None, ge=0)
     monotonic_tol_um: float | None = Field(None, ge=0)
     convergence_rel: float | None = Field(None, gt=0)
