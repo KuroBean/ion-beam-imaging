@@ -5,7 +5,7 @@ comsol_root: "C:/Program Files/COMSOL/COMSOL55/Multiphysics"   # COMSOL install 
 
 models:                      # base models, READ ONLY for all code
   2d: lens8_axisym_v2.mph                  # real lens assembly + v_tip, mesh_gap (scripts/build_axisym.py); TBD move to models/
-  3d: lens8newMCP_ks_v6_tip.mph            # v5 + v_tip (scripts/add_3d_tip.py); mesh_gap still TBD (author, GUI); TBD move to models/
+  3d: lens8newMCP_ks_v6_tip.mph            # v5 + v_tip (scripts/add_3d_tip.py) + mesh_gap (author, GUI, 2026-11-12, saved in place; not yet verified); TBD move to models/
 
 queue_dir: queue             # pending/ running/ done/ failed/ job folders (QueueBackend + worker)
 results_dir: results         # one folder per job_id

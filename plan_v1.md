@@ -654,8 +654,16 @@ for agent proposals.
          scripts/run_2d_job.py (queue -> worker -> checker -> plots, ~50 s) and
          scripts/reference_run_2d.py (independent plain-MPh run: results identical).
          GUI spot check: the checklist is in results/<job>/gui_reference.txt (author, optional).
-         Prerequisite KNOWN_ISSUES #10 (fixed-stack search space) is done; 3D needs mesh_gap (GUI).
+         Prerequisite KNOWN_ISSUES #10 (fixed-stack search space) is done.
+         3D mesh_gap: the author did the GUI edit in lens8newMCP_ks_v6_tip.mph (2026-11-12).
+         It still needs verifying (introspection + one 3D job), and the 3D runtime at
+         particle_rtol 1e-9 has to be checked (KNOWN_ISSUES #8, #19).
+         Emission model: for now the 20 deg HWHM applies at LAUNCH (spec.launch.hwhm_deg). At L1
+         it is unreachable at 1 eV (KNOWN_ISSUES #18); the author will revisit with the lab.
 - [ ] 10. Fidelity check (2D vs 3D on about 5 settings).
+         BEFORE STARTING: the author fills in YAML values (launch E0/n_theta/n_E/n_phi/offset/t_end,
+         tolerances, voltage and position ranges). Discuss with them first. Also refit R_cross
+         (KNOWN_ISSUES #2).
 - [ ] 11. baseline.py: B0 on at least one chamber setup, with promotion of top results to 3D.
 - [ ] 12. SSHTransport stub with the same interface and a test using a local directory.
 

@@ -45,8 +45,10 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
 7. **MCP back is at -5 kV with the front at -10 kV.** Set both from the constraints offset
    (plan section 12). Phosphor not modelled.
 8. **Screen-mesh offset `mesh_gap` is not a model parameter yet.** 2D done (v2,
-   2026-11-10). 3D is pending the author's GUI edit; the checklist is in
-   docs/comsol_api_notes.md §10. Until then the worker refuses 3D jobs. The mesh sits at
+   2026-11-10). 3D: on 2026-11-12 the author made the GUI edit in `lens8newMCP_ks_v6_tip.mph`, saved
+   in place. It is **not yet verified**. Next session: re-run `scripts/introspect_models.py 3d`
+   and check that `mesh_gap` exists, that the disc sits at `mcp_z-mesh_gap`, and that the
+   materials on sel13/sel14 and the Ultem ring survived. Then run one 3D job. The mesh sits at
    mcp_z - 12.7 mm. The opening diameter also differs: 11 mm in the model, 10 mm in the
    plan.
 9. **3D release.** The 3D model uses a Particle Beam (1000 ions, Gaussian), not the plan's
