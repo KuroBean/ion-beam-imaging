@@ -178,6 +178,20 @@ def cmd_worker(a) -> int:
     return 0
 
 
+def cmd_fidelity_check(a) -> int:
+    import json
+
+    from .fidelity import load_settings, run_fidelity_check
+
+    cfg = _load(a)
+    if not a.allow_3d:
+        print("the fidelity check runs 3D jobs: add --allow-3d (plan section 14)", file=sys.stderr)
+        return 2
+    rep = run_fidelity_check(cfg, load_settings(a.settings))
+    print(json.dumps(rep["summary"], indent=1, default=str))
+    return 0 if not rep["failed"] else 1
+
+
 def _not_yet(task: str):
     def fn(a) -> int:
         print(f"not implemented yet ({task})", file=sys.stderr)
@@ -214,6 +228,12 @@ def _args_optimize(p):
     p.add_argument("--allow-3d", action="store_true")
 
 
+def _args_fidelity(p):
+    p.add_argument("--settings", type=Path, required=True,
+                   help="JSON list of {name, cfg, wiring, channels, positions_mm}")
+    p.add_argument("--allow-3d", action="store_true")
+
+
 def _args_worker(p):
     p.add_argument("--runner", choices=["mock", "comsol"], default="comsol")
     p.add_argument("--max-jobs", type=int, default=None)
@@ -230,7 +250,7 @@ COMMANDS = {
     "worker": (cmd_worker, "start a worker on this machine (queue backend)", _args_worker),
     "baseline-b0": (_not_yet("task 11"), "baseline B0 over b0_configs.yaml (task 11)", None),
     "promote": (_not_yet("task 11"), "rerun top 2D results in 3D (task 11)", None),
-    "fidelity-check": (_not_yet("task 10"), "2D vs 3D on identical settings (task 10)", None),
+    "fidelity-check": (cmd_fidelity_check, "2D vs 3D on identical settings (task 10)", _args_fidelity),
 }
 
 

@@ -64,3 +64,14 @@ def test_worker_command_processes_queue(cfg_tmp, tmp_path, capsys):
 
 def test_not_yet_commands(tmp_path):
     assert main(["baseline-b0", *_args(tmp_path)]) == 2
+
+
+def test_fidelity_check_command(tmp_path, capsys):
+    s = tmp_path / "settings.json"
+    s.write_text(json.dumps([{"name": "einzel", "cfg": 1, "wiring": {"tip": "LV1", "e3": "LV2"},
+                              "channels": {"LV1": 100.0, "LV2": 85.0, "HV1": -5000.0, "HV4": -200.0},
+                              "positions_mm": {"lens_gap": 13.482, "z_mcp": 145, "mesh_gap": 12.7}}]))
+    pins = ["--set", "spec.launch.n_theta=26", "--set", "spec.launch.n_phi=8", "--set", "spec.launch.preaccel=false"]
+    assert main(["fidelity-check", "--settings", str(s), *_args(tmp_path, *pins)]) == 2      # needs --allow-3d
+    assert main(["fidelity-check", "--settings", str(s), "--allow-3d", *_args(tmp_path, *pins)]) == 0
+    assert '"fate_agreement"' in capsys.readouterr().out
