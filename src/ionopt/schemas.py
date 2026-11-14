@@ -24,6 +24,7 @@ FILES = {
     "ions_final": "ions_final.csv",
     "axis_potential": "axis_potential.csv",
     "cutplane_field": "cutplane_field.csv",
+    "cutplane_lens": "cutplane_lens.csv",
     "electrode_potentials": "electrode_potentials.csv",
     "traj": "traj.csv",
     "geometry": "geometry.json",

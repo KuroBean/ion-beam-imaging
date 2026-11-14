@@ -167,6 +167,13 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
 14. **Further mesh savings are possible.** The chamber-2 solid (about 170k elements) and
     the vacuum outside the chambers (about 200k) could be coarser. `scripts/mesh_stats_3d.py`
     shows where the elements go.
+24. **`constraints.electrodes.stack` is a bounding-box description (2026-11-14).** Each part is one
+    rectangle (r_in 5 mm, r_out 32.5 mm, full length incl. the back lip), so neighbouring parts
+    overlap in z. The model's plates are profiled: E1-E4 are 9 mm plates with lips, E5-E9 are thin
+    plates whose bore is ~6 mm, and D1/D2 are hollow. The summary plots now draw the real outlines
+    from the conductor mask of the exported potential grid. The rectangles still feed
+    `geometry.json`, the field check (`constraints.electrodes.clearance_mm`) and the mock.
+    *Fix:* store the real profiles (or the bore radius per plate) if those uses need them.
 
 ## Housekeeping
 

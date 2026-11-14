@@ -1,0 +1,20 @@
+﻿  [1] valid=False feasible=False score=n/a
+  [2] valid=False feasible=False score=n/a
+  [3] valid=False feasible=False score=n/a
+  [4] valid=False feasible=False score=n/a
+  [5] valid=False feasible=False score=n/a
+  [6] valid=False feasible=False score=n/a
+  [7] valid=False feasible=False score=n/a
+  [8] valid=True feasible=False score=1.57
+.venv\Scripts\ionopt.exe : D:\Users\kshimojo\projects\ion_beam_measurement\src\ionopt\plots.py:79: UserWarning: This 
+figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+At line:1 char:302
++ ... tch {} } }; .venv\Scripts\ionopt.exe optimize --config c3_einzel_spli ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\Users\kshimo...t be incorrect.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  fig.tight_layout()
+study devtest-c3_einzel_split (tpe): 8 solves, 7 failed, 0 feasible
+report: D:\Users\kshimojo\projects\ion_beam_measurement\results\report_devtest-c3_einzel_split.html
+no feasible solution found

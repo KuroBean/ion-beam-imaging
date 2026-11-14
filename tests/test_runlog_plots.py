@@ -8,7 +8,7 @@ from ionopt.runlog import RunLog
 from helpers import einzel_job
 
 EXPECTED_PLOTS = {"trajectories.png", "field_map.png", "axis_potential.png", "r_theta.png", "dtheta.png",
-                  "fates.png", "landing.png"}
+                  "fates.png", "landing.png", "summary.png"}
 
 
 def _run(cfg, **kw):

@@ -1,0 +1,15 @@
+﻿  [1] valid=True feasible=False score=n/a
+  [2] valid=True feasible=False score=n/a
+  [3] valid=True feasible=False score=n/a
+  [4] valid=True feasible=False score=n/a
+  [5] valid=True feasible=False score=n/a
+  [6] valid=True feasible=False score=n/a
+  [7] valid=True feasible=False score=n/a
+  [8] valid=True feasible=False score=1.095
+  [9] valid=True feasible=False score=n/a
+  [10] valid=True feasible=False score=n/a
+  [11] valid=True feasible=False score=0.07219
+  [12] valid=True feasible=False score=0.5152
+study devtest2-c3_einzel_split (tpe): 12 solves, 0 failed, 0 feasible
+report: D:\Users\kshimojo\projects\ion_beam_measurement\results\report_devtest2-c3_einzel_split.html
+no feasible solution found

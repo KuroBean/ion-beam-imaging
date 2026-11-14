@@ -145,8 +145,15 @@ def cmd_optimize(a) -> int:
         s = f"{m.score:.4g}" if m.score is not None else "n/a"
         print(f"  [{n}] valid={m.valid} feasible={m.feasible} score={s}", flush=True)
 
-    r = optimize(cfg, a.config, a.budget, a.fidelity, on_trial=progress)
+    initial = load_initial(cfg, a.config, a.init_from) if a.init_from else None
+    if initial is not None:
+        print(f"warm start: {len(initial)} settings from {a.init_from}")
+    r = optimize(cfg, a.config, a.budget, a.fidelity, on_trial=progress, study_id=a.study, initial=initial)
     print(f"study {r.study_id} ({r.sampler}): {r.n_trials} solves, {r.n_failed} failed, {r.n_feasible} feasible")
+    from .baseline import study_report
+    rep = study_report(cfg, r.study_id)
+    if rep:
+        print(f"report: {rep}")
     if r.best_job_id:
         print(f"best {r.best_job_id}: score {r.best_score:.4g} deg")
         print("  channels:", {k: round(v, 2) for k, v in r.best_channels.items()})
@@ -154,6 +161,16 @@ def cmd_optimize(a) -> int:
     else:
         print("no feasible solution found")
     return 0
+
+
+def load_initial(cfg: Config, config_id: str, path: Path) -> list[tuple[dict, dict]]:
+    """Warm-start settings for one configuration: a JSON list of {wiring, channels, positions_mm}
+    (the fidelity settings format); entries with another wiring are skipped."""
+    import json
+
+    wiring = cfg.b0_configs.get(config_id).wiring
+    return [(s["channels"], {k: v * 1e-3 for k, v in s["positions_mm"].items()})
+            for s in json.loads(Path(path).read_text(encoding="utf-8")) if s.get("wiring") == wiring]
 
 
 def cmd_worker(a) -> int:
@@ -195,6 +212,56 @@ def cmd_fidelity_check(a) -> int:
     return 0 if not rep["failed"] else 1
 
 
+def cmd_report(a) -> int:
+    from .report import build_report, collect_runs, study_history
+
+    cfg = _load(a)
+    res = cfg.path("results_dir")
+    dirs = collect_runs(res, study=a.study, purpose=a.purpose, last=a.last)
+    if not dirs:
+        print("no checked runs match", file=sys.stderr)
+        return 1
+    name = a.out or (f"report_{a.study}" if a.study else f"report_{a.purpose}" if a.purpose else "report_latest")
+    out = res / f"{name}.html"
+    hist = study_history(cfg, dirs, res / f"{name}_history.png", a.study) if a.study else None
+    if a.sort == "score":
+        dirs.sort(key=lambda d: _score_key(d))
+    build_report(cfg, dirs, out, title=a.study or a.purpose or "Latest runs", history_png=hist)
+    print(f"{len(dirs)} runs -> {out}")
+    return 0
+
+
+def _score_key(d: Path):
+    import json
+    import math as _m
+    m = json.loads((d / "metrics.json").read_text(encoding="utf-8"))
+    s = m.get("score")
+    return (not m.get("feasible"), s if s is not None and _m.isfinite(s) else 1e9)
+
+
+def cmd_baseline_b0(a) -> int:
+    from .baseline import run_baseline
+
+    cfg = _load(a)
+    out = run_baseline(cfg, a.configs or None, a.budget, a.tag)
+    for r in out["studies"]:
+        s = f"{r['best_score_deg']:.3g} deg" if r["best_score_deg"] is not None else "none feasible"
+        print(f"  {r['config_id']:28s} {r['n_feasible']:3d}/{r['n_trials']:3d} feasible  best {s}  {r['best_job_id']}")
+    return 0
+
+
+def cmd_promote(a) -> int:
+    from .baseline import promote
+
+    cfg = _load(a)
+    if not a.allow_3d:
+        print("promotion runs 3D jobs: add --allow-3d", file=sys.stderr)
+        return 2
+    for r in promote(cfg, a.study, a.top_k):
+        print(r)
+    return 0
+
+
 def _not_yet(task: str):
     def fn(a) -> int:
         print(f"not implemented yet ({task})", file=sys.stderr)
@@ -229,6 +296,21 @@ def _args_optimize(p):
     p.add_argument("--budget", type=int, default=None, help="number of solves (default optimizer.default_budget)")
     p.add_argument("--fidelity", choices=["2d", "3d"], default="2d")
     p.add_argument("--allow-3d", action="store_true")
+    p.add_argument("--study", default=None, help="study name (default <config>-<fidelity>-seed<seed>); resumes if it exists")
+    p.add_argument("--init-from", type=Path, default=None,
+                   help="warm start: JSON list of {wiring, channels, positions_mm}; matching entries run first")
+
+
+def _args_baseline(p):
+    p.add_argument("--configs", nargs="*", default=None, help="config_ids (default: all in b0_configs.yaml)")
+    p.add_argument("--budget", type=int, default=None, help="solves per configuration (default optimizer.default_budget)")
+    p.add_argument("--tag", default=None, help="names the studies b0-<config>-2d-<tag> (default seed<seed>)")
+
+
+def _args_promote(p):
+    p.add_argument("--study", required=True)
+    p.add_argument("--top-k", type=int, default=3)
+    p.add_argument("--allow-3d", action="store_true")
 
 
 def _args_fidelity(p):
@@ -237,6 +319,14 @@ def _args_fidelity(p):
     p.add_argument("--resume", type=Path, default=None,
                    help="job manifest of an interrupted check (results/fidelity_<time>_jobs.json): no resubmission")
     p.add_argument("--allow-3d", action="store_true")
+
+
+def _args_report(p):
+    p.add_argument("--study", default=None, help="only runs of this optimization study (job tag study_id)")
+    p.add_argument("--purpose", default=None, help="only runs with this purpose tag (e.g. optimize, fidelity_check)")
+    p.add_argument("--last", type=int, default=None, help="at most this many runs, newest first")
+    p.add_argument("--sort", choices=["time", "score"], default="time", help="initial row order")
+    p.add_argument("--out", default=None, help="page name in results/ (default report_<study|purpose|latest>)")
 
 
 def _args_worker(p):
@@ -253,9 +343,10 @@ COMMANDS = {
     "recheck": (cmd_recheck, "recompute metrics for stored runs with the current spec", _args_recheck),
     "optimize": (cmd_optimize, "optimize one configuration from b0_configs.yaml", _args_optimize),
     "worker": (cmd_worker, "start a worker on this machine (queue backend)", _args_worker),
-    "baseline-b0": (_not_yet("task 11"), "baseline B0 over b0_configs.yaml (task 11)", None),
-    "promote": (_not_yet("task 11"), "rerun top 2D results in 3D (task 11)", None),
+    "baseline-b0": (cmd_baseline_b0, "baseline B0: one 2D study per configuration in b0_configs.yaml", _args_baseline),
+    "promote": (cmd_promote, "rerun the top 2D results of a study in 3D", _args_promote),
     "fidelity-check": (cmd_fidelity_check, "2D vs 3D on identical settings (task 10)", _args_fidelity),
+    "report": (cmd_report, "HTML index of runs with summary figures (results/report_*.html)", _args_report),
 }
 
 

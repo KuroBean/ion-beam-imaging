@@ -45,6 +45,11 @@ class SearchSpace:
     lens_gap: tuple[float, float]                          # m
     stack_length: float                                    # m, E1 front to the end of the last stack part
     names: list[str] = field(default_factory=list)
+    # extraction rule (pre-acceleration on): q (V_tip - V_E1) >= min_extraction (V)
+    tip_ch: str | None = None
+    e1_ch: str | None = None
+    q_sign: int = 1
+    min_extraction: float | None = None
 
     @classmethod
     def from_config(cls, cfg: Config, conf: ConfigurationDef) -> "SearchSpace":
@@ -71,11 +76,66 @@ class SearchSpace:
         sp = cls(conf=conf, channels=chan, z_mcp=mm(_rng(cfg, f"{ck}.z_mcp_mm")),
                  mesh_gap=(lo_g * units.MM, hi_g * units.MM), lens_gap=mm(_rng(cfg, f"{ck}.lens_gap_mm")),
                  stack_length=max(e["z_back_m"] for e in parts))
+        if cfg.spec.launch.preaccel:
+            sp._extraction_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, cfg.optimizer.min_extraction_V)
         # worst case (mesh closest to the tip, stack furthest out) must still fit
         if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - sp.mesh_gap[1] - EPS_M:
             raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the mesh "
                               f"even at the smallest lens_gap, z_mcp and largest mesh_gap")
         return sp
+
+    def _extraction_rule(self, wiring: dict[str, str], q_sign: int, u_min: float) -> None:
+        """Restrict the tip / E1 channel ranges so that q (V_tip - V_E1) >= u_min is always possible."""
+        tip, e1 = wiring.get("tip"), wiring.get("e1")
+        tip = tip if tip in self.channels else None
+        e1 = e1 if e1 in self.channels else None
+        if tip is None and e1 is None or tip == e1:
+            raise ConfigError(f"configuration '{self.conf.config_id}': tip and E1 are at the same potential, so "
+                              f"there is no extraction field (pre-acceleration needs V_tip != V_E1)")
+        self.tip_ch, self.e1_ch, self.q_sign, self.min_extraction = tip, e1, q_sign, u_min
+        if tip is not None:
+            lo, hi = self.channels[tip]
+            e_lo, e_hi = self.channels[e1] if e1 else (0.0, 0.0)
+            # positive ions: V_tip >= min(V_E1) + u_min; negative: V_tip <= max(V_E1) - u_min
+            lo, hi = (max(lo, e_lo + u_min), hi) if q_sign > 0 else (lo, min(hi, e_hi - u_min))
+            if lo > hi:
+                raise ConfigError(f"'{self.conf.config_id}': no tip voltage gives an accelerating extraction field")
+            self.channels[tip] = (lo, hi)
+        elif e1 is not None:        # grounded tip
+            lo, hi = self.channels[e1]
+            lo, hi = (lo, min(hi, -u_min)) if q_sign > 0 else (max(lo, u_min), hi)
+            if lo > hi:
+                raise ConfigError(f"'{self.conf.config_id}': no E1 voltage gives an accelerating field at a grounded tip")
+            self.channels[e1] = (lo, hi)
+
+    def to_params(self, channels: dict[str, float], positions: dict[str, float]) -> dict[str, float]:
+        """Optuna parameters that reproduce these channels/positions (inverse of suggest; values clipped)."""
+        def frac(v, lo, hi):
+            return min(1.0, max(0.0, (v - lo) / (hi - lo)))
+
+        def clip(v, rng):
+            return min(max(v, rng[0]), rng[1])
+
+        p = {}
+        for ch, (lo, hi) in self.channels.items():
+            if hi - lo <= 1e-12 or ch not in channels:
+                continue
+            if ch == self.e1_ch and self.tip_ch is not None:
+                vt, u = clip(channels[self.tip_ch], self.channels[self.tip_ch]), self.min_extraction
+                lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
+                if hi - lo > 1e-12:
+                    p[f"u_{ch}"] = frac(channels[ch], lo, hi)
+            else:
+                p[ch] = clip(channels[ch], (lo, hi))
+        z_mcp, gap = clip(positions["z_mcp"], self.z_mcp), clip(positions["mesh_gap"], self.mesh_gap)
+        if self.z_mcp[1] - self.z_mcp[0] > 1e-12:
+            p["z_mcp_mm"] = z_mcp / units.MM
+        if self.mesh_gap[1] - self.mesh_gap[0] > 1e-12:
+            p["mesh_gap_mm"] = gap / units.MM
+        lo, hi = self.lens_gap[0], self.lens_gap_max(z_mcp - gap)
+        if hi - lo > 1e-12:
+            p["u_lens_gap"] = frac(positions["lens_gap"], lo, hi)
+        return p
 
     def lens_gap_max(self, z_mesh: float) -> float:
         """Largest lens_gap that keeps the whole stack upstream of the mesh plane."""
@@ -86,7 +146,18 @@ class SearchSpace:
         def f(name, lo, hi):
             return lo if hi - lo <= 1e-12 else trial.suggest_float(name, lo, hi)
 
-        channels = {ch: f(ch, lo, hi) for ch, (lo, hi) in self.channels.items()}
+        channels = {}
+        for ch, (lo, hi) in self.channels.items():
+            if ch == self.e1_ch and self.tip_ch is not None:
+                continue                              # set below, relative to the tip
+            channels[ch] = f(ch, lo, hi)
+        if self.e1_ch is not None and self.tip_ch is not None:
+            # E1 as a fraction of its accelerating range (cf. lens_gap): q (V_tip - V_E1) >= min_extraction
+            lo, hi = self.channels[self.e1_ch]
+            vt, u = channels[self.tip_ch], self.min_extraction
+            lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
+            channels[self.e1_ch] = lo if hi - lo <= 1e-12 else lo + trial.suggest_float(f"u_{self.e1_ch}", 0.0, 1.0) * (hi - lo)
+        channels = {ch: channels[ch] for ch in self.channels}   # keep the channel order
         z_mcp = f("z_mcp_mm", self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM) * units.MM
         gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM
         # lens_gap as a fraction of its feasible range, so the stack never reaches the mesh
@@ -143,8 +214,13 @@ def _constraints(m, cfg: Config) -> dict[str, float]:
 
 def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: str = "2d",
              backend: SimulationBackend | None = None, study_id: str | None = None,
-             on_trial: Callable[[int, Any], None] | None = None) -> StudyResult:
-    """Run (or resume) one optimization study for a fixed configuration."""
+             on_trial: Callable[[int, Any], None] | None = None,
+             initial: list[tuple[dict, dict]] | None = None) -> StudyResult:
+    """Run (or resume) one optimization study for a fixed configuration.
+
+    initial: optional warm start, (channels, positions) pairs evaluated first, only when the study
+    has no trials yet. Pure B0 runs leave it empty.
+    """
     optuna.logging.set_verbosity(optuna.logging.WARNING)
     conf = cfg.b0_configs.get(config_id)
     space = SearchSpace.from_config(cfg, conf)
@@ -154,7 +230,16 @@ def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: s
                 "spec.tolerances.monotonic_tol_um", "spec.tolerances.fate_position_tol_um"):
         cfg.require(key)
     budget = budget or cfg.optimizer.default_budget
+    own_backend = backend is None
     backend = backend or make_backend(cfg)
+    try:
+        return _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial)
+    finally:
+        if own_backend and hasattr(backend, "close"):
+            backend.close()
+
+
+def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial) -> StudyResult:
     sampler, sampler_name = make_sampler(cfg)
     study_id = study_id or f"{config_id}-{fidelity}-seed{cfg.optimizer.seed}"
     db = cfg.path("optuna_db_path")
@@ -165,6 +250,10 @@ def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: s
     for t in study.get_trials(deepcopy=False, states=(T.RUNNING,)):   # interrupted before: never left hanging
         study.tell(t.number, state=T.FAIL)
     done = len(study.get_trials(deepcopy=False, states=(T.COMPLETE, T.FAIL)))
+    if initial and not study.get_trials(deepcopy=False):
+        for ch, pos in initial:
+            study.enqueue_trial(space.to_params(ch, pos), skip_if_exists=True)
+        log.info("warm start: %d enqueued trials", len(initial))
 
     with RunLog(cfg.path("db_path")) as rl:
         rl.start_study(study_id, config_id, sampler_name, cfg.optimizer.seed, budget, fidelity)

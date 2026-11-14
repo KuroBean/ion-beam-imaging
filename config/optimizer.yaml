@@ -5,4 +5,6 @@ seed: 0
 n_startup_trials: 10         # random trials before the model-based sampler takes over
 default_budget: 50           # number of solves per study when --budget is not given
 nonevaluable_score_deg: 90   # objective value reported when dtheta cannot be evaluated (run still marked infeasible)
-write_plots: false           # write diagnostic plots for every optimizer job
+write_plots: true            # diagnostic plots (incl. plots/summary.png) for every optimizer job, ~3 s each
+min_extraction_V: 1           # with pre-acceleration the tip-E1 field must accelerate the ions: E1 is sampled as a
+                             # fraction of the range that keeps q (V_tip - V_E1) >= this (no wasted retarding trials)

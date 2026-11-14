@@ -289,7 +289,7 @@ class ModelAdapter:
         ev.set("data", "ad_cp")
         ev.set("expr", jpype.JArray(jpype.JString)(exprs))
         raw = ev.getReal()
-        out = np.array([np.array(list(row), float) for row in raw])
+        out = np.array([np.asarray(row, dtype=float) for row in raw])
         num.remove("ad_ev")
         ds.remove("ad_cp")
         return out.reshape(len(exprs), -1)
@@ -309,7 +309,7 @@ class ModelAdapter:
         out = []
         for e in exprs:
             ev.set("expr", e)
-            out.append(np.array([np.array(list(row), float) for row in ev.getReal()]))
+            out.append(np.array([np.asarray(row, dtype=float) for row in ev.getReal()]))
         num.remove("ad_pev")
         ds.remove("ad_part")
         return np.array(out)
@@ -376,7 +376,7 @@ class ModelAdapter:
         return {"params": params, "model_file": self.path.name, "model_hash": self.model_hash,
                 "comsol_version": str(self.client.version), "mesh_elements": int(comp.mesh(MESH).getNumElem()),
                 "n_ions": n_ions, "comsol_params": set_exprs, "adapter_notes": notes, "rebuilt_geometry": rebuild,
-                "timings_s": timings, "model_positions_m": pos,
+                "timings_s": {**timings, **getattr(self, "export_timings", {})}, "model_positions_m": pos,
                 "particle_rtol": str(self.j.sol(SOL_PT).feature(SOLVER_TIME).getString("rtol"))}
 
     # ------------------------------------------------------------------ export
@@ -385,6 +385,12 @@ class ModelAdapter:
         F = self.F
         tip_mm = tip_m / units.MM
         ions.to_csv(out / FILES["ions_launch"], index=False)
+        tk = self.export_timings = {}
+        t_mark = [time.time()]
+
+        def lap(name):
+            tk[name] = round(time.time() - t_mark[0], 2)
+            t_mark[0] = time.time()
 
         # ---- particles: all output times
         # V and cpt.Ep are evaluated by COMSOL at each particle's position, inside the domain the particle
@@ -421,13 +427,15 @@ class ModelAdapter:
             "V_start_V": v_start, "V_end_V": v_end})[FINAL_COLUMNS]
         final.to_csv(out / FILES["ions_final"], index=False)
 
-        # trajectories (subsampled, plots only)
-        step = max(1, t.shape[1] // 100)
-        k = np.arange(0, t.shape[1], step)
-        pd.DataFrame({"ion_id": np.repeat(final["ion_id"].to_numpy(), len(k)), "t_s": t[:, k].ravel(),
-                      "x_m": (x[:, k] * mm).ravel(), "y_m": (y[:, k] * mm).ravel(),
-                      "z_m": ((z[:, k] - tip_mm) * mm).ravel()}).dropna().to_csv(out / FILES["traj"], index=False)
+        # trajectories (plots only): every output time while the ion moves, plus where it stopped
+        k = np.arange(t.shape[1])
+        keep = k[None, :] <= np.minimum(stop + 1, np.maximum(last, 0))[:, None]
+        ids = np.broadcast_to(final["ion_id"].to_numpy()[:, None], t.shape)
+        pd.DataFrame({"ion_id": ids[keep], "t_s": t[keep], "x_m": x[keep] * mm, "y_m": y[keep] * mm,
+                      "z_m": (z[keep] - tip_mm) * mm}).dropna().to_csv(out / FILES["traj"], index=False,
+                                                                       float_format="%.7g")
 
+        lap("export_particles")
         # ---- fields: axis and r-z plane, tip apex to the MCP face
         z_mcp_mm = pos["z_mcp_m"] / mm
         za = np.linspace(1e-3, z_mcp_mm - 1e-3, 800)
@@ -438,19 +446,28 @@ class ModelAdapter:
         pd.DataFrame({"z_m": za * mm, "V_V": V, "Ez_Vpm": Ez}).to_csv(out / FILES["axis_potential"], index=False)
         geom_el = geometry_electrodes(job, self.cfg)
         r_max = 1.5 * max(e["r_out_m"] for e in geom_el) / mm
-        rr, zz = np.meshgrid(np.linspace(0, r_max, 40), np.linspace(0, z_mcp_mm, 250))
-        pts = np.vstack([rr.ravel(), zz.ravel() + tip_mm]) if self.fidelity == "2d" else \
-            np.vstack([rr.ravel(), np.zeros(rr.size), zz.ravel() + tip_mm])
-        Vg, Eg = self.eval_points(pts, ["V", "es.normE"])
-        pd.DataFrame({"r_m": rr.ravel() * mm, "z_m": zz.ravel() * mm, "V_V": Vg, "Emag_Vpm": Eg}).to_csv(
-            out / FILES["cutplane_field"], index=False)
+        # whole chamber (coarse) and the tip-to-stack region (fine, for the lens-region plots)
+        ex = self.cfg.backend.worker
+        z_stack_mm = max(e["z_m"] + e["thickness_m"] / 2 for e in geom_el) / mm + 10.0
+        grids = {"cutplane_field": (r_max, z_mcp_mm, ex.cutplane_n_r, ex.cutplane_n_z),
+                 "cutplane_lens": (max(e["r_out_m"] for e in geom_el) / mm + 2.0, min(z_stack_mm, z_mcp_mm),
+                                   ex.lens_cutplane_n_r, ex.lens_cutplane_n_z)}
+        for key, (r_hi, z_hi, n_r, n_z) in grids.items():
+            rr, zz = np.meshgrid(np.linspace(0, r_hi, n_r), np.linspace(0, z_hi, n_z))
+            pts = np.vstack([rr.ravel(), zz.ravel() + tip_mm]) if self.fidelity == "2d" else \
+                np.vstack([rr.ravel(), np.zeros(rr.size), zz.ravel() + tip_mm])
+            Vg, Eg = self.eval_points(pts, ["V", "es.normE"])
+            pd.DataFrame({"r_m": rr.ravel() * mm, "z_m": zz.ravel() * mm, "V_V": Vg, "Emag_Vpm": Eg}).to_csv(
+                out / FILES[key], index=False, float_format="%.7g")
 
+        lap("export_fields")
         # ---- electrode potentials (mean V on each plan selection)
         rows = []
         for key in expected_potentials(job, self.cfg):
             rows.append((key, self._numerical("av", key, ["V"], field_only=True)[0]))
         pd.DataFrame(rows, columns=["selection", "V_mean_V"]).to_csv(out / FILES["electrode_potentials"], index=False)
 
+        lap("export_potentials")
         # ---- geometry.json: stack from config, cross-checked against the model; detector from the model
         rz = [F["z_expr"], F["r_expr"]]
         checks = {}
@@ -480,4 +497,5 @@ class ModelAdapter:
             "lens_gap_m": pos["lens_gap_m"], "t_end_s": params["t_end"],
         }
         write_json(out / FILES["geometry"], geom)
+        lap("export_geometry")
         return n

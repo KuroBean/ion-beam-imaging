@@ -30,6 +30,10 @@ def make_backend(cfg: Config) -> SimulationBackend:
         from .mock import MockBackend
 
         return MockBackend(cfg)
+    if cfg.backend.backend == "comsol":
+        from .local_comsol import LocalComsolBackend
+
+        return LocalComsolBackend(cfg)
     from .queue import QueueBackend
 
     return QueueBackend(cfg, make_transport(cfg))

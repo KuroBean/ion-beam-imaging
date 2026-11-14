@@ -1,6 +1,6 @@
 # Which simulation backend to use, worker settings, mock simulator settings.
 
-backend: mock                # mock | queue
+backend: mock                # mock | queue | comsol (COMSOL in this process, one job at a time)
 transport: local             # local | ssh (queue backend only; ssh is a stub in Phase 1)
 poll_interval_s: 2           # QueueBackend polling interval
 job_timeout_s: 1800          # per-job timeout (2D ~30 s, refined 3D ~8 min on the WorkSpace)
@@ -8,10 +8,15 @@ job_timeout_s: 1800          # per-job timeout (2D ~30 s, refined 3D ~8 min on t
 worker:
   count: 1                   # COMSOL workers on this machine
   restart_after_jobs: 20     # restart the COMSOL client after this many jobs
-  output_steps: 500          # particle output times per run (dt_out = t_end / output_steps)
+  output_steps: 2000         # particle output times per run (dt_out = t_end / output_steps); 2000 at t_end 100 us
+                             # = 50 ns: ~1 mm steps for ~50 eV Na+ in the lens stack (trajectory plots)
   allow_3d_geometry_change: false   # 3D still has numeric selections a rebuild can break (KNOWN_ISSUES #13)
   particle_rtol: 1.0e-9      # particle solver rel. tolerance. 2D test job, MCP energy error: 1e-5 -> max 135 eV,
                              # 1e-7 -> 57 eV, 1e-9 -> 19 eV (of 10.1 keV), same runtime (2026-11-10)
+  cutplane_n_r: 40           # potential grid, whole chamber (r to 1.5 x electrode radius, z to the MCP)
+  cutplane_n_z: 300          # export costs ~0.27 ms per grid point in 2D (113k points = 30 s, 2026-11-14)
+  lens_cutplane_n_r: 90      # finer potential grid from the tip to 10 mm past the stack (~0.4 mm)
+  lens_cutplane_n_z: 400
 
 ssh:                         # never put hostnames or credentials here
   host_env_var: IONOPT_SSH_HOST            # env var holding an alias from ~/.ssh/config

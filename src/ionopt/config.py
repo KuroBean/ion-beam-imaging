@@ -323,6 +323,10 @@ class WorkerConfig(_Model):
     output_steps: int = Field(500, ge=10)        # particle output times per run: dt_out = t_end / output_steps
     allow_3d_geometry_change: bool = False       # 3D models still have numeric selections (KNOWN_ISSUES #13)
     particle_rtol: float = Field(1e-9, gt=0, lt=1)   # particle solver relative tolerance (sol2/t1 rtol)
+    cutplane_n_r: int = Field(60, ge=2)          # potential grid over the whole chamber (cutplane_field.csv)
+    cutplane_n_z: int = Field(400, ge=2)
+    lens_cutplane_n_r: int = Field(140, ge=2)    # finer grid from the tip to past the stack (cutplane_lens.csv)
+    lens_cutplane_n_z: int = Field(640, ge=2)
 
 
 class SSHConfig(_Model):
@@ -349,7 +353,7 @@ class MockConfig(_Model):
 
 
 class BackendConfig(_Model):
-    backend: Literal["mock", "queue"] = "mock"
+    backend: Literal["mock", "queue", "comsol"] = "mock"
     transport: Literal["local", "ssh"] = "local"
     poll_interval_s: float = Field(2.0, gt=0)
     job_timeout_s: float = Field(1800.0, gt=0)
@@ -365,6 +369,8 @@ class OptimizerConfig(_Model):
     default_budget: int = Field(50, ge=1)
     nonevaluable_score_deg: float = Field(90.0, gt=0)
     write_plots: bool = False
+    # with pre-acceleration, keep q (V_tip - V_E1) >= this (V): E1 is sampled inside the accelerating range
+    min_extraction_V: float = Field(1.0, gt=0)
 
 
 # --------------------------------------------------------------------------- b0 configurations

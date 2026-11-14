@@ -16,6 +16,7 @@ TEST_PINS = [   # values the analytic tests were written for (not the physical s
     "spec.tolerances.energy_conservation_rel=0.01", "spec.tolerances.energy_conservation_abs_eV=0",
     "spec.tolerances.potential_match_V=1.0", "spec.tolerances.monotonic_tol_um=1.0",
     "spec.tolerances.convergence_rel=0.05", "spec.tolerances.fate_position_tol_um=50",
+    "optimizer.write_plots=false",                 # plots have their own tests; keeps the optimizer tests fast
 ]
 
 

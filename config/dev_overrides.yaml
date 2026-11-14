@@ -13,6 +13,10 @@ constraints:
       z_mcp_mm: [145, 145]
       mesh_gap_mm: [12.7, 12.7]
       lens_gap_mm: [5, 15]
+    3:                       # 2D optimizer development (2026-11-14): the stored model geometry, voltages only
+      z_mcp_mm: [410.9, 410.9]
+      mesh_gap_mm: [12.7, 12.7]
+      lens_gap_mm: [13.482, 13.482]
   mesh:
     min_gap_to_mcp_mm: 5
   supplies:

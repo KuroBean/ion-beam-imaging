@@ -98,3 +98,56 @@ def test_optimizer_checks_tbd_before_solving(sharp):
     with pytest.raises(TBDError, match="sigma_mcp_um"):
         optimize(c, "example_einzel", budget=3)
     assert not c.path("db_path").exists()
+
+
+@pytest.mark.parametrize("wiring", [{"tip": "LV1", "e1": "LV2", "e3": "LV3"},      # tip and E1 on channels
+                                    {"tip": "LV1", "e3": "LV2"},                    # E1 grounded
+                                    {"e1": "LV1", "e3": "LV2"}])                    # grounded tip
+@pytest.mark.parametrize("charge", [1, -1])
+def test_search_space_keeps_extraction_accelerating(cfg, wiring, charge):
+    from ionopt.config import ConfigurationDef
+    c = cfg.with_overrides(["spec.launch.preaccel=true", f"spec.launch.charge={charge}"])
+    conf = ConfigurationDef(config_id="x", description="", cfg=1, wiring=wiring)
+    space = SearchSpace.from_config(c, conf)
+    study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=1))
+    lo, hi = c.constraints.supplies.low_voltage.range_V
+    for _ in range(200):
+        ch, _ = space.suggest(study.ask())
+        v_tip = ch.get(wiring.get("tip"), 0.0) if "tip" in wiring else 0.0
+        v_e1 = ch.get(wiring.get("e1"), 0.0) if "e1" in wiring else 0.0
+        assert charge * (v_tip - v_e1) >= c.optimizer.min_extraction_V - 1e-9
+        assert all(lo - 1e-9 <= ch[k] <= hi + 1e-9 for k in ch if k.startswith("LV"))
+    # without pre-acceleration the ranges are left alone
+    assert SearchSpace.from_config(c.with_overrides(["spec.launch.preaccel=false"]), conf).tip_ch is None
+
+
+def test_search_space_rejects_tip_and_e1_on_one_channel(cfg):
+    from ionopt.config import ConfigurationDef
+    c = cfg.with_overrides(["spec.launch.preaccel=true"])
+    with pytest.raises(ConfigError, match="extraction"):
+        SearchSpace.from_config(c, ConfigurationDef(config_id="x", description="", cfg=1, wiring={"tip": "LV1", "e1": "LV1"}))
+    with pytest.raises(ConfigError, match="extraction"):
+        SearchSpace.from_config(c, ConfigurationDef(config_id="x", description="", cfg=1, wiring={"e3": "LV1"}))
+
+
+def test_to_params_inverts_suggest(cfg):
+    from ionopt.config import ConfigurationDef
+    c = cfg.with_overrides(["spec.launch.preaccel=true"])
+    space = SearchSpace.from_config(c, ConfigurationDef(config_id="x", description="", cfg=1,
+                                                        wiring={"tip": "LV1", "e1": "LV2", "e3": "LV3"}))
+    study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=3))
+    for _ in range(20):
+        ch, pos = space.suggest(study.ask())
+        ch2, pos2 = space.suggest(optuna.trial.FixedTrial(space.to_params(ch, pos)))
+        assert ch2 == pytest.approx(ch) and pos2 == pytest.approx(pos)
+
+
+def test_warm_start_runs_given_settings_first(sharp):
+    import json
+    ch = {"LV1": 120.0, "LV2": 85.0, "HV1": -5000.0, "HV4": -200.0}
+    pos = {"lens_gap": 10e-3, "z_mcp": 145e-3, "mesh_gap": 12.7e-3}
+    optimize(sharp, "example_einzel", budget=2, backend=MockBackend(sharp), study_id="warm", initial=[(ch, pos)])
+    with RunLog(sharp.path("db_path")) as rl:
+        first = min(rl.jobs("warm"), key=lambda j: j["created_at"])
+    got = json.loads(first["config_json"])
+    assert got["channels"] == pytest.approx(ch)

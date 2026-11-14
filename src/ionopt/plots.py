@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
-from matplotlib.colors import LinearSegmentedColormap, Normalize, SymLogNorm  # noqa: E402
+from matplotlib.colors import LinearSegmentedColormap, ListedColormap, Normalize, SymLogNorm  # noqa: E402
 from matplotlib.patches import Circle, Rectangle  # noqa: E402
 
 from . import units  # noqa: E402
@@ -232,6 +232,258 @@ def plot_axis_potential(d: Path, out: Path, cfg: Config, job, geom: dict) -> Pat
     return _save(fig, out / "axis_potential.png")
 
 
+# --------------------------------------------------------------------------- one-page summary
+
+LOST_FATES = ("electrode", "mesh_frame", "wall", "mcp_outside", "in_flight")
+ELECTRODE_FILL = "#e8e7e1"
+
+
+def _grid(f: Path):
+    cp = pd.read_csv(f)
+    zs, rs = np.unique(cp["z_m"]), np.unique(cp["r_m"])
+    g = cp.pivot_table(index="r_m", columns="z_m", values="V_V").reindex(index=rs, columns=zs).to_numpy()
+    return zs / units.MM, rs / units.MM, g
+
+
+def _potential_bg(ax, zs, rs, g, vmax, contours: int = 0):
+    m = ax.pcolormesh(zs, rs, g, cmap=DIV, norm=SymLogNorm(linthresh=10.0, vmin=-vmax, vmax=vmax),
+                      shading="auto", rasterized=True, alpha=0.55)
+    if contours:
+        lv = np.linspace(np.nanmin(g), np.nanmax(g), contours)
+        ax.contour(zs, rs, g, levels=lv, colors=INK2, linewidths=0.35, alpha=0.7)
+    # conductors (and anything outside the vacuum) are blank in the exported grid: draw them as metal
+    solid = np.isnan(g)
+    if solid.any():
+        ax.pcolormesh(zs, rs, np.where(solid, 1.0, np.nan), cmap=ListedColormap([ELECTRODE_FILL]), shading="auto",
+                      rasterized=True, zorder=3)
+        ax.contour(zs, rs, solid.astype(float), levels=[0.5], colors=INK2, linewidths=0.6, zorder=3)
+    ax.grid(False)
+    return m
+
+
+def _electrode_labels(ax, geom: dict, pots: dict):
+    """Electrode name and potential above each stack part (axes-fraction height, alternating rows)."""
+    for i, e in enumerate(geom.get("electrodes", [])):
+        v = pots.get(e["name"])
+        ax.text(e["z_m"] / units.MM, 1.01 + 0.045 * (i % 2), e["name"].upper() + ("" if v is None else f" {v:+.0f}"),
+                ha="center", va="bottom", fontsize=7, color=INK2, transform=ax.get_xaxis_transform(), clip_on=False)
+
+
+def _electrodes_filled(ax, geom: dict):
+    """Stack parts as rectangles (bounding boxes from constraints; used only without an exported grid)."""
+    for e in geom.get("electrodes", []):
+        if None in (e.get("thickness_m"), e.get("r_in_m"), e.get("r_out_m")):
+            continue
+        z0 = (e["z_m"] - e["thickness_m"] / 2) / units.MM
+        ax.add_patch(Rectangle((z0, e["r_in_m"] / units.MM), e["thickness_m"] / units.MM,
+                               (e["r_out_m"] - e["r_in_m"]) / units.MM, fc=ELECTRODE_FILL, ec=INK2, lw=0.7, zorder=3))
+
+
+def _trajectories(ax, tr: pd.DataFrame, dv: pd.DataFrame, cfg: Config, z_max: float | None = None):
+    fate = dv.set_index("ion_id")["fate"]
+    norm = Normalize(0, cfg.spec.launch.theta_max_deg)
+    for iid, g in tr.groupby("ion_id"):
+        if z_max is not None:
+            g = g[g["z_m"] <= z_max * units.MM * 1.02]
+        r = np.hypot(g["x_m"], g["y_m"]) / units.MM
+        lost = fate.get(iid) in LOST_FATES
+        ax.plot(g["z_m"] / units.MM, r, color=RED if lost else SEQ(norm(g["theta_deg"].iloc[0])),
+                lw=0.6 if lost else 0.9, alpha=0.75 if lost else 0.95, zorder=5)
+    return norm
+
+
+def _n(v, fmt: str) -> str:
+    return "–" if v is None or (isinstance(v, float) and not math.isfinite(v)) else format(v, fmt)
+
+
+def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict) -> str:
+    f = metrics.get("fates", {})
+    req = metrics.get("requirements", {})
+    mp = metrics.get("mapping", {})
+    sp = metrics.get("spot", {})
+    pre = meta.get("preacceleration") or {}
+    lost = {k: f.get(k, 0) for k in LOST_FATES if f.get(k, 0) > 0}
+    L = cfg.spec.launch
+    lines = [
+        f"job {job.job_id[:12]}   {job.fidelity.upper()}   cfg {job.cfg}",
+        "   ".join(f"{k}={v}" for k, v in (job.tags or {}).items() if k in ("study_id", "trial", "purpose", "setting")),
+        "",
+        "TRANSMISSION",
+        f"  reach active MCP     {f.get('mcp_active', 0):6.1%}",
+        f"  collected (x mesh)   {_n(req.get('eta'), '6.1%')}",
+        "  lost: " + (", ".join(f"{k.replace('_', ' ')} {v:.1%}" for k, v in lost.items()) or "none"),
+        "",
+        "IMAGE",
+        f"  score (worst dθ)     {metrics.get('score') if metrics.get('score') is None else f'{metrics['score']:.3g}°'}",
+        f"  evaluated θ          0–{mp.get('eval_theta_max_deg')}°   monotonic: {'yes' if mp.get('monotonic') else 'NO'}",
+        f"  spot rms / r90       {_n(sp.get('rms_axis_mm'), '.2f')} / {_n(sp.get('r90_mm'), '.2f')} mm",
+        f"  impact KE, TOF       {_n(sp.get('impact_KE_mean_eV'), '.0f')} eV, {_n(sp.get('tof_mean_us'), '.1f')} µs",
+        "",
+        "VOLTAGES (V)",
+        "  " + "  ".join(f"{k} {v:+.0f}" for k, v in job.channels.items() if k.startswith("LV")),
+        "  " + "  ".join(f"{k} {v:+.0f}" for k, v in job.channels.items() if not k.startswith("LV")),
+        "  tip " + f"{pots.get('tip', float('nan')):+.1f}" + "   " + "  ".join(
+            f"{k.upper()} {v:+.0f}" for k, v in pots.items() if k.startswith("e") and v),
+        "  wiring " + " ".join(f"{k}:{v}" for k, v in job.wiring.items()),
+        "",
+        "POSITIONS (mm)   " + "  ".join(f"{k} {v / units.MM:.1f}" for k, v in job.positions.items()),
+        "",
+        f"LAUNCH  Na+ {L.E0_eV:g} eV, {L.hwhm_deg:g}° HWHM at the {L.emission_angle_at}",
+    ]
+    if pre.get("preaccel_eV"):
+        amap = next(iter((pre.get("angle_map_deg") or {}).values()), {})
+        lines.append(f"  pre-accel +{pre['preaccel_eV']:.1f} eV" +
+                     (f";  20° -> {amap['20']:.1f}° at launch" if "20" in amap else ""))
+    lines += ["", f"valid: {metrics.get('valid')}   feasible: {metrics.get('feasible')}"]
+    lines += [f"  ! {fl}" for fl in (metrics.get("flags") or [])[:4]]
+    return "\n".join(lines)
+
+
+def plot_summary(d: Path, out: Path, cfg: Config, job, geom: dict, metrics: dict) -> Path | None:
+    """One page per run: beam through the chamber and the lens stack, axis potential, mapping, numbers."""
+    from .electrodes import node_potentials
+
+    if not (d / FILES["traj"]).is_file() or not (d / FILES["ions_derived"]).is_file():
+        return None
+    ions = pd.read_csv(d / FILES["ions_launch"])
+    tr = pd.read_csv(d / FILES["traj"]).merge(ions[["ion_id", "theta_deg"]], on="ion_id")
+    dv = pd.read_csv(d / FILES["ions_derived"])
+    meta = read_json(d / FILES["meta"]) if (d / FILES["meta"]).is_file() else {}
+    pots = node_potentials(job, cfg)
+    z_lo, z_hi = z_limits_mm(cfg, job.cfg, geom)
+    r_el = max((e["r_out_m"] for e in geom.get("electrodes", [])), default=0.03) / units.MM
+
+    fig = plt.figure(figsize=(15, 10.5))
+    gs = fig.add_gridspec(3, 3, height_ratios=[1.0, 1.25, 0.95], width_ratios=[1, 1, 0.85], hspace=0.55, wspace=0.22)
+
+    # whole chamber
+    ax = fig.add_subplot(gs[0, :])
+    vmax = 1.0
+    if (d / FILES["cutplane_field"]).is_file():
+        zs, rs, g = _grid(d / FILES["cutplane_field"])
+        vmax = max(np.nanmax(np.abs(g)), 1.0)
+        m = _potential_bg(ax, zs, rs, g, vmax)
+        fig.colorbar(m, ax=ax, label="V (V)", pad=0.005, fraction=0.02)
+    else:
+        _electrodes_filled(ax, geom)
+    norm = _trajectories(ax, tr, dv, cfg)
+    ax.axvline(geom["z_mesh_m"] / units.MM, color=INK, lw=0.8, ls="--")
+    ax.axvline(geom["z_mcp_m"] / units.MM, color=INK, lw=1.4)
+    ax.axhline(_r_active_mm(cfg), xmin=0.95, color=INK, lw=0.8)
+    ax.set_xlim(z_lo, z_hi)
+    r_beam = float(np.nanmax(np.hypot(tr["x_m"], tr["y_m"]))) / units.MM if len(tr) else 0.0
+    ax.set_ylim(0, 1.15 * max(_r_active_mm(cfg), min(r_beam, 1.4 * r_el)))
+    ax.set(xlabel="z from tip (mm)", ylabel="r (mm)", title="Beam through the chamber")
+    _subtitle(ax, "blue: reaches the MCP (shade = emission angle θ)  ·  red: lost  ·  dashed: mesh  ·  solid: MCP  ·  "
+                  "background: potential (symmetric log, linear within ±10 V)")
+
+    # lens region
+    ax = fig.add_subplot(gs[1, :2])
+    z_end = (max(e["z_m"] + e["thickness_m"] / 2 for e in geom["electrodes"]) / units.MM + 10) if geom.get("electrodes") else 160
+    f_lens = d / FILES["cutplane_lens"]
+    if f_lens.is_file():
+        zs, rs, g = _grid(f_lens)
+        _potential_bg(ax, zs, rs, g, vmax, contours=40)
+        z_end = zs.max()
+    else:
+        _electrodes_filled(ax, geom)
+    _electrode_labels(ax, geom, pots)
+    _trajectories(ax, tr, dv, cfg, z_max=z_end)
+    ax.plot([0], [0], marker=">", color=INK, ms=7, zorder=6, clip_on=False)
+    ax.set_xlim(-2, z_end)
+    r_in = min((e["r_in_m"] for e in geom.get("electrodes", [])), default=0.005) / units.MM
+    ax.set_ylim(0, 2.0 * r_in)
+    ax.set(xlabel="z from tip (mm)", ylabel="r (mm)", title="Tip and lens stack (bore region)")
+    v_tip = (meta.get("comsol_params") or {}).get("v_tip", "?")
+    try:
+        v_tip = f"{float(str(v_tip).split('[')[0]):+.1f} V"
+    except ValueError:
+        pass
+    ax.set_title(ax.get_title(loc="left"), loc="left", pad=36)
+    ax.text(0, 1.105, f"labels: electrode, potential (V)  ·  gray: metal (model geometry)  ·  lines: 40 equipotentials  ·  model tip (z = 0) at "
+                      f"{v_tip}, the potential after pre-acceleration", transform=ax.transAxes, fontsize=8, color=INK2)
+    fig.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=SEQ), ax=ax, label="emission angle θ (deg)", pad=0.01, fraction=0.03)
+
+    # numbers
+    ax = fig.add_subplot(gs[1:, 2])
+    ax.axis("off")
+    ax.text(0, 1, _stats_text(job, cfg, metrics, meta, pots), transform=ax.transAxes, va="top", ha="left",
+            family="monospace", fontsize=8.3, color=INK, linespacing=1.35)
+
+    # axis potential
+    ax = fig.add_subplot(gs[2, 0])
+    if (d / FILES["axis_potential"]).is_file():
+        ap = pd.read_csv(d / FILES["axis_potential"])
+        ax.plot(ap["z_m"] / units.MM, ap["V_V"], color=BLUE)
+        ax.set_yscale("symlog", linthresh=10)
+    for e in geom.get("electrodes", []):
+        ax.axvline(e["z_m"] / units.MM, color=MUTED, lw=0.5, ls=":")
+    ax.axvline(geom["z_mcp_m"] / units.MM, color=INK, lw=1.0)
+    ax.set_xlim(z_lo, z_hi)
+    ax.set(xlabel="z from tip (mm)", ylabel="V on axis (V, symlog)", title="Axis potential")
+
+    # mapping
+    ax = fig.add_subplot(gs[2, 1])
+    mp = metrics.get("mapping") or {}
+    if mp.get("theta_deg"):
+        th = np.array(mp["theta_deg"])
+        r = np.array([np.nan if v is None else v for v in mp["r_mm"]])
+        lf = np.array(mp.get("landed_frac") or [np.nan] * len(th))
+        ax.plot(th, r, color=BLUE, marker="o", ms=3.5, label="landing radius r(θ)")
+        ax.set_ylim(0, 1.25 * _r_active_mm(cfg))
+        ax.axhline(_r_active_mm(cfg), color=INK2, lw=0.8, ls="--")
+        ax.text(0.5, _r_active_mm(cfg), " MCP active edge", fontsize=7, color=INK2, va="bottom")
+        lostth = th[lf < 0.5]
+        if len(lostth):
+            ax.plot(lostth, np.full(len(lostth), 0.3), ls="none", marker="x", color=RED, ms=5, label="lost")
+        if mp.get("eval_theta_max_deg") is not None:
+            ax.axvspan(mp["eval_theta_max_deg"], cfg.spec.launch.theta_max_deg, color=GRID, alpha=0.5, lw=0)
+        ax.axvline(cfg.spec.launch.hwhm_deg, color=MUTED, lw=0.8, ls=":")
+        ax.text(cfg.spec.launch.hwhm_deg, 0.02, " HWHM", transform=ax.get_xaxis_transform(), fontsize=7, color=INK2)
+        ax.legend(loc="upper right", bbox_to_anchor=(1, 0.78))
+    ax.set_xlim(0, cfg.spec.launch.theta_max_deg)
+    ax.set(xlabel="emission angle θ (deg)", ylabel="r on MCP (mm)", title="Image mapping")
+
+    fig.suptitle(f"Run {job.job_id[:12]}  ·  MCP {metrics.get('fates', {}).get('mcp_active', 0):.0%}  ·  "
+                 f"score {metrics.get('score') if metrics.get('score') is None else round(metrics['score'], 2)}°",
+                 x=0.01, ha="left", fontsize=13, fontweight="bold", color=INK)
+    fig.savefig(out / "summary.png", dpi=110, bbox_inches="tight")
+    plt.close(fig)
+    return out / "summary.png"
+
+
+def plot_study_history(rows: list[dict], out_png: Path, title: str, cap_deg: float) -> Path:
+    """Optimization progress: score per trial with the best feasible so far, and MCP fraction per trial.
+
+    rows: {trial, score, mcp, feasible, valid}. Scores above cap_deg (or missing) are drawn at the cap.
+    """
+    rows = sorted(rows, key=lambda r: r["trial"])
+    t = np.array([r["trial"] for r in rows])
+    sc = np.array([cap_deg if r["score"] is None or not math.isfinite(r["score"]) else min(r["score"], cap_deg)
+                   for r in rows])
+    feas = np.array([bool(r["feasible"]) for r in rows])
+    valid = np.array([bool(r["valid"]) for r in rows])
+    mcp = np.array([r["mcp"] or 0.0 for r in rows])
+    best, b = [], math.inf
+    for s_, f in zip(sc, feas):
+        b = min(b, s_) if f else b
+        best.append(b if math.isfinite(b) else np.nan)
+    fig, (a1, a2) = plt.subplots(2, 1, figsize=(9, 5.6), sharex=True, gridspec_kw={"hspace": 0.35})
+    a1.scatter(t[feas], sc[feas], s=22, color=BLUE, label="feasible", zorder=3)
+    a1.scatter(t[~feas & valid], sc[~feas & valid], s=22, facecolors="none", edgecolors=MUTED, label="infeasible")
+    a1.scatter(t[~valid], np.full((~valid).sum(), cap_deg), s=22, marker="x", color=RED, label="invalid / failed")
+    a1.step(t, best, where="post", color=INK, lw=1.2, label="best feasible so far")
+    a1.set_yscale("log")
+    a1.set(ylabel="score = worst dθ (deg)", title=title)
+    a1.legend(loc="upper right", ncol=2)
+    _subtitle(a1, "lower is better")
+    a2.bar(t, mcp, color=np.where(feas, BLUE, BLUE_LIGHT), width=0.8)
+    a2.set_ylim(0, 1)
+    a2.set(xlabel="trial", ylabel="fraction on the MCP", title="Transmission per trial")
+    a2.grid(axis="x", visible=False)
+    return _save(fig, out_png)
+
+
 # --------------------------------------------------------------------------- driver
 
 
@@ -256,4 +508,6 @@ def make_plots(result_dir: Path | str, cfg: Config) -> list[Path]:
         made += [plot_r_theta(out, cfg, metrics), plot_dtheta(out, cfg, metrics), plot_fates(out, metrics)]
     if (d / FILES["ions_derived"]).is_file():
         made.append(plot_landing(out, cfg, pd.read_csv(d / FILES["ions_derived"]), job.fidelity))
+    if geom and metrics:
+        made.append(plot_summary(d, out, cfg, job, geom, metrics))
     return [p for p in made if p is not None]

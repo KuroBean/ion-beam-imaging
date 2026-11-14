@@ -62,8 +62,25 @@ def test_worker_command_processes_queue(cfg_tmp, tmp_path, capsys):
     assert all((q / "done" / i / "meta.json").is_file() for i in ids)
 
 
-def test_not_yet_commands(tmp_path):
-    assert main(["baseline-b0", *_args(tmp_path)]) == 2
+def test_baseline_b0_and_report(tmp_path, capsys):
+    a = _args(tmp_path)
+    assert main(["baseline-b0", "--configs", "example_einzel", "example_extractor_only", "--budget", "3", *a]) == 0
+    out = capsys.readouterr().out
+    assert "example_einzel" in out and "example_extractor_only" in out
+    res = tmp_path / "results"
+    b0 = json.loads((res / "b0_seed0.json").read_text())
+    assert [r["n_trials"] for r in b0["studies"]] == [3, 3]
+    for r in b0["studies"]:                       # one page per study, with the history chart
+        assert (res / f"report_{r['study_id']}.html").is_file()
+        assert (res / f"report_{r['study_id']}_history.png").is_file()
+    if any(r["best_job_id"] for r in b0["studies"]):
+        page = (res / "report_b0_seed0.html").read_text(encoding="utf-8")
+        assert "summary.png" in page
+    # resuming adds no solves; the report command works on the same runs
+    assert main(["baseline-b0", "--configs", "example_einzel", "--budget", "3", *a]) == 0
+    assert json.loads((res / "b0_seed0.json").read_text())["studies"][0]["n_trials"] == 3
+    assert main(["report", "--last", "4", *a]) == 0 and (res / "report_latest.html").is_file()
+    assert main(["promote", "--study", b0["studies"][0]["study_id"], *a]) == 2      # needs --allow-3d
 
 
 def test_fidelity_check_command(tmp_path, capsys):
