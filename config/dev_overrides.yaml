@@ -4,7 +4,6 @@
 
 spec:
   requirements:
-    eta_min: 0.3
     impact_threshold_eV_per_charge: 1000
 
 constraints:
@@ -13,17 +12,9 @@ constraints:
       z_mcp_mm: [145, 145]
       mesh_gap_mm: [12.7, 12.7]
       lens_gap_mm: [5, 15]
-    3:                       # 2D optimizer development (2026-11-14): the stored model geometry, voltages only
-      z_mcp_mm: [410.9, 410.9]
-      mesh_gap_mm: [12.7, 12.7]
-      lens_gap_mm: [13.482, 13.482]
   mesh:
     min_gap_to_mcp_mm: 5
   supplies:
-    low_voltage:
-      range_V: [-300, 300]
-    mcp_front_V: [-10000, -2000]
-    mesh_V: [-1000, 500]
     mcp_back_offset_V: 1000
     phosphor_offset_V: 3000
   electrical:

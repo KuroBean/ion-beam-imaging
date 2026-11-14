@@ -18,9 +18,15 @@ chamber_setups:              # 2 physical chambers, 3 setups (same numbering as 
     lens_gap_mm: [null, null]
   3:
     name: chambers 1 and 2 joined
-    z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
-    mesh_gap_mm: [null, null]
-    lens_gap_mm: [null, null]
+    z_mcp_mm: [410.9, 410.9]     # author 2026-11-14: MCP fixed (sphere centre, current models)
+    mesh_gap_mm: [12.7, 52.7]    # author 2026-11-14: current gap is the minimum; up to 3-4 cm longer so the
+                                 # MCP + mesh unit still fits through the side flange (upper end: +40 mm)
+    lens_gap_mm: [10, 53.0]      # author 2026-11-14: >= 10 mm (closer changes the emission: the extraction
+                                 # field is less axial); the whole assembly shifts. Upper end: the assembly
+                                 # must stay inside the tube (chamber 1), whose output flange face is at model
+                                 # z 298.704 mm; tip at z 105 mm; the tie rods end 140.698 mm behind the E1 front
+                                 # face (CAD "lens assembly stripped with rods.STEP": E1 front -136.165, rods
+                                 # end +4.533; deflectors end +0.770) -> 298.704 - 105 - 140.698 = 53.006 mm
 
 mesh:
   min_gap_to_mcp_mm: null    # TBD, lower bound on mesh_gap (current model 12.7)
@@ -50,13 +56,14 @@ electrodes:
 supplies:
   low_voltage:
     channels: [LV1, LV2, LV3, LV4]
-    range_V: [null, null]    # TBD, +/- a few hundred V
+    range_V: [-300, 300]     # author 2026-11-14
     connectable: [tip, e1, e2, e3, e4, e5, e6, e7, e8, e9]   # each on an LV channel or GND (unlisted = GND)
   high_voltage:
     range_V: [-10000, 10000]
     roles: {HV1: mcp_front, HV2: mcp_back, HV3: phosphor, HV4: mesh}   # fixed, one to one
-  mcp_front_V: [null, null]  # TBD, upper limit also set by the velocity requirement
-  mesh_V: [null, null]       # TBD
+  mcp_front_V: [-10000, -2000]   # author 2026-11-14 (upper limit also set by the velocity requirement)
+  mesh_V: [-10000, 0]        # author 2026-11-14; like the lenses it must stay below the tip potential
+                             # (optimizer.no_mirror)
   mcp_back_offset_V: null    # TBD, back = front + offset (detector operation)
   phosphor_offset_V: null    # TBD, phosphor = back + offset
 

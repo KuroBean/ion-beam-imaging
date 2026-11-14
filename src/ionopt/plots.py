@@ -334,8 +334,10 @@ def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict) -> str:
         amap = next(iter((pre.get("angle_map_deg") or {}).values()), {})
         lines.append(f"  pre-accel +{pre['preaccel_eV']:.1f} eV" +
                      (f";  20° -> {amap['20']:.1f}° at launch" if "20" in amap else ""))
+    from .electrodes import mirror_warnings
+
     lines += ["", f"valid: {metrics.get('valid')}   feasible: {metrics.get('feasible')}"]
-    lines += [f"  ! {fl}" for fl in (metrics.get("flags") or [])[:4]]
+    lines += [f"  ! {fl}" for fl in (mirror_warnings(job, cfg) + (metrics.get("flags") or []))[:4]]
     return "\n".join(lines)
 
 

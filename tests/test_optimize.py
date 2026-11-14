@@ -36,7 +36,7 @@ def test_search_space_always_valid(cfg):
     assert min(seen) < 0.0055 and max(seen) > 0.010           # lens_gap explores its range
     # extremes of the lens_gap fraction are valid too (worst case: mesh closest to the tip)
     for u in (0.0, 1.0):
-        ch, pos = sp.suggest(optuna.trial.FixedTrial({"LV1": 0, "LV2": 0, "LV3": 0, "HV1": -5000, "HV4": 0,
+        ch, pos = sp.suggest(optuna.trial.FixedTrial({"LV1": 0, "u_LV2": 0.5, "u_LV3": 0.5, "HV1": -5000, "u_HV4": 1.0,
                                                       "z_mcp_mm": 135, "mesh_gap_mm": 12.7, "u_lens_gap": u}))
         validate_job(build_job(c, conf, ch, pos), c)
 
@@ -59,7 +59,8 @@ def test_optimizer_finds_known_optimum(sharp):
     ref = check(MockBackend(sharp).run(einzel_job(sharp, channels={"LV2": m.lens_opt_V, "HV4": m.mesh_opt_V}))
                 .result_dir, sharp)
     assert ref.feasible, ref.flags
-    res = optimize(sharp, "example_einzel", budget=80)
+    # the mock's score ignores the tip, so the no-mirror coupling of LV2 to the tip only slows it down
+    res = optimize(sharp.with_overrides(["optimizer.no_mirror=false"]), "example_einzel", budget=80)
     assert res.sampler in ("tpe", "gp")
     assert res.n_trials == 80 and res.best_job_id
     assert res.best_score <= 1.15 * ref.score
@@ -151,3 +152,41 @@ def test_warm_start_runs_given_settings_first(sharp):
         first = min(rl.jobs("warm"), key=lambda j: j["created_at"])
     got = json.loads(first["config_json"])
     assert got["channels"] == pytest.approx(ch)
+
+
+@pytest.mark.parametrize("wiring", [{"tip": "LV1", "e1": "LV2", "e3": "LV3", "e5": "LV4"},
+                                    {"e1": "LV1", "e3": "LV2"}])                   # grounded tip
+@pytest.mark.parametrize("charge", [1, -1])
+@pytest.mark.parametrize("preaccel", [True, False])
+def test_search_space_has_no_ion_mirrors(cfg, wiring, charge, preaccel):
+    from ionopt.config import ConfigurationDef
+    c = cfg.with_overrides([f"spec.launch.preaccel={str(preaccel).lower()}", f"spec.launch.charge={charge}",
+                            "spec.launch.E0_eV=2", "spec.launch.dE_eV=0"])
+    space = SearchSpace.from_config(c, ConfigurationDef(config_id="x", description="", cfg=1, wiring=wiring))
+    s = c.constraints.supplies
+    mesh, mcp = s.hv_port("mesh"), s.hv_port("mcp_front")
+    study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=2))
+    for _ in range(200):
+        ch, pos = space.suggest(study.ask())
+        v_tip = ch[wiring["tip"]] if "tip" in wiring else 0.0
+        others = [ch[v] for k, v in wiring.items() if k not in ("tip", "e1")] + [ch[mesh]]
+        assert all(charge * (v - v_tip) <= 1e-9 for v in others) and charge * v_tip >= -1e-9
+        assert all(space.channels[k][0] - 1e-9 <= ch[k] <= space.channels[k][1] + 1e-9 for k in ch)
+        ch2, _ = space.suggest(optuna.trial.FixedTrial(space.to_params(ch, pos)))
+        assert ch2 == pytest.approx(ch)
+    assert mcp not in space.capped
+    assert not SearchSpace.from_config(c.with_overrides(["optimizer.no_mirror=false"]),
+                                       ConfigurationDef(config_id="x", description="", cfg=1, wiring=wiring)).capped
+
+
+def test_mirror_warning_for_hand_made_settings(sharp, caplog):
+    import logging
+    from ionopt.electrodes import mirror_warnings
+    assert not mirror_warnings(einzel_job(sharp), sharp)                       # tip +100, E3 +85, mesh -200
+    with caplog.at_level(logging.WARNING, logger="ionopt.jobs"):
+        job = einzel_job(sharp, channels={"LV2": 150.0, "HV4": 120.0})
+    w = mirror_warnings(job, sharp)
+    assert len(w) == 1 and "e3 +150 V" in w[0] and "mesh +120 V" in w[0] and "above the tip (+100 V)" in w[0]
+    assert "above the tip" in caplog.text
+    # a tip below ground puts the grounded plates and deflectors above it
+    assert "e1 +0 V" in mirror_warnings(einzel_job(sharp, channels={"LV1": -20.0, "LV2": -50.0}), sharp)[0]

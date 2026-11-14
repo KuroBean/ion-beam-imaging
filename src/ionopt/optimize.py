@@ -5,6 +5,10 @@ Search space (bounds from constraints.yaml for the configuration's chamber setup
   * z_mcp and mesh_gap (fixed when their range has min == max)
   * lens_gap (places the fixed lens stack), as a fraction of its feasible range so the
     stack always stays upstream of the mesh
+  * with pre-acceleration, E1 as a fraction of its accelerating range (q (V_tip - V_E1) >= min_extraction_V)
+  * with optimizer.no_mirror, every other lens channel and the mesh as a fraction of the range below
+    the tip potential (above it for q < 0), and the tip itself on the passing side of ground (the
+    deflectors, unwired plates and the chamber are grounded): ions keep at least E0 everywhere
 
 Objective: minimize the checker score (max dtheta, degrees). Constraints (eta,
 fast fraction, monotonicity, evaluability, optional constraints) go to Optuna's
@@ -50,6 +54,9 @@ class SearchSpace:
     e1_ch: str | None = None
     q_sign: int = 1
     min_extraction: float | None = None
+    # no-mirror rule: channels in `capped` stay on the passing side of V_tip
+    mirror_tip: str | None = None          # tip channel (None: tip grounded)
+    capped: list[str] = field(default_factory=list)
 
     @classmethod
     def from_config(cls, cfg: Config, conf: ConfigurationDef) -> "SearchSpace":
@@ -78,6 +85,8 @@ class SearchSpace:
                  stack_length=max(e["z_back_m"] for e in parts))
         if cfg.spec.launch.preaccel:
             sp._extraction_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, cfg.optimizer.min_extraction_V)
+        if cfg.optimizer.no_mirror:
+            sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, s.hv_port("mcp_front"))
         # worst case (mesh closest to the tip, stack furthest out) must still fit
         if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - sp.mesh_gap[1] - EPS_M:
             raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the mesh "
@@ -108,6 +117,41 @@ class SearchSpace:
                 raise ConfigError(f"'{self.conf.config_id}': no E1 voltage gives an accelerating field at a grounded tip")
             self.channels[e1] = (lo, hi)
 
+    def _mirror_rule(self, wiring: dict[str, str], q_sign: int, mcp_port: str) -> None:
+        """No ion mirrors: lens channels and the mesh on the passing side of the tip potential, the tip on the
+        passing side of ground (deflectors, unwired plates and the chamber are grounded)."""
+        tip = wiring.get("tip")
+        self.mirror_tip = tip if tip in self.channels else None
+        self.q_sign = q_sign
+        self.capped = [ch for ch in self.channels if ch not in (self.mirror_tip, self.e1_ch, mcp_port)]
+        if self.mirror_tip:
+            lo, hi = self.channels[self.mirror_tip]
+            lo, hi = (max(lo, 0.0), hi) if q_sign > 0 else (lo, min(hi, 0.0))
+            if lo > hi:
+                raise ConfigError(f"'{self.conf.config_id}': the tip range {self.channels[self.mirror_tip]} has no "
+                                  f"voltage on the passing side of the grounded parts")
+            self.channels[self.mirror_tip] = (lo, hi)
+        t_lo, t_hi = self.channels[self.mirror_tip] if self.mirror_tip else (0.0, 0.0)
+        for ch in self.capped:
+            lo, hi = self.channels[ch]
+            if (q_sign > 0 and lo > t_hi) or (q_sign < 0 and hi < t_lo):
+                raise ConfigError(f"'{self.conf.config_id}': channel {ch} cannot stay "
+                                  f"{'below' if q_sign > 0 else 'above'} the tip potential for any tip voltage")
+
+    def _sub_range(self, ch: str, channels: dict[str, float]) -> tuple[float, float]:
+        """Sampling range of a dependent channel (E1 or a capped channel) given the tip voltage."""
+        lo, hi = self.channels[ch]
+        if ch == self.e1_ch and self.tip_ch is not None:
+            vt, u = channels[self.tip_ch], self.min_extraction
+            lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
+        elif ch in self.capped:
+            m = channels[self.mirror_tip] if self.mirror_tip else 0.0
+            lo, hi = (lo, min(hi, m)) if self.q_sign > 0 else (max(lo, m), hi)
+        return lo, max(lo, hi)
+
+    def _dependent(self, ch: str) -> bool:
+        return (ch == self.e1_ch and self.tip_ch is not None) or ch in self.capped
+
     def to_params(self, channels: dict[str, float], positions: dict[str, float]) -> dict[str, float]:
         """Optuna parameters that reproduce these channels/positions (inverse of suggest; values clipped)."""
         def frac(v, lo, hi):
@@ -117,16 +161,17 @@ class SearchSpace:
             return min(max(v, rng[0]), rng[1])
 
         p = {}
+        indep = {ch: clip(v, self.channels[ch]) for ch, v in channels.items()
+                 if ch in self.channels and not self._dependent(ch)}
         for ch, (lo, hi) in self.channels.items():
             if hi - lo <= 1e-12 or ch not in channels:
                 continue
-            if ch == self.e1_ch and self.tip_ch is not None:
-                vt, u = clip(channels[self.tip_ch], self.channels[self.tip_ch]), self.min_extraction
-                lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
+            if self._dependent(ch):
+                lo, hi = self._sub_range(ch, indep)
                 if hi - lo > 1e-12:
                     p[f"u_{ch}"] = frac(channels[ch], lo, hi)
             else:
-                p[ch] = clip(channels[ch], (lo, hi))
+                p[ch] = indep[ch]
         z_mcp, gap = clip(positions["z_mcp"], self.z_mcp), clip(positions["mesh_gap"], self.mesh_gap)
         if self.z_mcp[1] - self.z_mcp[0] > 1e-12:
             p["z_mcp_mm"] = z_mcp / units.MM
@@ -148,15 +193,16 @@ class SearchSpace:
 
         channels = {}
         for ch, (lo, hi) in self.channels.items():
-            if ch == self.e1_ch and self.tip_ch is not None:
-                continue                              # set below, relative to the tip
-            channels[ch] = f(ch, lo, hi)
-        if self.e1_ch is not None and self.tip_ch is not None:
-            # E1 as a fraction of its accelerating range (cf. lens_gap): q (V_tip - V_E1) >= min_extraction
-            lo, hi = self.channels[self.e1_ch]
-            vt, u = channels[self.tip_ch], self.min_extraction
-            lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
-            channels[self.e1_ch] = lo if hi - lo <= 1e-12 else lo + trial.suggest_float(f"u_{self.e1_ch}", 0.0, 1.0) * (hi - lo)
+            if not self._dependent(ch):
+                channels[ch] = f(ch, lo, hi)
+        indep = dict(channels)
+        for ch, (lo0, hi0) in self.channels.items():
+            if self._dependent(ch) and hi0 - lo0 > 1e-12:
+                # E1 and capped channels as a fraction of their range given the tip (cf. lens_gap)
+                lo, hi = self._sub_range(ch, indep)
+                channels[ch] = lo if hi - lo <= 1e-12 else lo + trial.suggest_float(f"u_{ch}", 0.0, 1.0) * (hi - lo)
+            elif self._dependent(ch):
+                channels[ch] = lo0
         channels = {ch: channels[ch] for ch in self.channels}   # keep the channel order
         z_mcp = f("z_mcp_mm", self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM) * units.MM
         gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM

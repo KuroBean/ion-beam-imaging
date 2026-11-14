@@ -371,6 +371,8 @@ class OptimizerConfig(_Model):
     write_plots: bool = False
     # with pre-acceleration, keep q (V_tip - V_E1) >= this (V): E1 is sampled inside the accelerating range
     min_extraction_V: float = Field(1.0, gt=0)
+    # no ion mirrors: q V <= q V_tip for every electrode and the mesh, and q V_tip >= 0 (grounded parts)
+    no_mirror: bool = True
 
 
 # --------------------------------------------------------------------------- b0 configurations

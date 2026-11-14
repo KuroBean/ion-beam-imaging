@@ -124,6 +124,25 @@ def deflector_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
     return {h: 0.0 for h in deflector_halves(cfg, job.cfg)}
 
 
+def mirror_warnings(job: JobSpec, cfg: Config) -> list[str]:
+    """Electrodes, deflectors or the mesh beyond the tip potential (above it for q > 0). By energy conservation
+    the ions only keep a positive kinetic energy below V_tip (+ E0/q), so such a part reflects them."""
+    q = 1 if job.launch.charge > 0 else -1
+    pots = node_potentials(job, cfg)
+    v_tip = pots.pop("tip")
+    try:
+        pots.update(deflector_potentials(job, cfg))
+    except NotImplementedError:
+        pass
+    pots["mesh"] = float(job.channels[cfg.constraints.supplies.hv_port("mesh")])
+    bad = {k: v for k, v in pots.items() if q * (v - v_tip) > 1e-9}
+    if not bad:
+        return []
+    side = "above" if q > 0 else "below"
+    return [f"{', '.join(f'{k} {v:+.0f} V' for k, v in bad.items())} {side} the tip ({v_tip:+.0f} V): "
+            f"ions keep only E0 there or are reflected"]
+
+
 def hv_potentials(job: JobSpec, cfg: Config) -> dict[str, float | None]:
     """mcp_front, mesh (optimizer variables) and mcp_back, phosphor (from detector offsets, None if TBD)."""
     s = cfg.constraints.supplies

@@ -8,3 +8,6 @@ nonevaluable_score_deg: 90   # objective value reported when dtheta cannot be ev
 write_plots: true            # diagnostic plots (incl. plots/summary.png) for every optimizer job, ~3 s each
 min_extraction_V: 1           # with pre-acceleration the tip-E1 field must accelerate the ions: E1 is sampled as a
                              # fraction of the range that keeps q (V_tip - V_E1) >= this (no wasted retarding trials)
+no_mirror: true              # author 2026-11-14: every lens channel and the mesh are sampled below the tip potential,
+                             # and the tip stays above ground (deflectors, unwired plates and chamber are at 0 V), so
+                             # ions keep at least E0 everywhere (B0 dev1: 66/150 trials broke this, all 0% MCP)

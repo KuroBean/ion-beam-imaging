@@ -1,8 +1,12 @@
 """Building JobSpecs from a structural configuration plus continuous variables."""
 from __future__ import annotations
 
+import logging
+
 from .config import Config, ConfigurationDef
 from .schemas import Fidelity, JobSpec
+
+log = logging.getLogger(__name__)
 
 
 def build_job(cfg: Config, conf: ConfigurationDef, channels: dict[str, float], positions: dict[str, float],
@@ -19,4 +23,9 @@ def build_job(cfg: Config, conf: ConfigurationDef, channels: dict[str, float], p
               launch=cfg.spec.launch.model_copy(), mesh_level=mesh_level, ion_level=ion_level, tags=t)
     if job_id:
         kw["job_id"] = job_id
-    return JobSpec(**kw)
+    job = JobSpec(**kw)
+    from .electrodes import mirror_warnings
+
+    for w in mirror_warnings(job, cfg):          # warn only: hand-made settings may do this on purpose
+        log.warning("job %s (%s): %s", job.job_id[:12], conf.config_id, w)
+    return job

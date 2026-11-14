@@ -40,7 +40,7 @@ detector:
   mesh_open_fraction: 0.7    # electroformed Ni mesh, 200 wires/inch (author 2026-11-12, approx.)
 
 requirements:
-  eta_min: null              # TBD, minimum collection efficiency (0..1)
+  eta_min: 0.4               # minimum collection efficiency (MCP x mesh transmission), author 2026-11-14
   impact_threshold_eV_per_charge: null   # TBD (literature review); set this OR impact_threshold_mps
   impact_threshold_mps: null             # TBD, alternative: minimum impact speed of the threshold species
   threshold_species_mass_Da: null        # TBD, heaviest species of interest (Na+ 22.99, Na2Cl+ ~81, hydrated Na+?); null = launch mass
