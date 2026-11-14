@@ -128,3 +128,59 @@ def test_make_launch_preaccel_shift(cfg):
     assert np.allclose(shifted["weight"], base["weight"])
     with pytest.raises(ValueError, match="retarding"):
         make_launch(L, "3d", preaccel_eV=-L.E0_eV)
+
+
+def _meniscus_launch(cfg):
+    return cfg.spec.launch.model_copy(update={"hwhm_deg": 20.0, "emitter_radius_nm": 50.0, "model_tip_radius_um": 100.0,
+                                              "emission_distance_um": None, "preaccel": True,
+                                              "emission_angle_at": "meniscus", "n_E": 1, "dE_eV": 0.0, "E0_eV": 2.0})
+
+
+def test_trace_preacceleration_energy_and_compression():
+    import math
+
+    from ionopt.launch import _hyperboloid, _hyperboloid_field, trace_preacceleration
+    re, D, s = 50e-9, 13.482e-3, 275e-6
+    # the normalized potential is 1 on the emitter apex and 0 on the plane, and matches the axial formula
+    a, c, A = _hyperboloid(D / re)
+    assert _hyperboloid_field(0.0, 0.0, a, c, A)[0] == pytest.approx(1.0, abs=1e-9)
+    assert _hyperboloid_field(0.0, D / re, a, c, A)[0] == pytest.approx(0.0, abs=1e-9)
+    f_s = _hyperboloid_field(0.0, s / re, a, c, A)[0]
+    assert 1 - f_s == pytest.approx(math.log1p(2 * s / re) / math.log(4 * D / re), rel=2e-3)
+    # field = -grad f: finite-difference check off axis
+    x, z, h = 3.0, 7.0, 1e-5
+    _, gx, gz = _hyperboloid_field(x, z, a, c, A)
+    fx = (_hyperboloid_field(x + h, z, a, c, A)[0] - _hyperboloid_field(x - h, z, a, c, A)[0]) / (2 * h)
+    fz = (_hyperboloid_field(x, z + h, a, c, A)[0] - _hyperboloid_field(x, z - h, a, c, A)[0]) / (2 * h)
+    assert (gx, gz) == pytest.approx((fx, fz), rel=1e-5)
+
+    th0 = np.radians([0.0, 10.0, 20.0, 40.0])
+    t50 = np.degrees(trace_preacceleration(th0, 2.0, 50.0, re, D, s))
+    assert t50[0] == 0.0
+    assert np.all(np.diff(t50) > 0) and np.all(t50[1:] < np.degrees(th0[1:]))      # monotonic, bent toward the axis
+    t300 = np.degrees(trace_preacceleration(th0, 2.0, 300.0, re, D, s))
+    assert np.all(t300[1:] < t50[1:])                                                # stronger field bends more
+    assert t300[2] == pytest.approx(4.1, abs=0.2)                                    # 20 deg -> ~4 deg at 300 V
+    with pytest.raises(ValueError, match="retarding"):
+        trace_preacceleration(th0, 2.0, -10.0, re, D, s)
+
+
+def test_make_launch_meniscus_angles(cfg):
+    from ionopt.launch import meniscus_angle_map, preacceleration, trace_preacceleration
+    L = _meniscus_launch(cfg)
+    pre = preacceleration(L, 60.0, 0.0, 13.482e-3)
+    amap = meniscus_angle_map(L, pre)
+    df = make_launch(L, "3d", preaccel_eV=pre["preaccel_eV"], angle_map=amap)
+    base = make_launch(L, "3d", preaccel_eV=pre["preaccel_eV"])
+    # grid angle and weights stay those at the meniscus; the velocity follows theta_launch
+    assert np.allclose(df["theta_deg"], base["theta_deg"]) and np.allclose(df["weight"], base["weight"])
+    assert np.allclose(base["theta_launch_deg"], base["theta_deg"])
+    th = np.radians(df["theta_deg"].to_numpy())
+    expect = trace_preacceleration(np.unique(th), 2.0, 60.0, 50e-9, 13.482e-3, pre["emission_distance_m"])
+    got = df.groupby("theta_deg").theta_launch_deg.first().to_numpy()
+    assert np.allclose(got, np.degrees(expect))
+    v = df[["vx_mps", "vy_mps", "vz_mps"]].to_numpy()
+    assert np.allclose(np.degrees(np.arctan2(np.hypot(v[:, 0], v[:, 1]), v[:, 2])), df["theta_launch_deg"])
+    # 'launch' mode or no pre-acceleration: no map
+    assert meniscus_angle_map(L.model_copy(update={"emission_angle_at": "launch"}), pre) is None
+    assert meniscus_angle_map(L.model_copy(update={"preaccel": False}), pre) is None

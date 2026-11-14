@@ -341,6 +341,24 @@ def launch_preaccel(job: JobSpec, cfg: Config) -> dict:
     return preacceleration(job.launch, pots["tip"], pots["e1"], job.positions["lens_gap"])
 
 
+def job_launch(job: JobSpec, cfg: Config):
+    """Launch table for a job and its pre-acceleration record (meta['preacceleration']).
+
+    With spec.launch.emission_angle_at = 'meniscus' the record also holds the angle map
+    (theta at the meniscus -> theta at the launch point, in degrees, for each meniscus energy).
+    """
+    from .launch import make_launch, meniscus_angle_map  # noqa: PLC0415
+    pre = launch_preaccel(job, cfg)
+    amap = meniscus_angle_map(job.launch, pre) if job.launch.preaccel else None
+    ions = make_launch(job.launch, job.fidelity, job.ion_level, preaccel_eV=pre["preaccel_eV"], angle_map=amap)
+    if amap is not None:
+        pre = {**pre, "emission_angle_at": "meniscus", "angle_map_deg": {
+            f"{e - pre['preaccel_eV']:.6g} eV": {f"{t:g}": round(float(tl), 4) for t, tl in g[["theta_deg", "theta_launch_deg"]]
+                                                .drop_duplicates().itertuples(index=False)}
+            for e, g in ions.groupby("KE0_eV")}}
+    return ions, pre
+
+
 def model_tip_potential(job: JobSpec, cfg: Config) -> float:
     """Potential the MODEL tip is held at.
 

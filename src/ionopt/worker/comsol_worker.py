@@ -18,8 +18,7 @@ import time
 from pathlib import Path
 
 from ..config import Config
-from ..electrodes import expand, launch_preaccel, validate_job
-from ..launch import make_launch
+from ..electrodes import expand, job_launch, validate_job
 from ..schemas import JobSpec
 from .model_adapter import AdapterError, ModelAdapter
 
@@ -101,8 +100,7 @@ class ComsolRunner:
             raise AdapterError(f"mesh_level '{job.mesh_level}' is not implemented in the COMSOL runner yet")
         warnings = validate_job(job, cfg)
         params = expand(job, cfg)
-        pre = launch_preaccel(job, cfg)
-        ions = make_launch(job.launch, job.fidelity, job.ion_level, preaccel_eV=pre["preaccel_eV"])
+        ions, pre = job_launch(job, cfg)
         deadline = time.time() + cfg.backend.job_timeout_s
         ad = self.adapter(job.fidelity)
         self.jobs_since_start += 1

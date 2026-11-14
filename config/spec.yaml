@@ -26,6 +26,11 @@ launch:
   emitter_radius_nm: 50      # r_e, apex radius of the real emitter (<100 nm nanopore); enters only via ln()
   model_tip_radius_um: 100   # R_tip, flat tip face radius in both models (r_tip = 0.1 mm)
   emission_distance_um: null # s; null = model_tip_radius_um / tan(hwhm_deg) (275 um at 20 deg)
+  # Where hwhm_deg applies (author 2026-11-13, to be confirmed with the lab, KNOWN_ISSUES #22):
+  # 'meniscus' = the 2 eV ions just outside the meniscus move in directions with 20 deg HWHM; the
+  # emitter field bends them toward the axis before s (~20 -> 7-9 deg at V_tip - V_E1 = 35-66 V,
+  # ~4 deg at 300 V; launch.trace_preacceleration). 'launch' = 20 deg HWHM at the launch point.
+  emission_angle_at: meniscus
 
 detector:
   model: Hamamatsu F2225-21P

@@ -96,11 +96,102 @@ def preacceleration(launch: LaunchConfig, v_tip: float, v_ext: float, gap_m: flo
             "emitter_radius_m": r_e, "U_tip_extractor_V": U, "gap_m": gap_m}
 
 
+AngleMap = Callable[[np.ndarray, float], np.ndarray]
+
+
+def _hyperboloid(D_re: float) -> tuple[float, float, float]:
+    """Prolate spheroidal frame for a hyperboloid emitter (apex radius 1) at distance D_re from a plane.
+
+    Lengths in units of r_e. Returns (a, c, A): focal distance a, c = a - D (apex to focus,
+    computed without cancellation) and A = atanh(eta0), eta0 = 1/sqrt(1 + 1/D).
+    """
+    c = 1.0 / (math.sqrt(1.0 + 1.0 / D_re) + 1.0)
+    return D_re + c, c, math.atanh(1.0 / math.sqrt(1.0 + 1.0 / D_re))
+
+
+def _hyperboloid_field(x: float, z: float, a: float, c: float, A: float) -> tuple[float, float, float]:
+    """Normalized potential f (1 on the emitter, 0 on the plane) and its gradient at (x, z).
+
+    z is the distance from the apex toward the plane, x the signed distance from the axis, both in
+    units of r_e. eta = (d2 - d1) / 2a with d1, d2 the distances to the foci; 1 - eta is formed
+    without cancellation so the field stays accurate within nanometres of the apex.
+    """
+    rho, w = abs(x), z + c
+    d1 = math.hypot(rho, w)
+    d2 = math.hypot(rho, 2 * a - w)
+    ome = ((4 * a * w - w * w - rho * rho) / (2 * a + d2) + d1) / (2 * a)     # 1 - eta
+    ope = 2.0 - ome                                                           # 1 + eta
+    k = 1.0 / (ome * ope * A * 2 * a)
+    gx = k * (rho / d2 - rho / d1) * (1.0 if x >= 0 else -1.0)
+    gz = k * (-(2 * a - w) / d2 - w / d1)
+    return 0.5 * (math.log(ope) - math.log(ome)) / A, gx, gz
+
+
+def trace_preacceleration(theta0_rad: np.ndarray, E0_eV: float, qU_eV: float, r_e_m: float, gap_m: float,
+                          s_m: float) -> np.ndarray:
+    """Direction (rad from the axis) at distance s of ions leaving the emitter apex at theta0 with E0.
+
+    Emission picture 'meniscus' (author 2026-11-13): the HWHM describes the velocity directions of
+    the few-eV ions just outside the meniscus. The emitter's own field (hyperboloid of apex radius
+    r_e facing the extractor plane at gap D, as in preacceleration) then accelerates them and bends
+    them toward the axis. Each ion is traced from the apex (on axis, so the motion stays in one
+    meridional plane) to the plane at distance s, where the model launches it.
+
+    Dimensionless form: lengths in r_e, speeds in sqrt(2 e 1V / m), so the equation of motion is
+    x'' = -(qU/2) grad f with f the normalized potential, independent of the mass. The
+    energy at s is E0 + qU (1 - f) (checked in the tests against the closed-form gain).
+    """
+    from scipy.integrate import solve_ivp  # noqa: PLC0415
+
+    if qU_eV <= 0:
+        raise ValueError(f"q (V_tip - V_E1) = {qU_eV:.3g} eV: the field at the emitter is retarding")
+    a, c, A = _hyperboloid(gap_m / r_e_m)
+    s = s_m / r_e_m
+    half = qU_eV / 2
+
+    def rhs(_t, y):
+        _, gx, gz = _hyperboloid_field(y[0], y[1], a, c, A)
+        return [y[2], y[3], -half * gx, -half * gz]
+
+    def reach(_t, y):
+        return y[1] - s
+    reach.terminal = True
+
+    v = math.sqrt(E0_eV)
+    out = np.zeros(len(np.atleast_1d(theta0_rad)))
+    for i, th in enumerate(np.atleast_1d(theta0_rad)):
+        if th == 0:
+            continue
+        sol = solve_ivp(rhs, [0.0, 1e12], [0.0, 1e-9, v * math.sin(th), v * math.cos(th)], events=reach,
+                        rtol=1e-10, atol=1e-12, method="DOP853")
+        if not len(sol.t_events[0]):
+            raise RuntimeError(f"pre-acceleration trace at theta0 = {math.degrees(th):.3g} deg did not reach s")
+        _, _, vx, vz = sol.y_events[0][0]
+        out[i] = math.atan2(vx, vz)
+    return out
+
+
+def meniscus_angle_map(launch: LaunchConfig, pre: dict) -> AngleMap | None:
+    """theta at the meniscus -> theta at the model launch point, or None (angles used as given).
+
+    Active when spec.launch.preaccel and emission_angle_at == 'meniscus'; pre is preacceleration().
+    """
+    if not launch.preaccel or launch.emission_angle_at != "meniscus":
+        return None
+    qU = launch.charge * pre["U_tip_extractor_V"]
+    r_e, gap, s = pre["emitter_radius_m"], pre["gap_m"], pre["emission_distance_m"]
+    return lambda th, ke: trace_preacceleration(th, ke, qU, r_e, gap, s)
+
+
 def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "search",
-                energy_weight: EnergyWeight | None = None, preaccel_eV: float = 0.0) -> pd.DataFrame:
+                energy_weight: EnergyWeight | None = None, preaccel_eV: float = 0.0,
+                angle_map: AngleMap | None = None) -> pd.DataFrame:
     """Ion table with columns LAUNCH_COLUMNS (SI positions/velocities, plan coordinates).
 
     preaccel_eV (see preacceleration) shifts every launch energy: KE0 = meniscus energy + preaccel_eV.
+    angle_map (see meniscus_angle_map) turns the grid angle theta (at the meniscus, the angle the
+    weights and the checker's mapping use) into the launch direction theta_launch for each meniscus
+    energy; without it theta_launch = theta.
     """
     n_theta = _req(launch, "n_theta")
     n_E = _req(launch, "n_E")
@@ -114,6 +205,7 @@ def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "sear
 
     theta, w_theta = theta_grid(n_theta, launch.theta_max_deg * units.DEG, launch.sigma_rad)
     ke, w_E = energy_grid(E0, launch.dE_eV, n_E, energy_weight)
+    tl = {e: (angle_map(theta, e) if angle_map is not None else theta) for e in ke}   # launch angles
     ke = ke + preaccel_eV
     if np.any(ke <= 0):
         raise ValueError(f"launch energies {ke.min():.3g}..{ke.max():.3g} eV after pre-acceleration "
@@ -131,23 +223,24 @@ def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "sear
         # theta = 0 is the same ray for every phi: launch it once, representing the full ring
         phi_list = [(0.0, 2 * math.pi)] if i == 0 else phis
         for phi, wp in phi_list:
-            for e, we in zip(ke, w_E):
-                rows.append((t, phi, e, wt, we, wp))
+            for e0, e, we in zip(tl, ke, w_E):
+                rows.append((t, tl[e0][i], phi, e, wt, we, wp))
     a = np.array(rows)
-    t, phi, e, wt, we, wp = a.T
+    t, t_l, phi, e, wt, we, wp = a.T
     speed = units.ke_eV_to_speed(e, mass_kg)
     w = wt * we * wp
     df = pd.DataFrame({
         "ion_id": np.arange(len(a)),
         "theta_deg": np.degrees(t),
+        "theta_launch_deg": np.degrees(t_l),
         "phi_deg": np.degrees(phi),
         "KE0_eV": e,
         "w_theta": wt, "w_E": we, "w_phi": wp,
         "weight": w / w.sum(),
         "x_m": 0.0, "y_m": 0.0, "z_m": z0,
-        "vx_mps": speed * np.sin(t) * np.cos(phi),
-        "vy_mps": speed * np.sin(t) * np.sin(phi),
-        "vz_mps": speed * np.cos(t),
+        "vx_mps": speed * np.sin(t_l) * np.cos(phi),
+        "vy_mps": speed * np.sin(t_l) * np.sin(phi),
+        "vz_mps": speed * np.cos(t_l),
     })
     return df[LAUNCH_COLUMNS]
 

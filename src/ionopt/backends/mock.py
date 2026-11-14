@@ -26,9 +26,8 @@ import pandas as pd
 
 from .. import units
 from ..config import Config
-from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, launch_preaccel,
+from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, job_launch,
                           model_tip_potential, node_potentials, used_lv_channels, validate_job)
-from ..launch import make_launch
 from ..results import JobTimeout, execute, prepare_job_dir, read_bundle
 from ..schemas import FILES, FINAL_COLUMNS, JobSpec, ResultBundle
 from ..utils import write_json
@@ -97,8 +96,8 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     t_end = launch.t_end_us * units.US
     q = launch.charge
     mass = launch.mass_Da * units.DALTON
-    pre = launch_preaccel(job, cfg)["preaccel_eV"]
-    ions = make_launch(launch, job.fidelity, job.ion_level, preaccel_eV=pre)
+    ions, pre_rec = job_launch(job, cfg)
+    pre = pre_rec["preaccel_eV"]
     ions.to_csv(out_dir / FILES["ions_launch"], index=False)
     geom = mock_geometry(job, cfg)
     write_json(out_dir / FILES["geometry"], geom)
@@ -109,7 +108,7 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     chroma = m.chroma_min_m_per_eV + m.chroma_coeff_m_per_eV * (
         ((v_lens - m.lens_opt_V) / m.lens_scale_V) ** 2 + ((hv["mesh"] - m.mesh_opt_V) / m.mesh_scale_V) ** 2)
 
-    th = np.radians(ions["theta_deg"].to_numpy())
+    th = np.radians(ions["theta_launch_deg"].to_numpy())
     phi = np.radians(ions["phi_deg"].to_numpy())
     ke0 = ions["KE0_eV"].to_numpy()
     z_mcp, z_mesh = geom["z_mcp_m"], geom["z_mesh_m"]

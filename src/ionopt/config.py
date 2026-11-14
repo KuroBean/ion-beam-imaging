@@ -142,6 +142,10 @@ class LaunchConfig(_Model):
     emitter_radius_nm: float | None = Field(None, gt=0)
     model_tip_radius_um: float | None = Field(None, gt=0)
     emission_distance_um: float | None = Field(None, gt=0)
+    # where hwhm_deg applies (with preaccel): 'launch' = beam spread at the model launch point;
+    # 'meniscus' = velocity directions of the E0 ions at the meniscus, bent toward the axis by the
+    # emitter field before the launch point (launch.trace_preacceleration)
+    emission_angle_at: Literal["launch", "meniscus"] = "launch"
 
     @field_validator("charge")
     @classmethod

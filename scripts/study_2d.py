@@ -77,7 +77,9 @@ def summarize(name: str, out: Path, meta, m) -> dict:
         "tof_mcp_us": [round(float(mcp.tof_us.min()), 1), round(float(mcp.tof_us.max()), 1)] if len(mcp) else None,
         "r_land_mm": mcp.groupby("theta_deg").r_land_mm.mean().round(3).to_dict() if len(mcp) else {},
         "timings_s": meta.model_extra.get("timings_s"), "mesh_elements": meta.mesh_elements,
-        "preacceleration": meta.model_extra.get("preacceleration"),
+        "preacceleration": {k: v for k, v in (meta.model_extra.get("preacceleration") or {}).items() if k != "angle_map_deg"},
+        "theta_launch_at_20deg": ((meta.model_extra.get("preacceleration") or {}).get("angle_map_deg") or {}).get(
+            f"{float(d.KE0_eV.iloc[0]) - (meta.model_extra.get('preacceleration') or {}).get('preaccel_eV', 0):.6g} eV", {}).get("20"),
         "v_tip_model": (meta.model_extra.get("comsol_params") or {}).get("v_tip"),
     })
     return row
@@ -91,9 +93,13 @@ def main():
     ap.add_argument("--family", choices=["A", "B"], default="A")
     ap.add_argument("--l3", type=float, default=-200.0)
     ap.add_argument("--tip", type=float, default=10.0)
+    ap.add_argument("--tag", default="", help="suffix for logs/study_2d_<mode><tag>.json")
+    ap.add_argument("--set", action="append", default=[], help="config override key=value (repeatable)")
     a = ap.parse_args()
     logging.basicConfig(level=logging.WARNING)
-    base = load_config(ROOT / "config", override_files=[ROOT / "config" / "dev_overrides.yaml"])
+    base = load_config(ROOT / "config", overrides=a.set, override_files=[ROOT / "config" / "dev_overrides.yaml"])
+    L = base.spec.launch
+    print(f"launch: preaccel {L.preaccel}, hwhm {L.hwhm_deg} deg at the {L.emission_angle_at}, E0 {L.E0_eV} eV", flush=True)
     runner = ComsolRunner(base)
 
     cases = []          # (name, overrides, family, l3, r_tip_um or None)
@@ -148,6 +154,9 @@ def main():
         study.enqueue_trial({"LV1": 200.0, "LV2": -110.0, "LV3": -300.0, "LV4": 0.0})
         study.enqueue_trial({"LV1": 100.0, "LV2": -110.0, "LV3": -150.0, "LV4": 0.0})
         study.enqueue_trial({"LV1": 10.0, "LV2": -110.0, "LV3": -200.0, "LV4": -110.0})
+        for s in json.loads((ROOT / "data" / "fidelity_settings_task10.json").read_text()):   # task 10 fidelity settings
+            if s["wiring"] == WIRING["S"]:
+                study.enqueue_trial({k: s["channels"][k] for k in SEARCH_RANGES})
 
         def objective(trial):
             v = {k: trial.suggest_float(k, lo, hi) for k, (lo, hi) in SEARCH_RANGES.items()}
@@ -167,7 +176,7 @@ def main():
             conf, ch = setting(fam, l3, tip_v)
             run_case(name, ov, conf, ch, r_tip)
     runner.close()
-    out = ROOT / "logs" / f"study_2d_{a.mode}.json"
+    out = ROOT / "logs" / f"study_2d_{a.mode}{a.tag}.json"
     out.write_text(json.dumps(rows, indent=1, default=str))
     print(f"wrote {out}")
 

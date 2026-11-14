@@ -117,6 +117,42 @@ Models referred to: 3D = `lens8newMCP_ks_v4_lens_voltages.mph`, 2D = `lens8_axis
     Without pre-acceleration the same setting sends 96% to the MCP: 2 eV ions at the blunt 0.1 mm
     tip are bent strongly by its field. Which picture holds depends on the real emitter shape.
     Moving the stack closer helps: straight-ray acceptance 14.7/17.4/19.7 deg at lens_gap 10/7/5 mm.
+22. **What the 20 deg HWHM means (2026-11-13, author still to confirm with the lab).** Two pictures:
+    (a) 'launch': 20 deg HWHM is the beam spread at the model launch point (used until 2026-11-13);
+    (b) 'meniscus': the ~2 eV ions just outside the meniscus move in directions with 20 deg HWHM, and
+    the emitter's own field bends them toward the axis while it accelerates them. The author chose (b)
+    (collaborators see ~93% transmission, which (a) cannot give) and it is now the spec
+    (`spec.launch.emission_angle_at: meniscus`). Each grid angle theta0 is traced from the apex of the
+    hyperboloid emitter (r_e 50 nm, extractor plane at lens_gap) to the launch distance s
+    (`ionopt.launch.trace_preacceleration`); the ion is launched with that direction (column
+    `theta_launch_deg`) while theta_deg, the weights and the checker's mapping stay at the meniscus
+    angle. 20 deg becomes ~9.2/7.4/5.4/4.1 deg at V_tip - V_E1 = 35/66/150/300 V (not the ~3 deg I
+    estimated first). Open points:
+    - The angle keeps shrinking slowly with distance (the needle field keeps accelerating): s = 50 /
+      275 / 1000 um gives 7.7/7.4/7.2 deg at 66 V. s stays 275 um (the old formula).
+    - The hyperboloid is a thin needle (asymptotic half angle ~0.1 deg). A pulled pipette is a cone of
+      a few degrees with a glass wall, so the field near the apex falls off differently and the bending
+      will differ. *Fix:* build a 2D axisymmetric near-tip model with the real taper (apex radius,
+      taper angle, glass, the extractor) and replace the analytic trace by a table from it; needs the
+      pipette geometry from the author.
+    - Where on the meniscus the ions start (point at the apex now) also matters.
+23. **2D vs 3D fidelity check (task 10, 2026-11-13; `logs/fidelity_20261113_task10.json`).** Five
+    cfg 3 settings from the 2D search, launch picture (a) of #22, 26 theta x 8 phi in 3D. All 10 jobs valid;
+    3D 15-17 min each (field 130-160 s, particles 720-870 s, rtol 1e-9).
+    - **Transmission: 2D is good enough for screening.** MCP fraction 3D - 2D = +0.9 to +5.3 points (3D
+      always higher), eta +3% to +27% relative; per-ray fate agreement 88-96%. The disagreement sits at
+      the edge of the transmitted cone (theta 12-16 deg): in 3D some azimuths still get through and land
+      at r 5-15 mm (a halo 2D does not have).
+    - **Mean mapping r(theta): within 0.6 mm** (rms 0.20-0.34 mm) on the rays both transmit, mostly the
+      3D beam offset: the on-axis ray lands 0.38-0.58 mm off axis, spot centroid 0.28-0.79 mm.
+    - **Resolution: 2D is not usable.** dtheta in 3D is 3-5x the 2D value (median), because the 8
+      azimuths of one theta land at different radii (offset and non-axisymmetric parts), which 2D
+      cannot show. Scores differ by -93% to +550%; all five mappings fold (non-monotonic), so the score
+      hinges on single points. Spot rms is 1.3-3.2x larger in 3D.
+    - *Consequence:* use 2D for transmission and the mean mapping only; score resolution in 3D, or add
+      an azimuthal-blur term calibrated from 3D to the 2D score. Find out whether the ~0.5 mm offset is
+      physical (posts, rods, split deflectors, MCP tabs: then the deflectors can correct it) or mesh
+      asymmetry (then refine). Repeat the check with settings for picture (b), where the beam is narrower.
 
 ## Geometry and configuration
 

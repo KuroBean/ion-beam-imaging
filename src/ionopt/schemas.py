@@ -35,7 +35,7 @@ REQUIRED_RAW = ("ions_launch", "ions_final", "axis_potential", "cutplane_field",
                 "electrode_potentials", "geometry", "meta")
 
 # column contracts for the raw per-ion files
-LAUNCH_COLUMNS = ["ion_id", "theta_deg", "phi_deg", "KE0_eV", "w_theta", "w_E", "w_phi", "weight",
+LAUNCH_COLUMNS = ["ion_id", "theta_deg", "theta_launch_deg", "phi_deg", "KE0_eV", "w_theta", "w_E", "w_phi", "weight",
                   "x_m", "y_m", "z_m", "vx_mps", "vy_mps", "vz_mps"]
 FINAL_COLUMNS = ["ion_id", "x_m", "y_m", "z_m", "vx_mps", "vy_mps", "vz_mps", "KE_eV", "t_s",
                  "V_start_V", "V_end_V"]
