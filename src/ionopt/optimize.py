@@ -58,40 +58,87 @@ class SearchSpace:
     mirror_tip: str | None = None          # tip channel (None: tip grounded)
     capped: list[str] = field(default_factory=list)
 
-    @classmethod
-    def from_config(cls, cfg: Config, conf: ConfigurationDef) -> "SearchSpace":
+    @staticmethod
+    def raw_ranges(cfg: Config, conf: ConfigurationDef) -> dict[str, tuple[float, float]]:
+        """Ranges from constraints.yaml for this configuration, before the extraction and no-mirror rules.
+
+        Keys: the LV channels used by the wiring and the MCP-front / mesh HV ports (V), and
+        lens_gap_mm, mesh_gap_mm, z_mcp_mm (mm). These are the variable names planner bounds use.
+        """
         problems = check_structure(cfg, conf.cfg, conf.wiring)
         if problems:
             raise ConfigError(f"configuration '{conf.config_id}' is invalid:\n  " + "\n  ".join(problems))
         s = cfg.constraints.supplies
-        chan = {}
+        out: dict[str, tuple[float, float]] = {}
         for ch in used_lv_channels(cfg, conf.wiring):
-            chan[ch] = tuple(_rng(cfg, "constraints.supplies.low_voltage.range_V"))
+            out[ch] = tuple(_rng(cfg, "constraints.supplies.low_voltage.range_V"))
         hv = s.high_voltage.range_V
         for role, key in (("mcp_front", "constraints.supplies.mcp_front_V"), ("mesh", "constraints.supplies.mesh_V")):
             lo, hi = _rng(cfg, key)
             if range_known(hv):
                 lo, hi = max(lo, hv[0]), min(hi, hv[1])
-            chan[s.hv_port(role)] = (lo, hi)
+            out[s.hv_port(role)] = (lo, hi)
         ck = f"constraints.chamber_setups.{conf.cfg}"
-        mm = lambda r: (r[0] * units.MM, r[1] * units.MM)  # noqa: E731
         lo_g, hi_g = _rng(cfg, f"{ck}.mesh_gap_mm")
         lo_g = max(lo_g, cfg.require("constraints.mesh.min_gap_to_mcp_mm"))
         if lo_g > hi_g:
             raise ConfigError(f"{ck}.mesh_gap_mm upper bound is below constraints.mesh.min_gap_to_mcp_mm")
+        out["lens_gap_mm"] = tuple(_rng(cfg, f"{ck}.lens_gap_mm"))
+        out["mesh_gap_mm"] = (lo_g, hi_g)
+        out["z_mcp_mm"] = tuple(_rng(cfg, f"{ck}.z_mcp_mm"))
+        return out
+
+    @classmethod
+    def from_config(cls, cfg: Config, conf: ConfigurationDef,
+                    bounds: dict[str, tuple[float, float]] | None = None) -> "SearchSpace":
+        """Search space of a configuration; `bounds` (planner, same keys as raw_ranges) narrow the
+        constraint ranges first, then the extraction and no-mirror rules apply to the result."""
+        raw = cls.raw_ranges(cfg, conf)
+        for k, (lo, hi) in (bounds or {}).items():
+            if k not in raw:
+                raise ConfigError(f"'{conf.config_id}': bound on unknown variable '{k}' (known: {sorted(raw)})")
+            r_lo, r_hi = raw[k]
+            n_lo, n_hi = max(r_lo, lo), min(r_hi, hi)
+            if n_lo > n_hi:
+                raise ConfigError(f"'{conf.config_id}': bound {k} = [{lo}, {hi}] does not overlap the allowed "
+                                  f"range [{r_lo}, {r_hi}]")
+            raw[k] = (n_lo, n_hi)
+        mm = lambda r: (r[0] * units.MM, r[1] * units.MM)  # noqa: E731
+        chan = {k: v for k, v in raw.items() if not k.endswith("_mm")}
         parts = stack_layout(cfg, conf.cfg, 0.0)
-        sp = cls(conf=conf, channels=chan, z_mcp=mm(_rng(cfg, f"{ck}.z_mcp_mm")),
-                 mesh_gap=(lo_g * units.MM, hi_g * units.MM), lens_gap=mm(_rng(cfg, f"{ck}.lens_gap_mm")),
-                 stack_length=max(e["z_back_m"] for e in parts))
+        sp = cls(conf=conf, channels=chan, z_mcp=mm(raw["z_mcp_mm"]), mesh_gap=mm(raw["mesh_gap_mm"]),
+                 lens_gap=mm(raw["lens_gap_mm"]), stack_length=max(e["z_back_m"] for e in parts))
         if cfg.spec.launch.preaccel:
             sp._extraction_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, cfg.optimizer.min_extraction_V)
         if cfg.optimizer.no_mirror:
-            sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, s.hv_port("mcp_front"))
+            sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1,
+                            cfg.constraints.supplies.hv_port("mcp_front"))
         # worst case (mesh closest to the tip, stack furthest out) must still fit
         if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - sp.mesh_gap[1] - EPS_M:
             raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the mesh "
                               f"even at the smallest lens_gap, z_mcp and largest mesh_gap")
         return sp
+
+    def variable_ranges(self) -> dict[str, tuple[float, float]]:
+        """Static range of every variable after the rules (V, mm), keyed like raw_ranges. E1 and the
+        capped channels are further limited by the sampled tip voltage at each trial."""
+        out = dict(self.channels)
+        out["lens_gap_mm"] = (self.lens_gap[0] / units.MM, self.lens_gap[1] / units.MM)
+        out["mesh_gap_mm"] = (self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM)
+        out["z_mcp_mm"] = (self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM)
+        return out
+
+    def contains(self, channels: dict[str, float], positions: dict[str, float], tol: float = 1e-9) -> bool:
+        """True if a (channels, positions) point lies inside this space, rules included (warm starts)."""
+        if set(channels) != set(self.channels):
+            return False
+        for ch, v in channels.items():
+            lo, hi = self._sub_range(ch, channels) if self._dependent(ch) else self.channels[ch]
+            if not (lo - tol <= v <= hi + tol):
+                return False
+        z, g, lg = positions["z_mcp"], positions["mesh_gap"], positions["lens_gap"]
+        ok = (self.z_mcp[0] - tol <= z <= self.z_mcp[1] + tol and self.mesh_gap[0] - tol <= g <= self.mesh_gap[1] + tol)
+        return ok and self.lens_gap[0] - tol <= lg <= self.lens_gap_max(z - g) + tol
 
     def _extraction_rule(self, wiring: dict[str, str], q_sign: int, u_min: float) -> None:
         """Restrict the tip / E1 channel ranges so that q (V_tip - V_E1) >= u_min is always possible."""
@@ -224,6 +271,7 @@ class StudyResult:
     best_score: float | None
     best_channels: dict[str, float] | None
     best_positions: dict[str, float] | None
+    n_new: int = 0              # solves run by this call (a resumed study already had the rest)
 
 
 # Optuna >= 5 reads per-trial constraints (Trial.set_constraint); older versions need constraints_func
@@ -261,15 +309,22 @@ def _constraints(m, cfg: Config) -> dict[str, float]:
 def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: str = "2d",
              backend: SimulationBackend | None = None, study_id: str | None = None,
              on_trial: Callable[[int, Any], None] | None = None,
-             initial: list[tuple[dict, dict]] | None = None) -> StudyResult:
+             initial: list[tuple[dict, dict]] | None = None, conf: ConfigurationDef | None = None,
+             bounds: dict[str, tuple[float, float]] | None = None,
+             tags: dict[str, str] | None = None) -> StudyResult:
     """Run (or resume) one optimization study for a fixed configuration.
 
     initial: optional warm start, (channels, positions) pairs evaluated first, only when the study
     has no trials yet. Pure B0 runs leave it empty.
+    conf: a configuration not in b0_configs.yaml (Phase 2 planner); config_id is then ignored.
+    bounds: planner bounds (SearchSpace.raw_ranges keys) narrowing the constraint ranges.
+    tags: extra job tags (e.g. run_id, round), on top of study_id / trial / purpose.
     """
     optuna.logging.set_verbosity(optuna.logging.WARNING)
-    conf = cfg.b0_configs.get(config_id)
-    space = SearchSpace.from_config(cfg, conf)
+    if conf is None:
+        conf = cfg.b0_configs.get(config_id)
+    config_id = conf.config_id
+    space = SearchSpace.from_config(cfg, conf, bounds)
     # values the checker needs: fail now, not after the first solve
     for key in ("spec.detector.sigma_mcp_um", "spec.detector.mesh_open_fraction", "spec.requirements.eta_min",
                 "spec.tolerances.energy_conservation_rel", "spec.tolerances.potential_match_V",
@@ -279,13 +334,15 @@ def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: s
     own_backend = backend is None
     backend = backend or make_backend(cfg)
     try:
-        return _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial)
+        return _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial,
+                         tags or {})
     finally:
         if own_backend and hasattr(backend, "close"):
             backend.close()
 
 
-def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial) -> StudyResult:
+def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, on_trial, initial,
+              tags) -> StudyResult:
     sampler, sampler_name = make_sampler(cfg)
     study_id = study_id or f"{config_id}-{fidelity}-seed{cfg.optimizer.seed}"
     db = cfg.path("optuna_db_path")
@@ -301,13 +358,14 @@ def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, 
             study.enqueue_trial(space.to_params(ch, pos), skip_if_exists=True)
         log.info("warm start: %d enqueued trials", len(initial))
 
+    n_new = 0
     with RunLog(cfg.path("db_path")) as rl:
         rl.start_study(study_id, config_id, sampler_name, cfg.optimizer.seed, budget, fidelity)
         while done < budget:
             trial = study.ask()
             channels, positions = space.suggest(trial)
             job = build_job(cfg, conf, channels, positions, fidelity=fidelity,
-                            tags={"study_id": study_id, "trial": str(trial.number), "purpose": "optimize"})
+                            tags={"purpose": "optimize", **tags, "study_id": study_id, "trial": str(trial.number)})
             trial.set_user_attr("job_id", job.job_id)
             bundle = backend.run(job)
             rl.record_job(job, bundle, cfg.config_hash(), backend=getattr(backend, "name", None))
@@ -330,6 +388,7 @@ def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, 
                 trial.set_user_attr("feasible", m.feasible)
                 study.tell(trial, score)
             done += 1
+            n_new += 1
             if on_trial:
                 on_trial(done, m)
 
@@ -346,7 +405,7 @@ def _optimize(cfg, config_id, conf, space, budget, fidelity, backend, study_id, 
         n_feasible=len([t for t in trials if t.user_attrs.get("feasible")]),
         best_job_id=best.user_attrs["job_id"] if best else None,
         best_score=best.value if best else None,
-        best_channels=ch_b if best else None, best_positions=pos_b if best else None,
+        best_channels=ch_b if best else None, best_positions=pos_b if best else None, n_new=n_new,
     )
 
 
