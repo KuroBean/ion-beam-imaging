@@ -30,6 +30,7 @@ CONFIG_DIR_ENV = "IONOPT_CONFIG_DIR"
 NOT_TBD = (
     "parameters.parameters.*.unit",
     "parameters.parameters.*.allowed",
+    "parameters.parameters.*.default",       # null = no as-built value (the model must have the parameter)
     "spec.analysis.spline_smoothing",
     "backend.mock.fold_theta_deg",           # null = no fold
     "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)

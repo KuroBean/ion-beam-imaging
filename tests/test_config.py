@@ -16,11 +16,11 @@ def test_repo_config_loads_with_tbds():
     assert "spec.requirements.eta_min" not in tbd                 # author 2026-11-14: 0.4
     assert "constraints.chamber_setups.1.z_mcp_mm" in tbd
     assert "parameters.parameters.v_phosphor.comsol_name" in tbd   # not modelled
-    assert "spec.requirements.impact_threshold_eV_per_charge" in tbd
+    assert not any(k.startswith("spec.requirements.impact_threshold") for k in tbd)   # author 2026-11-15
+    assert cfg.spec.requirements.impact_threshold_mps == pytest.approx(1.6e5)
     assert "spec.launch.mass_Da" not in tbd
     assert not any(k.endswith(".unit") or k.endswith(".allowed") for k in tbd)
     assert "spec.analysis.spline_smoothing" not in tbd
-    assert "spec.requirements.impact_threshold_mps" not in tbd
     assert cfg.spec.launch.mass_Da == pytest.approx(22.99)
     assert cfg.spec.detector.mcp_active_diameter_mm == 40
 
@@ -28,8 +28,8 @@ def test_repo_config_loads_with_tbds():
 def test_require_names_exact_key():
     cfg = load_config(CONFIG_DIR)
     with pytest.raises(TBDError) as e:
-        cfg.require("spec.requirements.impact_threshold_eV_per_charge")
-    assert str(e.value) == "spec.requirements.impact_threshold_eV_per_charge is TBD; set it in config/spec.yaml"
+        cfg.require("constraints.supplies.mcp_back_offset_V")
+    assert str(e.value) == "constraints.supplies.mcp_back_offset_V is TBD; set it in config/constraints.yaml"
     with pytest.raises(TBDError):
         cfg.require("constraints.chamber_setups.1.z_mcp_mm")   # [null, null]
     assert cfg.require("spec.launch.hwhm_deg") == 20
@@ -122,5 +122,5 @@ def test_spec_hash_changes_only_with_spec():
 def test_cli_config_check(capsys):
     assert main(["config-check", "--config-dir", str(CONFIG_DIR)]) == 0
     out = capsys.readouterr().out
-    assert "TBD keys" in out and "spec.requirements.impact_threshold_eV_per_charge" in out
+    assert "TBD keys" in out and "constraints.supplies.mcp_back_offset_V" in out
     assert main(["config-check", "--config-dir", str(CONFIG_DIR), "--set", "spec.bad=1"]) == 2

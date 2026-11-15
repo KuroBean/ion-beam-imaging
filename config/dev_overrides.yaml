@@ -2,10 +2,6 @@
 # These are NOT physical decisions. Use with:  ionopt --overrides config/dev_overrides.yaml ...
 # Every key here must already exist in the main config files (typos are rejected).
 
-spec:
-  requirements:
-    impact_threshold_eV_per_charge: 1000
-
 constraints:
   chamber_setups:
     1:

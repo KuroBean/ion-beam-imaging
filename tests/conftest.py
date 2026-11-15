@@ -18,6 +18,7 @@ TEST_PINS = [   # values the analytic tests were written for (not the physical s
     "spec.tolerances.convergence_rel=0.05", "spec.tolerances.fate_position_tol_um=50",
     "optimizer.write_plots=false",                 # plots have their own tests; keeps the optimizer tests fast
     "spec.requirements.eta_min=0.3", "constraints.supplies.mesh_V=[-1000, 500]",   # the mock optimizer tests' ranges
+    "spec.requirements.impact_threshold_mps=null", "spec.requirements.impact_threshold_eV_per_charge=1000",
 ]
 
 

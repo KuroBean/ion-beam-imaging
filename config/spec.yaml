@@ -41,9 +41,10 @@ detector:
 
 requirements:
   eta_min: 0.4               # minimum collection efficiency (MCP x mesh transmission), author 2026-11-14
-  impact_threshold_eV_per_charge: null   # TBD (literature review); set this OR impact_threshold_mps
-  impact_threshold_mps: null             # TBD, alternative: minimum impact speed of the threshold species
-  threshold_species_mass_Da: null        # TBD, heaviest species of interest (Na+ 22.99, Na2Cl+ ~81, hydrated Na+?); null = launch mass
+  impact_threshold_eV_per_charge: null   # set this OR impact_threshold_mps
+  impact_threshold_mps: 1.6e+5           # MCP detection threshold speed (author 2026-11-15, quick literature review);
+                                         # Na+ at 1.6e5 m/s = 3.05 keV per charge
+  threshold_species_mass_Da: 22.99       # Na+ (author 2026-11-15); heavier species (Na2Cl+ ~81, hydrated Na+) later
   frac_fast_min: 0.90        # minimum weighted fraction of MCP ions above the threshold
   optional_constraints: {}   # extra constraints on spot statistics, e.g. {min_fill_fraction: 0.5, max_rms_axis_mm: 8}
 

@@ -95,7 +95,15 @@ def metrics_block(s: dict) -> str:
 
 def spec_block(cfg: Config) -> str:
     L, D, R = cfg.spec.launch, cfg.spec.detector, cfg.spec.requirements
-    thr = R.impact_threshold_eV_per_charge if R.impact_threshold_eV_per_charge is not None else R.impact_threshold_mps
+    if R.impact_threshold_eV_per_charge is not None:
+        thr = f"impact energy >= {R.impact_threshold_eV_per_charge:g} eV per charge"
+    elif R.impact_threshold_mps is not None:
+        m = R.threshold_species_mass_Da or L.mass_Da
+        ev = 0.5 * m * units.DALTON * R.impact_threshold_mps ** 2 / units.E_CHARGE
+        thr = (f"impact speed of a {m:g} Da ion >= {R.impact_threshold_mps:.3g} m/s, i.e. >= {ev / 1000:.3g} keV per "
+               f"charge gained between the tip and the MCP front")
+    else:
+        thr = None
     return "\n".join([
         f"- ions: mass {L.mass_Da} Da, charge {L.charge:+d}, E0 {L.E0_eV} eV, energy spread {L.dE_eV} eV, "
         f"emission HWHM {L.hwhm_deg} deg at the {L.emission_angle_at}, pre-acceleration "
@@ -104,7 +112,7 @@ def spec_block(cfg: Config) -> str:
         f"so the MCP spot maps emission angle to radius as finely as possible",
         f"- feasible requires: collection efficiency eta >= {R.eta_min} (MCP active area x mesh "
         f"transmission {D.mesh_open_fraction}), monotonic r(theta), fast fraction >= {R.frac_fast_min} "
-        f"(impact threshold {thr if thr is not None else 'not set: always passes'})",
+        f"({thr if thr is not None else 'impact threshold not set: always passes'})",
         f"- detector: MCP diameter {D.mcp_active_diameter_mm} mm, resolution sigma {D.sigma_mcp_um} um"])
 
 

@@ -60,8 +60,9 @@ electrodes:
   removable: [e2, e3, e4, e5, e6, e7, e8, e9, d1, d2]
   movable: [e2, e3, e4, e5, e6, e7, e8, e9]
   min_gap_mm: 2.23           # smallest axial gap between facing surfaces of neighbouring parts (as built)
-  max_offset_mm: null        # optional: furthest back a moved plate may reach (e.g. rod length); null = no limit
-                             # beyond no-overlap and the mesh
+  max_offset_mm: 140.698     # furthest back (from the E1 front face) a moved plate may reach: the far face of
+                             # the four 2.54 mm rods (CAD "Part 2", z -140.467..+4.533; E1 front at -136.165),
+                             # author 2026-11-15
 
 supplies:
   low_voltage:
