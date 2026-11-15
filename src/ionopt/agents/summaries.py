@@ -112,7 +112,12 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
     lv = cs.supplies.low_voltage
     lines = ["Chamber setups (positions in mm from the tip apex; [a, a] = fixed):"]
     for k, c in sorted(cs.chamber_setups.items()):
-        lines.append(f"- cfg {k} ({c.name}): z_mcp {c.z_mcp_mm}, mesh_gap {c.mesh_gap_mm}, lens_gap {c.lens_gap_mm}")
+        rng = (c.z_mcp_mm, c.mesh_gap_mm, c.lens_gap_mm)
+        if any(r is None or None in r for r in rng):
+            lines.append(f"- cfg {k} ({c.name}): NOT USABLE (position ranges not set)")
+        else:
+            lines.append(f"- cfg {k} ({c.name}): z_mcp {c.z_mcp_mm}, mesh_gap {c.mesh_gap_mm}, "
+                         f"lens_gap {c.lens_gap_mm}")
     lines.append(f"Supplies: {len(lv.channels)} low-voltage channels {lv.channels}, range {lv.range_V} V. Each of "
                  f"{lv.connectable} is wired to one channel or GND; electrodes on one channel share its voltage. "
                  f"HV ports have fixed roles {cs.supplies.high_voltage.roles}; MCP front {cs.supplies.mcp_front_V} V, "
@@ -185,31 +190,52 @@ def best_block(state: LoopState) -> str:
             f"{config_str(b.configuration)}")
 
 
-def b0_block(cfg: Config, max_rows: int = 12) -> str:
-    """Baseline B0 results in the run log (the reference the agent must beat)."""
+def _study_rows(rl: RunLog, study_id: str, spec_hash: str) -> tuple[list[dict], bool]:
+    """Valid runs of a study with metrics for the current spec; else the latest metrics of each job
+    (second value False: scored under an older spec)."""
+    rows = [r for r in rl.study_results(study_id, spec_hash) if r["valid"]]
+    if rows:
+        return rows, True
+    rows = rl._rows(
+        "SELECT j.job_id, m.valid, m.feasible, m.score, m.eta FROM jobs j JOIN metrics m ON m.job_id=j.job_id "
+        "WHERE j.study_id=? AND m.rowid=(SELECT m2.rowid FROM metrics m2 WHERE m2.job_id=j.job_id "
+        "ORDER BY m2.created_at DESC, m2.rowid DESC LIMIT 1)", (study_id,))
+    rows = [r for r in rows if r["valid"]]
+    rows.sort(key=lambda r: (not r["feasible"], r["score"] if r["score"] is not None else 1e9))
+    return rows, False
+
+
+def b0_block(cfg: Config) -> str:
+    """Baseline B0 (the reference the agent must beat): the latest study of each b0_configs entry."""
     db = cfg.path("db_path")
     if not db.is_file():
         return "(no B0 results in the run log)"
     ids = {c.config_id: c for c in cfg.b0_configs.configurations}
-    rows = []
+    rows, old_spec = [], False
     with RunLog(db) as rl:
-        studies = rl._rows("SELECT * FROM studies ORDER BY started_at")
-        for s in studies:
-            if s["config_id"] not in ids:
-                continue
-            res = [r for r in rl.study_results(s["study_id"], cfg.spec_hash()) if r["valid"]]
+        latest: dict[str, dict] = {}
+        for s in rl._rows("SELECT * FROM studies ORDER BY started_at"):
+            if s["config_id"] in ids:
+                latest[s["config_id"]] = s
+        for cid, s in latest.items():
+            res, current = _study_rows(rl, s["study_id"], cfg.spec_hash())
             if not res:
                 continue
-            best = res[0]
-            c = ids[s["config_id"]]
-            rows.append(f"| {s['study_id']} | {config_str(c.model_dump())} | {len(res)} | "
-                        f"{sum(1 for r in res if r['feasible'])} | {_fmt(best['score'])} | {_fmt(best['eta'])} | "
-                        f"{_fmt(bool(best['feasible']))} |")
+            old_spec |= not current
+            n_feas = sum(1 for r in res if r["feasible"])
+            if n_feas:
+                best = res[0]
+                score, eta = _fmt(best["score"]), _fmt(best["eta"])
+            else:       # an infeasible run's score is meaningless (tiny when almost no ions land)
+                score, eta = "none feasible", f"max {_fmt(max((r['eta'] or 0.0) for r in res))}"
+            rows.append(f"| {s['study_id']}{'' if current else ' *'} | {config_str(ids[cid].model_dump())} | "
+                        f"{len(res)} | {n_feas} | {score} | {eta} |")
     if not rows:
-        return "(no B0 results for the current spec)"
-    head = ["| study | configuration | valid runs | feasible | best score | eta | feasible |",
-            "|---|---|---|---|---|---|---|"]
-    return "\n".join(head + rows[-max_rows:])
+        return "(no B0 results in the run log)"
+    head = ["| study | configuration | valid runs | feasible runs | best feasible score (deg) | its eta |",
+            "|---|---|---|---|---|---|"]
+    note = ["", "* scored under an earlier spec version (thresholds may differ); treat as indicative"] if old_spec else []
+    return "\n".join(head + rows + note)
 
 
 # --------------------------------------------------------------------------- prompts
