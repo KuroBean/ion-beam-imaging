@@ -123,7 +123,7 @@ def _row(d: Path, cfg: Config, make_missing: bool) -> str:
 
 
 def build_report(cfg: Config, dirs: list[Path], out_html: Path, title: str, subtitle: str = "",
-                 history_png: Path | None = None, make_missing: bool = True) -> Path:
+                 history_png: Path | None = None, make_missing: bool = True, intro_html: str = "") -> Path:
     head = ["", "run", "MCP", "collected", "score (worst dθ)", "monotonic", "spot rms", "voltages (V) and wiring",
             "positions (mm)", "status"]
     th = "".join(f'<th data-k="{i}">{h}</th>' if h else "<th></th>" for i, h in enumerate(head))
@@ -135,7 +135,7 @@ def build_report(cfg: Config, dirs: list[Path], out_html: Path, title: str, subt
     page = (f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'>"
             f"<title>{html.escape(title)}</title>{CSS}</head><body><h1>{html.escape(title)}</h1>"
             f"<p class='sub'>{html.escape(subtitle)} {len(dirs)} runs. Click a column to sort; click a figure to open it."
-            f"</p>{hist}<table><thead><tr>{th}</tr></thead><tbody>{rows}</tbody></table>{SORT_JS}</body></html>")
+            f"</p>{intro_html}{hist}<table><thead><tr>{th}</tr></thead><tbody>{rows}</tbody></table>{SORT_JS}</body></html>")
     out_html.parent.mkdir(parents=True, exist_ok=True)
     out_html.write_text(page, encoding="utf-8")
     return out_html

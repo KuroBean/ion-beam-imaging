@@ -51,6 +51,25 @@ def _best_metrics(cfg: Config, job_id: str | None) -> dict:
     return json.loads(f.read_text(encoding="utf-8")) if f.is_file() else {}
 
 
+def _overview_html(rows: list[dict]) -> str:
+    """Per-configuration table with links to each study's page (all trials, history plot)."""
+    import html
+
+    def f(v, fmt):
+        return "–" if v is None else format(v, fmt)
+
+    body = "".join(
+        f"<tr><td>{f'<a href=\"{html.escape(Path(r['report']).name)}\">' if r.get('report') else ''}"
+        f"{html.escape(r['config_id'])}{'</a>' if r.get('report') else ''}</td>"
+        f"<td class='num'>{r['n_trials']}</td><td class='num'>{r['n_failed']}</td>"
+        f"<td class='num'>{r['n_feasible']}</td><td class='num'>{f(r['best_score_deg'], '.3g')}{'°' if r['best_score_deg'] is not None else ''}</td>"
+        f"<td class='num'>{f(None if r['best_mcp'] is None else 100 * r['best_mcp'], '.0f')}{'%' if r['best_mcp'] is not None else ''}</td>"
+        f"<td class='num'>{f(r.get('solve_time_s_total', 0) / 60, '.0f')} min</td></tr>" for r in rows)
+    return ("<table style='margin-bottom:16px'><thead><tr><th>configuration (link: all trials)</th><th>trials</th>"
+            "<th>failed</th><th>feasible</th><th>best score</th><th>best MCP</th><th>solve time</th></tr></thead>"
+            f"<tbody>{body}</tbody></table>")
+
+
 def run_baseline(cfg: Config, config_ids: list[str] | None = None, budget: int | None = None,
                  tag: str | None = None, backend=None, log=None) -> dict:
     """Run (or resume) one 2D study per configuration; write the comparison and the reports."""
@@ -76,6 +95,9 @@ def run_baseline(cfg: Config, config_ids: list[str] | None = None, budget: int |
                                       study_id=f"b0-{cid}-2d-{tag}", on_trial=progress)
             rep = study_report(cfg, r.study_id)
             bm = _best_metrics(cfg, r.best_job_id)
+            from .runlog import RunLog
+            with RunLog(cfg.path("db_path")) as rl:     # all sessions (studies resume)
+                solve_total = sum(j.get("solve_time_s") or 0.0 for j in rl.jobs(r.study_id))
             rows.append({
                 "config_id": cid, "study_id": r.study_id, "sampler": r.sampler, "n_trials": r.n_trials,
                 "n_failed": r.n_failed, "n_feasible": r.n_feasible, "best_job_id": r.best_job_id,
@@ -83,7 +105,8 @@ def run_baseline(cfg: Config, config_ids: list[str] | None = None, budget: int |
                 "best_eta": (bm.get("requirements") or {}).get("eta"),
                 "best_channels": r.best_channels,
                 "best_positions_mm": {k: v * 1e3 for k, v in (r.best_positions or {}).items()} or None,
-                "report": str(rep) if rep else None, "wall_time_s": round(time.time() - t0)})
+                "report": str(rep) if rep else None, "solve_time_s_total": round(solve_total),
+                "wall_time_s_this_session": round(time.time() - t0)})
             log(f"   best {r.best_job_id} score {r.best_score} ({r.n_feasible}/{r.n_trials} feasible)")
     finally:
         if own_backend and hasattr(backend, "close"):
@@ -92,11 +115,10 @@ def run_baseline(cfg: Config, config_ids: list[str] | None = None, budget: int |
     res = cfg.path("results_dir")
     (res / f"b0_{tag}.json").write_text(json.dumps(out, indent=1, default=str), encoding="utf-8")
     best_dirs = [res / r["best_job_id"] for r in rows if r["best_job_id"]]
-    if best_dirs:
-        from .report import build_report
-        best_dirs.sort(key=_rank_key)
-        build_report(cfg, best_dirs, res / f"report_b0_{tag}.html", title=f"Baseline B0 ({tag})",
-                     subtitle="Best feasible run of each configuration.")
+    from .report import build_report
+    best_dirs.sort(key=_rank_key)
+    build_report(cfg, best_dirs, res / f"report_b0_{tag}.html", title=f"Baseline B0 ({tag})",
+                 subtitle="Best feasible run of each configuration.", intro_html=_overview_html(rows))
     log(f"wrote {res / f'b0_{tag}.json'}")
     return out
 
