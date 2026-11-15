@@ -21,6 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+agents = ["langgraph>=1.0", "langgraph-checkpoint-sqlite>=3.0"]  # Phase 2 loop (plan_phase2.md)
 
 [project.scripts]
 ionopt = "ionopt.cli:main"
