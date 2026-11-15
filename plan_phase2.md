@@ -174,30 +174,40 @@ The critic does not classify the next action; the planner does. This keeps ablat
 
 ### 7.3 Editor
 
-Input (EditRequest from the planner): what to change (element type, position, dimensions,
-which supply it connects to), why, and the parent variant.
+Purpose (author 2026-11-15): probe HYPOTHETICAL parts we could order before buying them. The
+author lists them in config/inventory.yaml (id, kind, what it replaces, sweepable dimensions with
+the range a vendor could supply, mesh transmission, whether it may be wired). Example: a screen
+mesh with an open diameter up to 40 mm, or no screen mesh at all. A later agent may search the web
+for parts; not now. New conductors may share LV channels with the lens plates.
 
-Process, in a sandbox folder per edit (results/edits/<edit_id>/):
-1. Introspect the parent model (plan_v1 task 8 scripts) and read docs/comsol_api_notes.md and
-   the COMSOL 5.5 API reference. No remembered node names.
-2. Write an edit script that produces a new variant. Never touch models/.
-3. Register any new parameters (e.g. v_grid, z_grid) in a variant parameter file and add
-   their bounds request.
-4. Geometry checks: build succeeds, named selections still resolve, new element does not
-   overlap others, minimum gaps and field limit respected.
-5. One smoke solve (2D) through the normal backend; checker must report valid.
-6. Return EditResult: variant_id, edit script, introspection diff, new parameters, check
-   results, smoke job_id.
+Input (EditRequest from the planner): inventory item ids, what to build and which dimensions to
+sweep, placement, supply for new conductors, the parent variant.
 
-Then the loop pauses for author approval (CLI prompt showing the diff, geometry plot and smoke
-plots). Rejected edits return to the planner with the author's reason.
+Process (agents/editor.py), per edit in a sandbox results/runs/<run_id>/edits/<edit>/:
+1. Opus edits a copy of the parent's build script (scripts/build_axisym.py or an approved
+   variant's). Tools: Read/Edit/Write only, --permission-mode acceptEdits, --restricted (file tools
+   confined to the sandbox); no shell. Contract (prompts/editor.md): every swept dimension becomes a
+   PARAMS entry whose default reproduces the parent exactly; new parts sit in an If block on a 0/1
+   switch (default 0) with a potential parameter; removing the screen mesh deletes its features.
+   The editor reports parameters, parts and removals (EditorReport).
+2. Deterministic checks: only the script changed; imports and calls on an allow-list; the reported
+   names exist; build with `python -P` (COMSOL subprocess, ~1 min; the loop's client is closed first).
+3. Equivalence: with every new parameter at its as-built value the variant reproduces a stored
+   parent run (landing positions within 10 um, energies within 0.05 eV). Skipped for removals.
+4. Smoke run: new parts present, swept dimensions mid-range; the checker must call it valid and
+   no new part may overlap a stack part (measured boxes).
+5. Failures go back to the editor with the message (loop.editor_attempts = 3). Check solves count
+   against the run's budget.
+6. The loop pauses for author approval (diff, smoke run). Approved variants
+   (results/variants/<id>/variant.json, script, model) are usable in any later run: their swept
+   dimensions are optimizer variables <name>_mm over the inventory range, their switches are
+   configuration.variant_settings, their parts are wiring nodes.
 
-Target of edits (author 2026-11-14): 2D only. The editor edits a copy of scripts/build_axisym.py
-per edit (results/edits/<edit_id>/). 3D .mph edits by the editor come later, once a stronger
-computer is available; until then the author builds 3D finalists in the GUI.
+`ionopt agent-edit --item <id> --description "..."` runs one editor call outside a loop;
+`--approve-variant <id>` approves the result.
 
-Risk tiers (from the FEABench notes): re-introspect after every structural edit; selections by
-name only; watch boundary dimension (dim 1 in 2D axisymmetric, dim 2 in 3D).
+Target of edits (author 2026-11-14): 2D only. 3D .mph edits come later, once a stronger computer
+is available; until then the author builds 3D finalists in the GUI.
 
 ## 8. Constraint validator (agents/validator.py)
 
