@@ -98,6 +98,8 @@ class ParameterDef(_Model):
     unit: str | None = None
     allowed: list[Any] | None = None
     per_electrode: bool = False
+    default: float | None = None       # value meaning "as built": a model without this parameter may skip it
+    geometric: bool = False            # a change needs a geometry rebuild
     description: str = ""
 
     @model_validator(mode="after")
@@ -235,7 +237,8 @@ class MeshConstraints(_Model):
 
 
 class StackPart(_Model):
-    """One part of the fixed lens stack, positioned relative to the E1 (L1) front face."""
+    """One part of the lens stack, positioned relative to the E1 (L1) front face (as built)."""
+    profile: Literal["lens", "accel", "deflector"] | None = None   # r-z shape (electrodes.PROFILES)
     front_mm: float = Field(ge=0)          # front face, measured from the E1 front face along +z
     length_mm: float = Field(gt=0)         # full axial extent including lips (bounding box)
     plate_mm: float | None = Field(None, gt=0)   # plate thickness without lips (field checks)
@@ -251,6 +254,7 @@ class StackPart(_Model):
 
 class Deflector(StackPart):
     name: str                              # d1, d2; halves are <name>a / <name>b
+    profile: Literal["lens", "accel", "deflector"] | None = "deflector"
     cfgs: list[int]                        # chamber setups in which the deflector exists
 
 
@@ -260,6 +264,10 @@ class ElectrodeConstraints(_Model):
     deflectors: list[Deflector] = []
     deflectors_grounded: bool = True       # Phase 1: every deflector half at 0 V
     clearance_mm: float | None = Field(None, gt=0)   # smallest gap between neighbouring plates
+    removable: list[str] = []              # parts a configuration may leave out (e2..e9, deflector names)
+    movable: list[str] = []                # plates whose front offset from E1 the optimizer may tune
+    min_gap_mm: float | None = Field(None, gt=0)     # smallest axial gap between neighbouring parts' faces
+    max_offset_mm: float | None = Field(None, gt=0)  # optional limit on a moved plate's back end (from E1 front)
 
     @model_validator(mode="after")
     def _stack(self):
@@ -268,6 +276,16 @@ class ElectrodeConstraints(_Model):
         fr = [e.front_mm for e in self.stack]
         if fr != sorted(fr) or (fr and fr[0] != 0):
             raise ValueError("electrodes.stack front_mm must start at 0 (E1) and increase")
+        plates = {f"e{k}" for k in range(1, self.count + 1)}
+        parts = plates | {d.name for d in self.deflectors}
+        if "e1" in self.removable or "e1" in self.movable:
+            raise ValueError("e1 (extractor) is the stack reference: it cannot be removable or movable")
+        bad = sorted(set(self.removable) - parts) + sorted(set(self.movable) - plates)
+        if bad:
+            raise ValueError(f"electrodes.removable/movable: unknown parts {bad} (plates {sorted(plates)}, "
+                             f"deflectors {[d.name for d in self.deflectors]}; only plates are movable)")
+        if self.movable and (self.min_gap_mm is None or any(e.profile is None for e in self.stack)):
+            raise ValueError("movable plates need electrodes.min_gap_mm and a profile for every stack part")
         return self
 
 
@@ -388,6 +406,8 @@ class ConfigurationDef(_Model):
     description: str = ""
     cfg: int
     wiring: dict[str, str] = {}
+    removed: list[str] = []                # stack parts left out (constraints.electrodes.removable)
+    moved: list[str] = []                  # plates whose offset the optimizer tunes (electrodes.movable)
 
 
 class B0Config(_Model):

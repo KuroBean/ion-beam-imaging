@@ -22,6 +22,7 @@ Ultem holder ring are kept as dielectric domains.  The screen mesh is an idealis
 
 Usage:
   .venv\\Scripts\\python.exe scripts\\build_axisym.py [--solve] [--particles] [--out file.mph]
+  (current base model: --out lens8_axisym_v3.mph, with the part switches L<k>_on, L<k>_dz, D<n>_on)
 """
 import argparse
 import time
@@ -64,6 +65,12 @@ PARAMS = [
     ("L7_v", "-40[V]", "L7 potential"),
     ("L8_v", "-40[V]", "L8 potential"),
     ("L9_v", "0[V]", "L9 potential"),
+    # part switches (constraints.electrodes.removable / movable, author 2026-11-15): presence 1/0 and
+    # axial shift from the as-built position; as built = all 1, all 0 mm
+    *[(f"L{k}_on", "1", f"L{k} present (1) or removed (0)") for k in range(1, 10)],
+    *[(f"L{k}_dz", "0[mm]", f"L{k} axial shift from its as-built position") for k in range(1, 10)],
+    ("D1_on", "1", "deflector pair 1 present (1) or removed (0); deleted anyway for cfg 1 and 2"),
+    ("D2_on", "1", "deflector pair 2 present (1) or removed (0); deleted anyway for cfg 1 and 2"),
     ("D1a_v", "0[V]", "deflector 1 half a potential (2D uses the mean of a and b)"),
     ("D1b_v", "0[V]", "deflector 1 half b potential"),
     ("D2a_v", "0[V]", "deflector 2 half a potential (2D uses the mean of a and b)"),
@@ -108,15 +115,15 @@ DEFLECTORS = [
 ASM_TAGS = [t for t, _, _ in ELECTRODES] + [t for t, _ in DEFLECTORS]
 
 
-def profile(kind, z_cad):
-    """r-z polygon of one electrode; z offsets from its front face."""
+def profile(kind, z_cad, tag):
+    """r-z polygon of one electrode; z offsets from its front face, shifted by <tag>_dz."""
     if kind == "lens":      # 9 mm plate, aperture r 5, front groove r 10..15 (5 deep), back lip r 12..13 (5 long)
         pts = [(5, 0), (10, 0), (10, 5), (15, 5), (15, 0), (32.5, 0), (32.5, 9), (13, 9), (13, 14),
                (12, 14), (12, 9), (5, 9)]
     else:                   # 10 mm plate, front recess r<15 (7 deep), 1 mm web with aperture r 5,
         pts = [(5, 7), (15, 7), (15, 0), (32.5, 0), (32.5, 10), (13, 10), (13, 15),  # back recess r<12,
                (12, 15), (12, 8), (5, 8)]                                          # lip r 12..13
-    return [[f"{r:g}", f"z_asm+({z_cad}+{dz:g})"] for r, dz in pts]
+    return [[f"{r:g}", f"z_asm+({z_cad}+{dz:g})+{tag}_dz"] for r, dz in pts]
 
 
 def sarr2(rows):
@@ -200,16 +207,21 @@ def build_geometry(comp):
     ], "Needle (gnd)", contribute="csel_cond")
 
     # ---------------- lens assembly ----------------
+    # each plate inside its own If block (L<k>_on), shifted by L<k>_dz
     for tag, kind, z_cad in ELECTRODES:
-        polygon(g, tag, profile(kind, z_cad), f"{tag} ({kind})", contribute="csel_cond")
-    # Deflectors: deleted for cfg 1 and 2 to make room (same as the 3D model's "If delete deflectors").
-    # Each split-cylinder pair is idealised as one axisymmetric body (full tube + both mounting plates).
-    g.create("if_defl", "If").set("condition", "cfg!=1&&cfg!=2")
-    g.feature("if_defl").label("If keep deflectors (deleted for cfg 1 and 2)")
+        g.create(f"if_{tag}", "If").set("condition", f"{tag}_on==1")
+        g.feature(f"if_{tag}").label(f"If {tag} present")
+        polygon(g, tag, profile(kind, z_cad, tag), f"{tag} ({kind})", contribute="csel_cond")
+        g.create(f"endif_{tag}", "EndIf")
+    # Deflectors: deleted for cfg 1 and 2 to make room (same as the 3D model's "If delete deflectors"),
+    # and when switched off (D<n>_on = 0). Each split-cylinder pair is idealised as one axisymmetric body
+    # (full tube + both mounting plates).
     for tag, pts in DEFLECTORS:
+        g.create(f"if_{tag}", "If").set("condition", f"cfg!=1&&cfg!=2&&{tag}_on==1")
+        g.feature(f"if_{tag}").label(f"If keep {tag} (deleted for cfg 1 and 2, or {tag}_on = 0)")
         polygon(g, tag, [[r, f"z_asm+({z})"] for r, z in pts], f"{tag} (deflector pair, axisymmetric)",
                 contribute="csel_cond")
-    g.create("endif_defl", "EndIf")
+        g.create(f"endif_{tag}", "EndIf")
 
     # ---------------- MCP stack (relative to mcp_z) ----------------
     m = "mcp_z"

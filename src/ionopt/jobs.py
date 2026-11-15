@@ -15,11 +15,12 @@ def build_job(cfg: Config, conf: ConfigurationDef, channels: dict[str, float], p
     """JobSpec for a configuration (chamber setup, wiring).
 
     channels in V (LV channels used by the wiring, MCP-front and mesh HV ports);
-    positions in metres (lens_gap, z_mcp, mesh_gap).
+    positions in metres (lens_gap, z_mcp, mesh_gap; e<k>_offset for the configuration's moved plates).
     The current spec.launch section is copied into the job so it is self-contained.
     """
     t = {"config_id": conf.config_id, **(tags or {})}
     kw = dict(fidelity=fidelity, cfg=conf.cfg, wiring=dict(conf.wiring), channels=dict(channels), positions=dict(positions),
+              removed=list(conf.removed),
               launch=cfg.spec.launch.model_copy(), mesh_level=mesh_level, ion_level=ion_level, tags=t)
     if job_id:
         kw["job_id"] = job_id

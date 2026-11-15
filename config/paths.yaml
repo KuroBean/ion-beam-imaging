@@ -4,7 +4,9 @@
 comsol_root: "C:/Program Files/COMSOL/COMSOL55/Multiphysics"   # COMSOL install (bundled JRE lives under java/win64/jre/bin)
 
 models:                      # base models, READ ONLY for all code
-  2d: lens8_axisym_v2.mph                  # real lens assembly + v_tip, mesh_gap (scripts/build_axisym.py); TBD move to models/
+  2d: lens8_axisym_v3.mph                  # v2 + part switches L<k>_on, L<k>_dz, D<n>_on (build_axisym.py --solve --particles,
+                                           # 2026-11-15); as built it reproduces v2 exactly (scripts/verify_part_switches.py,
+                                           # logs/verify_part_switches.json). v2 = real lens assembly + v_tip, mesh_gap. TBD move to models/
   3d: lens8newMCP_ks_v6_tip.mph            # v5 + v_tip (add_3d_tip.py) + mesh_gap (author, GUI) + lead-glass MCP plate and stored mesh
                                            # (set_mcp_material_3d.py), both 2026-11-12, saved in place; verified (verify_3d_geometry.py). TBD move to models/
 

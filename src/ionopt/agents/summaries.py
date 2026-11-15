@@ -125,10 +125,20 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
                  f"mesh {cs.supplies.mesh_V} V.")
     el = cs.electrodes
     stack = ", ".join(f"e{k} front {s.front_mm} mm" for k, s in enumerate(el.stack, start=1))
+    defl = ", ".join(f"{d.name} front {d.front_mm} mm (cfg {d.cfgs})" for d in el.deflectors)
     lines.append(f"Lens stack: {el.count} plates (e1 = extractor, aperture radius {el.stack[0].r_in_mm} mm), placed "
-                 f"as one unit by lens_gap: {stack}. Deflectors: grounded.")
-    lines.append("Per-electrode removal: " + ("available (configuration.removed)" if presence_supported(cfg)
-                                             else "NOT available yet (keep every electrode)."))
+                 f"by lens_gap (tip apex to the e1 front face); as built, front faces from e1: {stack}. "
+                 f"Deflector pairs (grounded): {defl}.")
+    if presence_supported(cfg):
+        lines.append(f"Part switches: configuration.removed may leave out {el.removable}; configuration.moved lets the "
+                     f"optimizer tune the axial position of {el.movable} (variable <plate>_offset_mm, front face from "
+                     f"the e1 front face), keeping at least {el.min_gap_mm} mm between facing surfaces of neighbours"
+                     + (f" and ending before {el.max_offset_mm} mm" if el.max_offset_mm else "") +
+                     ". As built, every plate already sits at that minimum gap, so a plate can only move into room "
+                     "made by removing a neighbour (or, without deflectors, the last plate can move back toward the "
+                     "mesh).")
+    else:
+        lines.append("Part switches: NOT available (keep every part as built).")
     rules = []
     if cfg.optimizer.no_mirror:
         rules.append("no ion mirrors: every lens channel and the mesh stay below the tip potential (positive ions) "
@@ -141,7 +151,7 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
     port = {role: k for k, role in hv.items()}
     lines.append(f"Optimizer variables (the names bounds use): each LV channel used by the wiring (V), "
                  f"{port.get('mcp_front')} (MCP front, V), {port.get('mesh')} (mesh, V), lens_gap_mm, mesh_gap_mm, "
-                 f"z_mcp_mm (mm). A position fixed by its range ([a, a]) is not a variable. Omitted variables keep "
+                 f"z_mcp_mm and <plate>_offset_mm of moved plates (mm). A position fixed by its range ([a, a]) is not a variable. Omitted variables keep "
                  f"their full usable range.")
     v = [x.variant_id for x in state.model_variants]
     lines.append(f"Approved model variants: base{', ' + ', '.join(v) if v else ''}.")
@@ -168,6 +178,7 @@ def config_str(c: dict | None) -> str:
         return "-"
     w = ",".join(f"{k}:{v}" for k, v in sorted(c.get("wiring", {}).items()) if v != "GND") or "all GND"
     extra = (f" removed {c['removed']}" if c.get("removed") else "") + \
+            (f" moved {c['moved']}" if c.get("moved") else "") + \
             (f" variant {c['variant_id']}" if c.get("variant_id", "base") != "base" else "")
     return f"cfg {c.get('cfg')} [{w}]{extra}"
 

@@ -12,6 +12,8 @@
 # Model status: 2D (build_axisym.py) has all of them. 3D v5 lacks mesh_gap (author adds it
 # in the GUI) and v_tip (scripted, new file); the worker refuses jobs that need a
 # parameter the loaded model does not have.
+# Parameters with a `default` (the as-built value) may be missing from a model: the worker then
+# skips them at that value and refuses any other (part switches exist in the 2D model only).
 
 parameters:
   - name: cfg
@@ -56,6 +58,35 @@ parameters:
     unit: V
     per_electrode: true
     description: potential of electrode k (L k), set from the wiring map
+  - name: on_e{k}
+    comsol_name: L{k}_on
+    type: int
+    allowed: [0, 1]
+    per_electrode: true
+    default: 1
+    geometric: true
+    description: "1 = plate k present, 0 = removed (constraints.electrodes.removable); 2D only"
+  - name: dz_e{k}
+    comsol_name: L{k}_dz
+    unit: mm
+    per_electrode: true
+    default: 0
+    geometric: true
+    description: "axial shift of plate k from its as-built position (constraints.electrodes.movable); 2D only"
+  - name: on_d1
+    comsol_name: D1_on
+    type: int
+    allowed: [0, 1]
+    default: 1
+    geometric: true
+    description: "1 = deflector pair 1 present (where its chamber setup has it), 0 = removed; 2D only"
+  - name: on_d2
+    comsol_name: D2_on
+    type: int
+    allowed: [0, 1]
+    default: 1
+    geometric: true
+    description: "1 = deflector pair 2 present, 0 = removed; 2D only"
   - name: v_d1a
     comsol_name: D1a_v
     unit: V

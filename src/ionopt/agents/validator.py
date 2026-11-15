@@ -9,7 +9,7 @@ that passes here cannot fail when the optimizer builds its search space.
 from __future__ import annotations
 
 from ..config import Config, ConfigError, ConfigurationDef
-from ..electrodes import GND, check_structure, electrode_names
+from ..electrodes import check_structure, layout_problems
 from ..optimize import SearchSpace
 from .config import AgentsConfig
 from .schemas import Bound, Configuration, PlannerProposal
@@ -20,12 +20,15 @@ TOL = 1e-9
 
 
 def presence_supported(cfg: Config) -> bool:
-    """Per-electrode removal needs the 2D presence switches (Phase 2 task 7, not built yet)."""
-    return False
+    """Part removal / moves are allowed by constraints.electrodes (removable / movable lists).
+    The model must have the switches too (2D lens8_axisym_v3+); the worker refuses jobs otherwise."""
+    el = cfg.constraints.electrodes
+    return bool(el.removable or el.movable)
 
 
 def to_configuration_def(c: Configuration, config_id: str, description: str = "") -> ConfigurationDef:
-    return ConfigurationDef(config_id=config_id, description=description, cfg=c.cfg, wiring=dict(c.wiring))
+    return ConfigurationDef(config_id=config_id, description=description, cfg=c.cfg, wiring=dict(c.wiring),
+                            removed=list(c.removed), moved=list(c.moved))
 
 
 def bounds_tuple(bounds: dict[str, Bound]) -> dict[str, tuple[float, float]]:
@@ -54,18 +57,18 @@ def check_configuration(c: Configuration, state: LoopState, cfg: Config) -> list
     p: list[str] = []
     if c.variant_id not in state.variant_ids():
         p.append(f"variant_id '{c.variant_id}' is not an approved variant (known: {sorted(state.variant_ids())})")
-    names = set(electrode_names(cfg))
-    bad = sorted(set(c.removed) - names)
+    el = cfg.constraints.electrodes
+    if "e1" in c.removed or "e1" in c.moved:
+        p.append("e1 is the extractor and the stack reference: it cannot be removed or moved")
+    if c.cfg in cfg.constraints.chamber_setups:
+        p += [f"removed: {x}" for x in layout_problems(cfg, c.cfg, c.removed, {})]
+    bad = sorted(set(c.moved) - set(el.movable))
     if bad:
-        p.append(f"removed: unknown electrodes {bad} (electrodes: e1..e{len(names)})")
-    if c.removed and not presence_supported(cfg):
-        p.append("removed: per-electrode removal is not available in the model yet; keep every electrode")
-    wired_removed = sorted(e for e in c.removed if c.wiring.get(e, GND) != GND)
-    if wired_removed:
-        p.append(f"removed electrodes cannot be wired to a supply: {wired_removed}")
-    if "e1" in c.removed:
-        p.append("e1 is the extractor and cannot be removed")
-    p += check_structure(cfg, c.cfg, c.wiring)
+        p.append(f"moved: {bad} are not movable (constraints.electrodes.movable: {el.movable})")
+    both = sorted(set(c.moved) & set(c.removed))
+    if both:
+        p.append(f"{both} both removed and moved")
+    p += check_structure(cfg, c.cfg, c.wiring, c.removed)
     return p
 
 

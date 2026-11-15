@@ -59,7 +59,10 @@ def test_ok_and_pass_through(cfg, acfg):
     ({"configuration": {"cfg": 1, "wiring": {"tip": "LV1", "e3": "HV1"}}}, "HV ports"),
     ({"configuration": {"cfg": 7, "wiring": EINZEL}}, "not a chamber setup"),
     ({"configuration": {"cfg": 1, "wiring": EINZEL, "variant_id": "v9"}}, "not an approved variant"),
-    ({"configuration": {"cfg": 1, "wiring": EINZEL, "removed": ["e6"]}}, "not available"),
+    ({"configuration": {"cfg": 1, "wiring": EINZEL, "removed": ["e1"]}}, "cannot be removed or moved"),
+    ({"configuration": {"cfg": 1, "wiring": EINZEL, "removed": ["d1"]}}, "not in the stack of cfg 1"),
+    ({"configuration": {"cfg": 1, "wiring": EINZEL, "removed": ["e4"], "moved": ["e4"]}}, "both removed and moved"),
+    ({"configuration": {"cfg": 1, "wiring": EINZEL, "moved": ["e1"]}}, "cannot be removed or moved"),
     ({"configuration": {"cfg": 1, "wiring": EINZEL, "removed": ["e3"]}}, "cannot be wired"),
     ({"bounds": {"LV7": {"lo": 0, "hi": 1}}}, "not a variable"),
     ({"bounds": {"LV2": {"lo": -500, "hi": 0}}}, "outside the allowed range"),
@@ -144,3 +147,11 @@ def test_optimize_adhoc_configuration(cfg_tmp):
     assert all(json.loads(j["config_json"])["tags"]["run_id"] == "run1" for j in jobs)
     again = optimize(cfg_tmp, "ignored", budget=3, backend=MockBackend(cfg_tmp), study_id="run1-r1", conf=conf)
     assert again.n_new == 0                                # resumed study: nothing new to run
+
+
+def test_removed_and_moved_parts(cfg, acfg):
+    c = {"cfg": 1, "wiring": EINZEL, "removed": ["e2", "e4"], "moved": ["e3"]}
+    v = validate(prop(configuration=c, bounds={"e3_offset_mm": {"lo": 13, "hi": 30}}), state(), cfg, acfg)
+    assert v.status == "ok", v.reasons
+    v = validate(prop(configuration=c, bounds={"e5_offset_mm": {"lo": 50, "hi": 60}}), state(), cfg, acfg)
+    assert v.status == "invalid" and any("not a variable" in r for r in v.reasons)

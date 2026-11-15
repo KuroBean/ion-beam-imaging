@@ -194,6 +194,8 @@ class ModelAdapter:
             if name == "z_mcp" and job.cfg != 1:
                 continue                     # fixed by the chamber in cfg 2/3; checked after the update
             if d.comsol_name not in self.model_params:
+                if d.default is not None and math.isclose(float(value), float(d.default), rel_tol=0, abs_tol=1e-12):
+                    continue                 # an as-built switch the model does not have (e.g. 3D part switches)
                 missing.append(f"{name} -> {d.comsol_name}")
                 continue
             if d.type == "int":
@@ -206,13 +208,14 @@ class ModelAdapter:
         if missing:
             raise AdapterError(f"{self.path.name} lacks parameters needed by this job: {missing}")
 
-        geo_names = {reg[n].comsol_name for n in GEOMETRIC if n in params and reg[n].comsol_name}
+        geo_names = {reg[n].comsol_name for n in params if (n in GEOMETRIC or reg[n].geometric)
+                     and reg[n].comsol_name in self.model_params}
         before = {n: str(self.j.param().get(n)) for n in geo_names}
         changed = any(before[n] != set_exprs.get(n, before[n]) for n in geo_names)
         stored_matches = all(math.isclose(self.param_value(n), self.param_value(set_exprs[n]) if n in set_exprs
                                           else self.param_value(n), rel_tol=0, abs_tol=1e-12) for n in geo_names)
         if self.fidelity == "3d" and not stored_matches and not self.cfg.backend.worker.allow_3d_geometry_change:
-            raise AdapterError("this 3D job changes the geometry (cfg/lens_gap/mesh_gap/z_mcp) but the 3D model "
+            raise AdapterError("this 3D job changes the geometry (cfg/lens_gap/mesh_gap/z_mcp/parts) but the 3D model "
                                "still has numeric selections that a rebuild can silently break (KNOWN_ISSUES #13); "
                                "set backend.worker.allow_3d_geometry_change=true to override")
         for n, e in set_exprs.items():

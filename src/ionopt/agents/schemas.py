@@ -44,14 +44,18 @@ class Configuration(_S):
         description="tip and e1..e9 -> LV1..LV4 or GND; any node not listed is grounded. Electrodes on the "
                     "same channel share one voltage.")
     removed: list[str] = Field(default_factory=list,
-                               description="electrodes taken out of the stack (e.g. ['e6','e7']); needs the "
-                                           "per-electrode presence switches")
+                               description="stack parts left out (plates e2..e9, deflectors d1, d2; see the design "
+                                           "space for what is removable). A removed part cannot be wired.")
+    moved: list[str] = Field(default_factory=list,
+                             description="plates whose axial position the optimizer tunes (variable "
+                                         "<plate>_offset_mm = front face from the e1 front face); the others stay "
+                                         "as built. Needs room: the as-built plates are packed at the minimum gap.")
     variant_id: str = Field("base", description="model variant: 'base' or an approved editor variant id")
 
     def key(self) -> tuple:
         """Identity for duplicate detection: grounded entries do not matter."""
         w = tuple(sorted((k, v) for k, v in self.wiring.items() if v != "GND"))
-        return (self.cfg, w, tuple(sorted(self.removed)), self.variant_id)
+        return (self.cfg, w, tuple(sorted(self.removed)), tuple(sorted(self.moved)), self.variant_id)
 
 
 class Claim(_S):

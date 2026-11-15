@@ -1,8 +1,11 @@
 """Supply-channel wiring, fixed-stack geometry, validation and expansion into model parameters.
 
-Hardware (plan 7.2, reworked for the real assembly, KNOWN_ISSUES #10): a FIXED stack of nine
-plates E1..E9 (= L1..L9 in the models, E1 = extractor) plus two split deflectors, placed as one
-unit by lens_gap (tip apex to the E1 front face). Every plate is always present.
+Hardware (plan 7.2, reworked for the real assembly, KNOWN_ISSUES #10): a stack of nine plates
+E1..E9 (= L1..L9 in the models, E1 = extractor) plus two split deflectors, placed by lens_gap (tip
+apex to the E1 front face). As built, every part is present at its CAD position. A configuration
+may leave out parts in constraints.electrodes.removable (JobSpec.removed) and the optimizer may move
+plates in electrodes.movable (positions e<k>_offset = front face from the E1 front face), keeping
+electrodes.min_gap_mm between the facing surfaces of neighbours (author 2026-11-15).
 
 The optimizer tunes supply *channels*; the wiring map assigns the tip and each electrode to an
 LV channel or GND (nodes not listed are GND), which makes the four-supply limit impossible to
@@ -14,7 +17,8 @@ hard violations raise :class:`JobValidationError` listing every problem.
 """
 from __future__ import annotations
 
-from typing import Any
+import math
+from typing import Any, Iterable
 
 from . import units
 from .config import Config, TBDError, range_known
@@ -23,6 +27,19 @@ from .schemas import JobSpec
 GND = "GND"
 EPS_M = 1e-12          # numerical slack for position comparisons (m)
 POSITIONS = ("lens_gap", "z_mcp", "mesh_gap")
+OFFSET = "_offset"     # positions key suffix of a moved plate: e3_offset (m, front face from the E1 front face)
+
+# r-z shapes of the stack parts (scripts/build_axisym.py profile() and DEFLECTORS), as radial bands
+# (r_lo, r_hi, front_dz, back_dz) in mm: where the solid starts and ends along z in each band,
+# relative to the part's front face. Bands cover r 5..32.5 (aperture to outer radius).
+PROFILES: dict[str, list[tuple[float, float, float, float]]] = {
+    # 9 mm plate, front groove r 10..15 (5 deep), back lip r 12..13 (5 long)
+    "lens": [(5, 10, 0, 9), (10, 12, 5, 9), (12, 13, 5, 14), (13, 15, 5, 9), (15, 32.5, 0, 9)],
+    # 10 mm plate: front recess r < 15 (7 deep), 1 mm web, back recess r < 12, lip r 12..13 (to 15)
+    "accel": [(5, 12, 7, 8), (12, 13, 7, 15), (13, 15, 7, 10), (15, 32.5, 0, 10)],
+    # split-cylinder pair as one body: tube r 5..6.5 (12.77 long), plates from 0.77 to 12.0
+    "deflector": [(5, 6.5, 0, 12.77), (6.5, 32.5, 0.77, 12.0)],
+}
 
 
 class JobValidationError(ValueError):
@@ -43,9 +60,12 @@ def deflector_halves(cfg: Config, chamber: int) -> list[str]:
 # --------------------------------------------------------------------------- structure
 
 
-def check_structure(cfg: Config, chamber: int, wiring: dict[str, str]) -> list[str]:
-    """Problems with a configuration's chamber setup and wiring map."""
+def check_structure(cfg: Config, chamber: int, wiring: dict[str, str], removed: Iterable[str] = ()) -> list[str]:
+    """Problems with a configuration's chamber setup, wiring map and removed parts."""
     p: list[str] = []
+    wired_removed = sorted(n for n in removed if wiring.get(n, GND) != GND)
+    if wired_removed:
+        p.append(f"removed parts cannot be wired: {wired_removed}")
     cs = cfg.constraints
     if chamber not in cs.chamber_setups:
         p.append(f"cfg {chamber} is not a chamber setup {sorted(cs.chamber_setups)}")
@@ -71,38 +91,108 @@ def used_lv_channels(cfg: Config, wiring: dict[str, str]) -> list[str]:
 # --------------------------------------------------------------------------- geometry
 
 
-def stack_layout(cfg: Config, chamber: int, lens_gap_m: float) -> list[dict]:
-    """Plates and deflectors of the fixed stack in plan coordinates (m), in beam order.
+def stack_layout(cfg: Config, chamber: int, lens_gap_m: float, removed: Iterable[str] = (),
+                 offsets: dict[str, float] | None = None) -> list[dict]:
+    """Present plates and deflectors in plan coordinates (m), in beam order.
 
-    Each entry: name, selection, kind (electrode | deflector), z_front_m, z_back_m (incl. lips),
+    removed: parts left out; offsets: plate name -> front face from the E1 front face (m), others as built.
+    Each entry: name, selection, kind (electrode | deflector), profile, z_front_m, z_back_m (incl. lips),
     z_plate_back_m (plate only), r_in_m, r_out_m.
     """
     el = cfg.constraints.electrodes
     if not el.stack:
         raise TBDError("constraints.electrodes.stack")
+    removed, offsets = set(removed), offsets or {}
     out = []
     for k, s in enumerate(el.stack, start=1):
-        z0 = lens_gap_m + s.front_mm * units.MM
-        out.append({"name": f"e{k}", "selection": f"sel_e{k}", "kind": "electrode", "z_front_m": z0,
-                    "z_back_m": z0 + s.length_mm * units.MM,
+        name = f"e{k}"
+        if name in removed:
+            continue
+        z0 = lens_gap_m + offsets.get(name, s.front_mm * units.MM)
+        out.append({"name": name, "selection": f"sel_{name}", "kind": "electrode", "profile": s.profile,
+                    "z_front_m": z0, "z_back_m": z0 + s.length_mm * units.MM,
                     "z_plate_back_m": z0 + (s.plate_mm or s.length_mm) * units.MM,
                     "r_in_m": s.r_in_mm * units.MM, "r_out_m": s.r_out_mm * units.MM})
     for d in el.deflectors:
-        if chamber in d.cfgs:
+        if chamber in d.cfgs and d.name not in removed:
             z0 = lens_gap_m + d.front_mm * units.MM
-            out.append({"name": d.name, "selection": f"sel_{d.name}", "kind": "deflector", "z_front_m": z0,
-                        "z_back_m": z0 + d.length_mm * units.MM, "z_plate_back_m": z0 + d.length_mm * units.MM,
+            out.append({"name": d.name, "selection": f"sel_{d.name}", "kind": "deflector", "profile": d.profile,
+                        "z_front_m": z0, "z_back_m": z0 + d.length_mm * units.MM,
+                        "z_plate_back_m": z0 + d.length_mm * units.MM,
                         "r_in_m": d.r_in_mm * units.MM, "r_out_m": d.r_out_mm * units.MM})
     return out
 
 
+def job_offsets(job: JobSpec) -> dict[str, float]:
+    """Moved plates of a job: name -> front face from the E1 front face (m)."""
+    return {k[: -len(OFFSET)]: v for k, v in job.positions.items() if k.endswith(OFFSET)}
+
+
+def job_layout(job: JobSpec, cfg: Config) -> list[dict]:
+    return stack_layout(cfg, job.cfg, job.positions["lens_gap"], job.removed, job_offsets(job))
+
+
+def nominal_offset(cfg: Config, plate: str) -> float:
+    """As-built front face of a plate from the E1 front face (m)."""
+    return cfg.constraints.electrodes.stack[int(plate[1:]) - 1].front_mm * units.MM
+
+
+def face_shift(profile_a: str, profile_b: str) -> float:
+    """Smallest gap (m) between part a's back surface and part b's front surface when b's front face is
+    exactly at a's front face; the actual gap is this plus (b front - a front)."""
+    best = math.inf
+    for lo_a, hi_a, _, back_a in PROFILES[profile_a]:
+        for lo_b, hi_b, front_b, _ in PROFILES[profile_b]:
+            if min(hi_a, hi_b) - max(lo_a, lo_b) > 1e-9:          # radial bands overlap
+                best = min(best, front_b - back_a)
+    return best * units.MM
+
+
+def part_gap(a: dict, b: dict) -> float:
+    """Smallest axial gap (m) between neighbouring stack parts a (upstream) and b (stack_layout entries)."""
+    return b["z_front_m"] - a["z_front_m"] + face_shift(a["profile"], b["profile"])
+
+
+def layout_problems(cfg: Config, chamber: int, removed: Iterable[str], offsets: dict[str, float]) -> list[str]:
+    """Removed / moved parts against constraints.electrodes: allowed lists, overlaps, max offset."""
+    el = cfg.constraints.electrodes
+    removed, p = list(removed), []
+    exist = {f"e{k}" for k in range(1, el.count + 1)} | {d.name for d in el.deflectors if chamber in d.cfgs}
+    not_allowed = sorted(set(removed) - set(el.removable))
+    if not_allowed:
+        p.append(f"cannot remove {not_allowed} (constraints.electrodes.removable: {el.removable})")
+    absent = sorted(set(removed) - exist - set(not_allowed))
+    if absent:
+        p.append(f"cannot remove {absent}: not in the stack of cfg {chamber}")
+    fixed = sorted(set(offsets) - set(el.movable))
+    if fixed:
+        p.append(f"cannot move {fixed} (constraints.electrodes.movable: {el.movable})")
+    both = sorted(set(offsets) & set(removed))
+    if both:
+        p.append(f"{both} both removed and moved")
+    if p or not offsets:
+        return p
+    parts = stack_layout(cfg, chamber, 0.0, removed, offsets)
+    g = el.min_gap_mm * units.MM
+    for a, b in zip(parts, parts[1:]):
+        if (a["name"] in offsets or b["name"] in offsets) and part_gap(a, b) < g - 1e-9:
+            p.append(f"{a['name']}-{b['name']} gap {part_gap(a, b) / units.MM:.3f} mm < electrodes.min_gap_mm "
+                     f"{el.min_gap_mm} (moved: {sorted(offsets)})")
+    if el.max_offset_mm is not None:
+        for e in parts:
+            if e["name"] in offsets and e["z_back_m"] > el.max_offset_mm * units.MM + 1e-9:
+                p.append(f"{e['name']} reaches {e['z_back_m'] / units.MM:.3f} mm > electrodes.max_offset_mm "
+                         f"{el.max_offset_mm}")
+    return p
+
+
 def geometry_electrodes(job: JobSpec, cfg: Config) -> list[dict]:
     """geometry.json 'electrodes' entries (checker contract: name, selection, z_m centre,
-    thickness_m, r_in_m, r_out_m) as bounding boxes of each stack part."""
+    thickness_m, r_in_m, r_out_m) as bounding boxes of each present stack part."""
     return [{"name": e["name"], "selection": e["selection"], "kind": e["kind"],
              "z_m": 0.5 * (e["z_front_m"] + e["z_back_m"]), "thickness_m": e["z_back_m"] - e["z_front_m"],
              "r_in_m": e["r_in_m"], "r_out_m": e["r_out_m"]}
-            for e in stack_layout(cfg, job.cfg, job.positions["lens_gap"])]
+            for e in job_layout(job, cfg)]
 
 
 # --------------------------------------------------------------------------- potentials
@@ -165,7 +255,7 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
 
     Returns warnings (checks skipped because a limit is TBD). Raises JobValidationError.
     """
-    problems = check_structure(cfg, job.cfg, job.wiring)
+    problems = check_structure(cfg, job.cfg, job.wiring, job.removed)
     warnings: list[str] = []
     if problems:
         raise JobValidationError(problems)
@@ -210,11 +300,14 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
 
     # ---- positions (metres)
     missing = sorted(set(POSITIONS) - set(job.positions))
-    extra = sorted(set(job.positions) - set(POSITIONS))
+    extra = sorted(k for k in set(job.positions) - set(POSITIONS) if not k.endswith(OFFSET))
     if missing:
         problems.append(f"positions missing {missing}")
     if extra:
-        problems.append(f"unknown positions {extra} (the stack is fixed; only {list(POSITIONS)})")
+        problems.append(f"unknown positions {extra} (known: {list(POSITIONS)} and e<k>{OFFSET} for moved plates)")
+    if problems:
+        raise JobValidationError(problems)
+    problems += layout_problems(cfg, job.cfg, job.removed, job_offsets(job))
     if problems:
         raise JobValidationError(problems)
 
@@ -241,7 +334,7 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
                         f"{cs.mesh.min_gap_to_mcp_mm}")
     if lg <= 0:
         problems.append("lens_gap must be > 0 (E1 would touch the tip apex)")
-    parts = stack_layout(cfg, job.cfg, lg)
+    parts = job_layout(job, cfg)
     last = max(parts, key=lambda e: e["z_back_m"])
     if last["z_back_m"] >= z_mesh - EPS_M:
         problems.append(f"the lens stack ends at {last['z_back_m'] / units.MM:g} mm ({last['name']}), "
@@ -324,9 +417,26 @@ def expand(job: JobSpec, cfg: Config) -> dict[str, Any]:
     for d in cfg.constraints.electrodes.deflectors:
         for h in "ab":
             p[f"v_{d.name}{h}"] = defl.get(f"{d.name}{h}", 0.0)
+    p.update(layout_params(job, cfg))
     unknown = sorted(set(p) - set(reg))
     if unknown:
         raise ValueError(f"expanded parameters not in the registry: {unknown}")
+    return p
+
+
+def layout_params(job: JobSpec, cfg: Config) -> dict[str, Any]:
+    """on_<part> (1 present, 0 removed) and dz_e<k> (shift from the as-built position, m) for every part.
+
+    As built (all 1, all 0) these equal the registry defaults, so models without the switches still run
+    such jobs (the worker skips a missing parameter only at its default value).
+    """
+    removed, off = set(job.removed), job_offsets(job)
+    p: dict[str, Any] = {}
+    for name in electrode_names(cfg):
+        p[f"on_{name}"] = 0 if name in removed else 1
+        p[f"dz_{name}"] = off[name] - nominal_offset(cfg, name) if name in off else 0.0
+    for d in cfg.constraints.electrodes.deflectors:
+        p[f"on_{d.name}"] = 0 if d.name in removed else 1
     return p
 
 
@@ -335,11 +445,13 @@ def expected_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
     pots = node_potentials(job, cfg)
     hv = hv_potentials(job, cfg)
     out = {"sel_tip": model_tip_potential(job, cfg)}
+    removed = set(job.removed)
     for name in electrode_names(cfg):
-        out[f"sel_{name}"] = pots[name]
+        if name not in removed:
+            out[f"sel_{name}"] = pots[name]
     defl = deflector_potentials(job, cfg)
     for d in cfg.constraints.electrodes.deflectors:
-        if job.cfg in d.cfgs:
+        if job.cfg in d.cfgs and d.name not in removed:
             # one value per deflector (2D models the pair as one ring at the mean of its halves)
             out[f"sel_{d.name}"] = 0.5 * (defl[d.name + "a"] + defl[d.name + "b"])
     out["sel_mesh_plane"] = hv["mesh"]
