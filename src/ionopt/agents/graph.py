@@ -38,6 +38,7 @@ from .schemas import EditResult
 from .state import BestSoFar, Budget, LoopState, Method, Pending, RoundRecord, Variant
 from .summaries import load_metrics, metrics_summary
 from .validator import bounds_tuple, to_configuration_def, validate
+from ..variants import approve_variant
 
 ASSUMPTIONS = [
     "2D axisymmetric model trusted for search; 3D used only to validate finalists once compute allows "
@@ -135,12 +136,13 @@ def build_graph(ctx: LoopContext, checkpointer=None):
             except Exception as e:                                   # noqa: BLE001
                 res = EditResult(ok=False, variant_id="", script_path="", diff_summary="", notes=f"editor error: {e}")
         (sandbox / "edit_result.json").write_text(res.model_dump_json(indent=1), encoding="utf-8")
+        budget = s.budget.model_copy(update={"solves_used": s.budget.solves_used + res.n_solves})
         if res.ok:
             pend = s.pending.model_copy(update={"edit_request": req, "edit_result": res, "edit_id": edit_id,
                                                 "approval": "waiting"})
-            return {"pending": pend}
+            return {"pending": pend, "budget": budget}
         fails = s.editor_failures + 1
-        upd = {"editor_failures": fails,
+        upd = {"editor_failures": fails, "budget": budget,
                "pending": s.pending.model_copy(update={"feedback": [f"edit {edit_id} failed: {res.notes}"]})}
         if fails >= lp.editor_failure_cap:
             upd["stop_reason"] = "editor_failures"
@@ -160,8 +162,14 @@ def build_graph(ctx: LoopContext, checkpointer=None):
             var = Variant(variant_id=res.variant_id, parent=s.pending.edit_request.parent_variant,
                           edit_id=s.pending.edit_id, script_path=res.script_path,
                           new_parameters=[p.model_dump() for p in res.new_parameters])
+            approve_variant(cfg, res.variant_id)
             p = s.pending.proposal
-            p = p.model_copy(update={"configuration": p.configuration.model_copy(update={"variant_id": res.variant_id})})
+            c = p.configuration
+            req = s.pending.edit_request
+            wiring = {**c.wiring, **{n: req.supply for n in res.new_parts if req.supply and req.supply != "GND"}}
+            settings = {**c.variant_settings, **{n: 1.0 for n in res.new_switches}}   # the requested parts exist
+            p = p.model_copy(update={"configuration": c.model_copy(update={
+                "variant_id": res.variant_id, "wiring": wiring, "variant_settings": settings})})
             return {"model_variants": s.model_variants + [var], "editor_failures": 0,
                     "pending": s.pending.model_copy(update={"approval": "approved", "proposal": p}),
                     "current": s.current.model_copy(update={"proposal": p})}

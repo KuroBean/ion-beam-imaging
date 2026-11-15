@@ -33,6 +33,7 @@ from .config import Config, ConfigError, ConfigurationDef, range_known
 from .electrodes import OFFSET, check_structure, face_shift, layout_problems, stack_layout, used_lv_channels
 from .jobs import build_job
 from .runlog import RunLog
+from .variants import load_variant
 
 log = logging.getLogger(__name__)
 EPS_M = 1e-9
@@ -103,6 +104,7 @@ class SearchSpace:
     capped: list[str] = field(default_factory=list)
     # moved plates (beam order): static offset windows (m), present parts as built at lens_gap 0
     offsets: dict[str, tuple[float, float]] = field(default_factory=dict)
+    variant_vars: dict[str, tuple[float, float]] = field(default_factory=dict)   # variant lengths (m)
     parts: list[dict] = field(default_factory=list)
     min_gap: float = 0.0
     max_offset: float | None = None
@@ -115,7 +117,7 @@ class SearchSpace:
         lens_gap_mm, mesh_gap_mm, z_mcp_mm, e<k>_offset_mm for moved plates (mm). These are the variable
         names planner bounds use.
         """
-        problems = check_structure(cfg, conf.cfg, conf.wiring, conf.removed)
+        problems = check_structure(cfg, conf.cfg, conf.wiring, conf.removed, conf.variant_id, conf.variant_settings)
         if conf.cfg in cfg.constraints.chamber_setups:
             problems += layout_problems(cfg, conf.cfg, conf.removed, {})
             problems += [f"cannot move {m}: {'removed' if m in conf.removed else 'not movable'}" for m in conf.moved
@@ -151,6 +153,15 @@ class SearchSpace:
                     raise ConfigError(f"configuration '{conf.config_id}': no room to move {n} "
                                       f"(electrodes.min_gap_mm to its neighbours)")
                 out[f"{n}{OFFSET}_mm"] = (lo / units.MM, hi / units.MM)
+        var = load_variant(cfg, conf.variant_id)
+        if var is not None:
+            for x in var.variables():
+                out[f"{x.name}_mm"] = (float(x.range[0]), float(x.range[1]))
+            if "screen_mesh" in var.removed_base:      # no mesh: its voltage and gap do nothing
+                lo, hi = out[s.hv_port("mesh")]
+                v = min(max(0.0, lo), hi)
+                out[s.hv_port("mesh")] = (v, v)
+                out["mesh_gap_mm"] = (out["mesh_gap_mm"][0], out["mesh_gap_mm"][0])
         return out
 
     @classmethod
@@ -169,13 +180,16 @@ class SearchSpace:
                                   f"range [{r_lo}, {r_hi}]")
             raw[k] = (n_lo, n_hi)
         mm = lambda r: (r[0] * units.MM, r[1] * units.MM)  # noqa: E731
+        var = load_variant(cfg, conf.variant_id)
+        vnames = {f"{x.name}_mm": x.name for x in var.variables()} if var else {}
         chan = {k: v for k, v in raw.items() if not k.endswith("_mm")}
         parts = stack_layout(cfg, conf.cfg, 0.0, conf.removed)
         el = cfg.constraints.electrodes
         sp = cls(conf=conf, channels=chan, z_mcp=mm(raw["z_mcp_mm"]), mesh_gap=mm(raw["mesh_gap_mm"]),
                  lens_gap=mm(raw["lens_gap_mm"]), stack_length=max(e["z_back_m"] for e in parts),
                  parts=parts, min_gap=(el.min_gap_mm or 0.0) * units.MM,
-                 max_offset=None if el.max_offset_mm is None else el.max_offset_mm * units.MM)
+                 max_offset=None if el.max_offset_mm is None else el.max_offset_mm * units.MM,
+                 variant_vars={n: mm(raw[k]) for k, n in vnames.items()})
         if conf.moved:
             b = {n: mm(raw[f"{n}{OFFSET}_mm"]) for n in conf.moved}
             end = sp.z_mcp[1] - sp.mesh_gap[0] - sp.lens_gap[0] - EPS_M
@@ -206,6 +220,8 @@ class SearchSpace:
         out["z_mcp_mm"] = (self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM)
         for n, (lo, hi) in self.offsets.items():
             out[f"{n}{OFFSET}_mm"] = (lo / units.MM, hi / units.MM)
+        for n, (lo, hi) in self.variant_vars.items():
+            out[f"{n}_mm"] = (lo / units.MM, hi / units.MM)
         return out
 
     # ---- moved plates
@@ -233,6 +249,9 @@ class SearchSpace:
         offs = {k[: -len(OFFSET)]: v for k, v in positions.items() if k.endswith(OFFSET)}
         if set(offs) != set(self.offsets):
             return False
+        for n, (lo, hi) in self.variant_vars.items():
+            if n not in positions or not (lo - tol <= positions[n] <= hi + tol):
+                return False
         placed: dict[str, float] = {}
         for n in self.offsets:
             lo, hi = self.window(n, placed, z - g)
@@ -325,6 +344,9 @@ class SearchSpace:
             p["z_mcp_mm"] = z_mcp / units.MM
         if self.mesh_gap[1] - self.mesh_gap[0] > 1e-12:
             p["mesh_gap_mm"] = gap / units.MM
+        for n, (lo, hi) in self.variant_vars.items():
+            if hi - lo > 1e-12:
+                p[f"{n}_mm"] = clip(positions.get(n, lo), (lo, hi)) / units.MM
         placed: dict[str, float] = {}
         for n in self.offsets:
             lo, hi = self.window(n, placed, z_mcp - gap)
@@ -363,6 +385,8 @@ class SearchSpace:
         channels = {ch: channels[ch] for ch in self.channels}   # keep the channel order
         z_mcp = f("z_mcp_mm", self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM) * units.MM
         gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM
+        variant = {n: f(f"{n}_mm", lo / units.MM, hi / units.MM) * units.MM
+                   for n, (lo, hi) in self.variant_vars.items()}
         # moved plates in beam order, each as a fraction of the window its neighbours leave
         placed: dict[str, float] = {}
         for n in self.offsets:
@@ -372,7 +396,7 @@ class SearchSpace:
         lo, hi = self.lens_gap[0], self.lens_gap_max(z_mcp - gap, placed)
         lens_gap = lo if hi - lo <= 1e-12 else lo + trial.suggest_float("u_lens_gap", 0.0, 1.0) * (hi - lo)
         return channels, {"lens_gap": lens_gap, "z_mcp": z_mcp, "mesh_gap": gap,
-                          **{f"{n}{OFFSET}": v for n, v in placed.items()}}
+                          **{f"{n}{OFFSET}": v for n, v in placed.items()}, **variant}
 
 
 def _beam_order(parts: list[dict], moved: list[str]) -> list[str]:

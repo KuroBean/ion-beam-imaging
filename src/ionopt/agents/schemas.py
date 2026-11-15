@@ -51,11 +51,14 @@ class Configuration(_S):
                                          "<plate>_offset_mm = front face from the e1 front face); the others stay "
                                          "as built. Needs room: the as-built plates are packed at the minimum gap.")
     variant_id: str = Field("base", description="model variant: 'base' or an approved editor variant id")
+    variant_settings: dict[str, float] = Field(
+        default_factory=dict, description="0/1 values of the variant's switch parameters (unset: as built)")
 
     def key(self) -> tuple:
         """Identity for duplicate detection: grounded entries do not matter."""
         w = tuple(sorted((k, v) for k, v in self.wiring.items() if v != "GND"))
-        return (self.cfg, w, tuple(sorted(self.removed)), tuple(sorted(self.moved)), self.variant_id)
+        return (self.cfg, w, tuple(sorted(self.removed)), tuple(sorted(self.moved)), self.variant_id,
+                tuple(sorted(self.variant_settings.items())))
 
 
 class Claim(_S):
@@ -65,13 +68,14 @@ class Claim(_S):
 
 
 class EditRequest(_S):
-    """Geometry change that is not a switch in the model (plan_phase2 7.3). 2D only for now."""
+    """A model variant built from inventory items (plan_phase2 7.3; 2D only for now)."""
 
-    element: Literal["grounded_grid", "electrode", "move_fixed_part", "mesh_change", "other"]
-    description: str = Field(description="what to add, remove or change, in words")
+    inventory_items: list[str] = Field(min_length=1, description="ids from the inventory to build in")
+    description: str = Field(description="what to add, replace or remove, where, and which dimensions the "
+                                         "optimizer should sweep (within the inventory ranges)")
     z_mm: float | None = Field(None, description="axial position from the tip apex, mm (if applicable)")
-    dimensions_mm: dict[str, float] = Field(default_factory=dict, description="e.g. r_in, r_out, thickness")
-    supply: str | None = Field(None, description="LV1..LV4, GND or an HV port, if it is an electrode")
+    supply: str | None = Field(None, description="LV1..LV4 or GND for new conductors (they may share a channel "
+                                                 "with lens plates)")
     reason: str
     parent_variant: str = "base"
 
@@ -152,4 +156,7 @@ class EditResult(_S):
     checks: dict[str, bool] = Field(default_factory=dict,
                                     description="build, selections, no_overlap, min_gap, field_limit, smoke_valid")
     smoke_job_id: str | None = None
+    n_solves: int = 0                       # check solves (count against the run's solve budget)
+    new_parts: list[str] = Field(default_factory=list)
+    new_switches: list[str] = Field(default_factory=list)
     notes: str = ""

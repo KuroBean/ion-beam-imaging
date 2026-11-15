@@ -1,0 +1,38 @@
+# Parts the editor agent may build into a 2D model variant (plan_phase2 7.3, author 2026-11-15).
+#
+# These are HYPOTHETICAL parts: things we could order, not things in stock. The point of the
+# editor is to probe whether such a part would help before buying it. Each parameter range is
+# what the optimizer may sweep once the editor has made the dimension a model parameter, so
+# give the range a vendor could actually supply. The planner sees this list.
+#
+# Fields per item:
+#   id            short name the planner uses in an edit request
+#   description   what it is, in words (the editor builds it from this)
+#   kind          mesh | grid | electrode | aperture | removal | other
+#   replaces      existing part it replaces or removes (screen_mesh, e2..e9, d1, d2), if any
+#   parameters    name -> {range: [lo, hi] (mm), as_built: value of the part it replaces, if any}
+#   transmission  optical transparency of a mesh/grid (enters the collection efficiency eta);
+#                 a removal of the screen mesh means 1.0
+#   connectable   true: may be wired to an LV channel like a lens plate (author 2026-11-15)
+#   notes         vendor, part number, price, lead time ...
+
+items:
+  - id: screen_mesh_wide
+    description: >-
+      Screen mesh in front of the MCP with a larger open diameter: the transparent mesh disc grows,
+      the screen cross hub moves out with its edge. Same potential (HV4) and mesh_gap as now.
+    kind: mesh
+    replaces: screen_mesh
+    parameters:
+      open_diameter_mm: {range: [10, 40], as_built: 11}   # 2D model: mesh disc r 0..5.5 mm now
+    transmission: 0.7
+    notes: author example 2026-11-15 (electroformed Ni mesh, orderable up to 40 mm)
+
+  - id: no_screen_mesh
+    description: >-
+      Run without the screen mesh and its cross hub: nothing between the lens stack and the MCP
+      front, whose field then reaches into the chamber.
+    kind: removal
+    replaces: screen_mesh
+    transmission: 1.0
+    notes: author example 2026-11-15

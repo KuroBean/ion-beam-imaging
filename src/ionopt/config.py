@@ -24,13 +24,14 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationErr
 
 from . import units
 
-CONFIG_FILES = ("paths", "parameters", "spec", "constraints", "backend", "optimizer", "b0_configs")
+CONFIG_FILES = ("paths", "parameters", "spec", "constraints", "backend", "optimizer", "b0_configs", "inventory")
 CONFIG_DIR_ENV = "IONOPT_CONFIG_DIR"
 # keys where null means "not used" rather than TBD (fnmatch patterns over dotted keys)
 NOT_TBD = (
     "parameters.parameters.*.unit",
     "parameters.parameters.*.allowed",
     "parameters.parameters.*.default",       # null = no as-built value (the model must have the parameter)
+    "inventory.*",                           # optional item fields (replaces, transmission, as_built)
     "spec.analysis.spline_smoothing",
     "backend.mock.fold_theta_deg",           # null = no fold
     "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)
@@ -409,6 +410,8 @@ class ConfigurationDef(_Model):
     wiring: dict[str, str] = {}
     removed: list[str] = []                # stack parts left out (constraints.electrodes.removable)
     moved: list[str] = []                  # plates whose offset the optimizer tunes (electrodes.movable)
+    variant_id: str = "base"               # model variant (results/variants/<id>/variant.json)
+    variant_settings: dict[str, float] = {}   # values of the variant's switch parameters (others: as built)
 
 
 class B0Config(_Model):
@@ -430,6 +433,50 @@ class B0Config(_Model):
         raise ConfigError(f"unknown config_id '{config_id}'; known: {[c.config_id for c in self.configurations]}")
 
 
+# --------------------------------------------------------------------------- inventory
+
+
+class InventoryParam(_Model):
+    range: list[float]                     # [lo, hi]
+    unit: Literal["mm"] = "mm"
+    as_built: float | None = None          # value of the part it replaces, if any
+
+    @field_validator("range")
+    @classmethod
+    def _rng(cls, v):
+        if len(v) != 2 or v[0] > v[1]:
+            raise ValueError("range must be [lo, hi] with lo <= hi")
+        return v
+
+
+class InventoryItem(_Model):
+    """A part the editor may build into a model variant (hypothetical: could be ordered)."""
+    id: str
+    description: str
+    kind: Literal["mesh", "grid", "electrode", "aperture", "removal", "other"]
+    replaces: str | None = None
+    parameters: dict[str, InventoryParam] = {}
+    transmission: float | None = Field(None, gt=0, le=1)
+    connectable: bool = False
+    notes: str = ""
+
+
+class InventoryConfig(_Model):
+    items: list[InventoryItem] = []
+
+    @field_validator("items")
+    @classmethod
+    def _unique(cls, v):
+        ids = [i.id for i in v]
+        dup = {i for i in ids if ids.count(i) > 1}
+        if dup:
+            raise ValueError(f"duplicate inventory ids: {sorted(dup)}")
+        return v
+
+    def get(self, item_id: str) -> InventoryItem | None:
+        return next((i for i in self.items if i.id == item_id), None)
+
+
 # --------------------------------------------------------------------------- root
 
 
@@ -441,6 +488,7 @@ class Config(_Model):
     backend: BackendConfig
     optimizer: OptimizerConfig
     b0_configs: B0Config
+    inventory: InventoryConfig = InventoryConfig()
 
     # not part of the files
     root_dir: Path = Field(default=Path("."), exclude=True)

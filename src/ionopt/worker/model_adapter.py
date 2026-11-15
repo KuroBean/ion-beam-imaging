@@ -25,6 +25,7 @@ import pandas as pd
 from .. import units
 from ..config import Config
 from ..electrodes import expected_potentials, geometry_electrodes, stack_layout
+from ..variants import BASE, load_variant, model_path, present_parts, registry as variant_registry
 from ..launch import write_release_file
 from ..schemas import FILES, FINAL_COLUMNS, JobSpec
 from ..utils import write_json
@@ -92,6 +93,7 @@ class ModelAdapter:
     client: Any
     cfg: Config
     fidelity: str
+    variant_id: str = BASE
     path: Path = field(init=False)
     model: Any = field(init=False, default=None)
     model_hash: str = field(init=False, default="")
@@ -103,7 +105,8 @@ class ModelAdapter:
         if self.fidelity not in FIDELITY:
             raise ValueError(f"unknown fidelity {self.fidelity!r}")
         self.F = FIDELITY[self.fidelity]
-        self.path = self.cfg.path(f"models.{self.fidelity}")
+        self.variant = load_variant(self.cfg, self.variant_id)
+        self.path = model_path(self.cfg, self.variant_id, self.fidelity)
 
     # ------------------------------------------------------------------ setup
 
@@ -142,8 +145,13 @@ class ModelAdapter:
             if len(cands) != 1:
                 raise AdapterError(f"{self.path.name}: expected one boundary selection labelled '{label}', got {cands}")
             out[key] = cands[0]
+        no_mesh = self.variant is not None and "screen_mesh" in self.variant.removed_base
         for key, val in expand_k(self.F["selections"]):
+            if no_mesh and key in ("sel_mesh_plane", "sel_mesh_frame"):
+                continue
             out[key] = val
+        for part in (self.variant.parts if self.variant else []):
+            out[f"sel_{part.name}"] = part.selection
         for key, val in out.items():
             for s in (val if isinstance(val, list) else [val]):
                 if s not in tags and s not in out:
@@ -179,7 +187,7 @@ class ModelAdapter:
 
     def set_params(self, params: dict[str, Any], job: JobSpec) -> tuple[dict[str, str], list[str], bool]:
         """Write registry parameters to the model. Returns (comsol expressions set, notes, geometry_changed)."""
-        reg = self.cfg.registry()
+        reg = {**self.cfg.registry(), **variant_registry(self.variant)}
         set_exprs: dict[str, str] = {}
         notes: list[str] = []
         missing = []
@@ -449,6 +457,7 @@ class ModelAdapter:
         pd.DataFrame({"z_m": za * mm, "V_V": V, "Ez_Vpm": Ez}).to_csv(out / FILES["axis_potential"], index=False)
         geom_el = geometry_electrodes(job, self.cfg)
         r_max = 1.5 * max(e["r_out_m"] for e in geom_el) / mm
+        var_parts = present_parts(self.variant, job.variant_settings)
         # whole chamber (coarse) and the tip-to-stack region (fine, for the lens-region plots)
         ex = self.cfg.backend.worker
         z_stack_mm = max(e["z_m"] + e["thickness_m"] / 2 for e in geom_el) / mm + 10.0
@@ -484,18 +493,34 @@ class ModelAdapter:
             if abs(front_model - front_cfg) > 0.05 * mm:
                 raise AdapterError(f"{e['name']}: model front face at {front_model / mm:.3f} mm, "
                                    f"constraints.electrodes stack says {front_cfg / mm:.3f} mm")
-        fz0, fr0 = self._numerical("min", "sel_mesh_frame", rz)
-        fz1, fr1 = self._numerical("max", "sel_mesh_frame", rz)
-        mz0, _ = self._numerical("min", "sel_mesh_plane", rz)
-        mz1, mr1 = self._numerical("max", "sel_mesh_plane", rz)
+        # variant parts: their measured bounding boxes are the geometry the checker uses for fates
+        for part in var_parts:
+            key = f"sel_{part.name}"
+            zmin, rmin = self._numerical("min", key, rz)
+            zmax, rmax = self._numerical("max", key, rz)
+            box = {"z_min_m": (zmin - tip_mm) * mm, "z_max_m": (zmax - tip_mm) * mm, "r_min_m": rmin * mm,
+                   "r_max_m": rmax * mm}
+            checks[part.name] = box
+            geom_el.append({"name": part.name, "selection": key, "kind": "variant_part",
+                            "z_m": 0.5 * (box["z_min_m"] + box["z_max_m"]), "thickness_m": box["z_max_m"] - box["z_min_m"],
+                            "r_in_m": box["r_min_m"], "r_out_m": box["r_max_m"]})
+        if "sel_mesh_frame" in self.sel:
+            fz0, fr0 = self._numerical("min", "sel_mesh_frame", rz)
+            fz1, fr1 = self._numerical("max", "sel_mesh_frame", rz)
+            mz0, _ = self._numerical("min", "sel_mesh_plane", rz)
+            mz1, mr1 = self._numerical("max", "sel_mesh_plane", rz)
+            mesh = {"z_mesh_m": (0.5 * (mz0 + mz1) - tip_mm) * mm, "r_mesh_open_m": fr0 * mm,
+                    "mesh_frame_z_m": [(fz0 - tip_mm) * mm, (fz1 - tip_mm) * mm], "mesh_frame_r_m": [fr0 * mm, fr1 * mm]}
+        else:                    # variant without a screen mesh: nominal plane, no frame
+            mesh = {"z_mesh_m": pos["z_mcp_m"] - job.positions["mesh_gap"], "r_mesh_open_m": None,
+                    "mesh_frame_z_m": None, "mesh_frame_r_m": None}
         _, r_mcp = self._numerical("max", "sel_mcp_face", rz)
         la = job.launch
         geom = {
             "source": f"comsol:{self.path.name}", "fidelity": self.fidelity, "cfg": job.cfg,
             "z_tip_m": 0.0, "z_launch_m": (la.launch_offset_um or 0.0) * units.UM,
             "z_mcp_m": pos["z_mcp_m"], "r_mcp_active_m": r_mcp * mm,
-            "z_mesh_m": (0.5 * (mz0 + mz1) - tip_mm) * mm, "r_mesh_open_m": fr0 * mm,
-            "mesh_frame_z_m": [(fz0 - tip_mm) * mm, (fz1 - tip_mm) * mm], "mesh_frame_r_m": [fr0 * mm, fr1 * mm],
+            **mesh, "variant_id": job.variant_id,
             "electrodes": geom_el, "model_boxes": checks,
             "lens_gap_m": pos["lens_gap_m"], "t_end_s": params["t_end"],
         }

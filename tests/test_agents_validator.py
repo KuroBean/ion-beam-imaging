@@ -111,10 +111,15 @@ def test_duplicate_needs_reason(cfg, acfg):
 
 def test_edit_paths(cfg, acfg):
     edit = prop(action="edit_then_optimize",
-                edit_request={"element": "grounded_grid", "description": "grid 5 mm before the MCP", "reason": "x"})
+                edit_request={"inventory_items": ["screen_mesh_wide"], "description": "wider mesh", "reason": "x"})
     assert validate(edit, state(), cfg, acfg).status == "needs_edit"
     v = validate(edit, state(method="A2"), cfg, acfg)
     assert v.status == "invalid" and "A2" in v.reasons[0]
+    bad = prop(action="edit_then_optimize",
+               edit_request={"inventory_items": ["flux_capacitor"], "description": "?", "reason": "x", "supply": "HV1"})
+    v = validate(bad, state(), cfg, acfg)
+    assert v.status == "invalid" and any("not in the inventory" in r for r in v.reasons)
+    assert any("LV channel or GND" in r for r in v.reasons)
 
 
 def test_search_space_bounds(cfg):

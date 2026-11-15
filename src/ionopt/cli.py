@@ -365,6 +365,8 @@ COMMANDS = {
     "agent-run": (_agents("agent_run"), "Phase 2: run the planner/critic agent loop", _agent_args("agent_run")),
     "agent-plan": (_agents("agent_plan"), "Phase 2: one planner call on the run log (no solves)",
                    _agent_args("agent_plan")),
+    "agent-edit": (_agents("agent_edit"), "Phase 2: one editor call (inventory part -> checked 2D model variant)",
+                   _agent_args("agent_edit")),
     "agent-resume": (_agents("agent_resume"), "Phase 2: continue a paused or interrupted agent run",
                      _agent_args("agent_resume")),
     "trace": (_agents("trace"), "Phase 2: export an agent run's rounds and calls (trace.md/json)", _agent_args("trace")),

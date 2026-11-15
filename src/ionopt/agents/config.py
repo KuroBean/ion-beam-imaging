@@ -31,6 +31,7 @@ class RoleConfig(_M):
     effort: Literal["low", "medium", "high", "xhigh", "max"] | None = None
     tools: list[str] = []
     timeout_s: float = Field(900, gt=0)
+    permission_mode: Literal["acceptEdits"] | None = None   # editor: file edits inside its sandbox only
 
 
 class LoopConfig(_M):
@@ -42,6 +43,8 @@ class LoopConfig(_M):
     improvement_tol_deg: float = Field(0.01, ge=0)
     validator_retries: int = Field(2, ge=0)
     editor_failure_cap: int = Field(2, ge=1)
+    editor_attempts: int = Field(3, ge=1)          # editor calls per edit (later ones get the failed check)
+    editor_build_timeout_s: float = Field(900, gt=0)
     min_bound_fraction: float = Field(0.1, gt=0, le=1)
     warm_start_top_k: int = Field(3, ge=0)
 

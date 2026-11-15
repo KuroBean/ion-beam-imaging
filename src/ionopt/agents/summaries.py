@@ -14,6 +14,7 @@ from .. import units
 from ..config import Config
 from ..optimize import SearchSpace
 from ..runlog import RunLog
+from ..variants import list_variants, load_variant
 from .config import AgentsConfig
 from .state import LoopState
 from .validator import presence_supported, to_configuration_def
@@ -161,11 +162,57 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
                  f"{port.get('mcp_front')} (MCP front, V), {port.get('mesh')} (mesh, V), lens_gap_mm, mesh_gap_mm, "
                  f"z_mcp_mm and <plate>_offset_mm of moved plates (mm). A position fixed by its range ([a, a]) is not a variable. Omitted variables keep "
                  f"their full usable range.")
-    v = [x.variant_id for x in state.model_variants]
-    lines.append(f"Approved model variants: base{', ' + ', '.join(v) if v else ''}.")
+    lines.append("Model variants (configuration.variant_id; 2D models the editor built and the author approved):")
+    lines += variants_lines(cfg, state)
     if state.method == "A2":
         lines.append("Geometry edits are DISABLED in this run: use the existing switches only.")
     return "\n".join(lines)
+
+
+def variants_lines(cfg: Config, state: LoopState) -> list[str]:
+    seen = {m.variant_id: m for m in list_variants(cfg)}
+    for v in state.model_variants:
+        if v.variant_id not in seen:
+            m = load_variant(cfg, v.variant_id)
+            if m is not None:
+                seen[v.variant_id] = m
+    out = ["- base: the as-built model"]
+    for m in seen.values():
+        bits = [f"from {m.parent} with {m.inventory_items}"]
+        if m.variables():
+            bits.append("variables " + ", ".join(f"{x.name}_mm [{x.range[0]:g}, {x.range[1]:g}] (as built "
+                                                 f"{x.as_built:g})" for x in m.variables()))
+        if m.switches():
+            bits.append("switches (variant_settings) " + ", ".join(f"{x.name} (as built {x.as_built:g})"
+                                                                  for x in m.switches()))
+        if m.parts:
+            bits.append("new conductors, wired like plates when present: " + ", ".join(
+                p.name + (f" (needs {p.present_when}=1)" if p.present_when else "") for p in m.parts))
+        if m.removed_base:
+            bits.append(f"removed: {m.removed_base}")
+        if m.mesh_open_fraction is not None:
+            bits.append(f"mesh transmission {m.mesh_open_fraction:g}")
+        out.append(f"- {m.variant_id}: " + "; ".join(bits) + (f". {m.description}" if m.description else ""))
+    return out
+
+
+def inventory_block(cfg: Config) -> str:
+    """Hypothetical parts the editor can build into a 2D variant (config/inventory.yaml)."""
+    if not cfg.inventory.items:
+        return "(empty: no geometry edits possible)"
+    out = []
+    for i in cfg.inventory.items:
+        bits = [f"{i.kind}" + (f", replaces {i.replaces}" if i.replaces else "")]
+        if i.parameters:
+            bits.append("sweepable " + ", ".join(f"{k} [{v.range[0]:g}, {v.range[1]:g}]"
+                                                 + (f" (as built {v.as_built:g})" if v.as_built is not None else "")
+                                                 for k, v in i.parameters.items()))
+        if i.transmission is not None:
+            bits.append(f"transmission {i.transmission:g}")
+        if i.connectable:
+            bits.append("may be wired to an LV channel")
+        out.append(f"- {i.id} ({'; '.join(bits)}): {' '.join(i.description.split())}")
+    return "\n".join(out)
 
 
 def variables_block(cfg: Config, c) -> str:
@@ -299,6 +346,8 @@ def planner_context(cfg: Config, acfg: AgentsConfig, state: LoopState, last_metr
         "# Specification\n" + spec_block(cfg),
         "# Design space\n" + design_space_block(cfg, state),
         "# Baseline B0 (fixed hand-made configurations, same optimizer)\n" + b0_block(cfg),
+        "# Inventory (hypothetical parts we could order; action edit_then_optimize builds them into a 2D model "
+        "variant, the author approves it)\n" + inventory_block(cfg),
         "# Rounds so far\n" + history_block(state),
         "# Best so far\n" + best_block(state),
         f"# Budget\n- solves used {b.solves_used} of {b.solves_total} ({b.solves_left} left); round "

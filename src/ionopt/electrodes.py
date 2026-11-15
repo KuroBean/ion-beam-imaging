@@ -23,6 +23,7 @@ from typing import Any, Iterable
 from . import units
 from .config import Config, TBDError, range_known
 from .schemas import JobSpec
+from .variants import load_variant, present_parts, registry as variant_registry
 
 GND = "GND"
 EPS_M = 1e-12          # numerical slack for position comparisons (m)
@@ -60,9 +61,22 @@ def deflector_halves(cfg: Config, chamber: int) -> list[str]:
 # --------------------------------------------------------------------------- structure
 
 
-def check_structure(cfg: Config, chamber: int, wiring: dict[str, str], removed: Iterable[str] = ()) -> list[str]:
-    """Problems with a configuration's chamber setup, wiring map and removed parts."""
+def check_structure(cfg: Config, chamber: int, wiring: dict[str, str], removed: Iterable[str] = (),
+                    variant_id: str = "base", variant_settings: dict[str, float] | None = None) -> list[str]:
+    """Problems with a configuration's chamber setup, wiring map, removed parts and variant."""
     p: list[str] = []
+    try:
+        var = load_variant(cfg, variant_id)
+    except Exception as e:                                  # noqa: BLE001
+        return [str(e)]
+    settings = variant_settings or {}
+    if var is not None:
+        sw = {x.name for x in var.switches()}
+        p += [f"variant {variant_id} has no switch '{k}' (switches: {sorted(sw)})" for k in settings if k not in sw]
+        p += [f"variant switch {k} must be 0 or 1" for k, v in settings.items() if k in sw and v not in (0, 1)]
+    elif settings:
+        p.append("variant_settings given for the base model")
+    extra_nodes = [x.name for x in present_parts(var, settings) if x.connectable]
     wired_removed = sorted(n for n in removed if wiring.get(n, GND) != GND)
     if wired_removed:
         p.append(f"removed parts cannot be wired: {wired_removed}")
@@ -71,9 +85,9 @@ def check_structure(cfg: Config, chamber: int, wiring: dict[str, str], removed: 
         p.append(f"cfg {chamber} is not a chamber setup {sorted(cs.chamber_setups)}")
     lv = cs.supplies.low_voltage
     hv_ports = set(cs.supplies.high_voltage.roles)
-    not_conn = sorted(set(wiring) - set(lv.connectable))
+    not_conn = sorted(set(wiring) - set(lv.connectable) - set(extra_nodes))
     if not_conn:
-        p.append(f"not connectable to LV supplies: {not_conn} (connectable: {lv.connectable})")
+        p.append(f"not connectable to LV supplies: {not_conn} (connectable: {lv.connectable + extra_nodes})")
     allowed = set(lv.channels) | {GND}
     for node, ch in wiring.items():
         if ch in hv_ports:
@@ -198,10 +212,15 @@ def geometry_electrodes(job: JobSpec, cfg: Config) -> list[dict]:
 # --------------------------------------------------------------------------- potentials
 
 
+def variant_nodes(job: JobSpec, cfg: Config) -> list[str]:
+    """Wiring nodes added by the job's variant (present parts)."""
+    return [x.name for x in present_parts(load_variant(cfg, job.variant_id), job.variant_settings)]
+
+
 def node_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
-    """Potential (V) of the tip and every electrode e1..e9, from the wiring (unlisted = GND)."""
+    """Potential (V) of the tip, every electrode e1..e9 and the variant's parts, from the wiring (unlisted = GND)."""
     out = {}
-    for node in ["tip"] + electrode_names(cfg):
+    for node in ["tip"] + electrode_names(cfg) + variant_nodes(job, cfg):
         ch = job.wiring.get(node, GND)
         out[node] = 0.0 if ch == GND else float(job.channels[ch])
     return out
@@ -255,8 +274,12 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
 
     Returns warnings (checks skipped because a limit is TBD). Raises JobValidationError.
     """
-    problems = check_structure(cfg, job.cfg, job.wiring, job.removed)
+    problems = check_structure(cfg, job.cfg, job.wiring, job.removed, job.variant_id, job.variant_settings)
     warnings: list[str] = []
+    if problems:
+        raise JobValidationError(problems)
+    var = load_variant(cfg, job.variant_id)
+    var_vars = {x.name: x for x in var.variables()} if var else {}
     if problems:
         raise JobValidationError(problems)
     cs = cfg.constraints
@@ -300,7 +323,12 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
 
     # ---- positions (metres)
     missing = sorted(set(POSITIONS) - set(job.positions))
-    extra = sorted(k for k in set(job.positions) - set(POSITIONS) if not k.endswith(OFFSET))
+    extra = sorted(k for k in set(job.positions) - set(POSITIONS) if not k.endswith(OFFSET) and k not in var_vars)
+    for name, x in var_vars.items():
+        if name not in job.positions:
+            problems.append(f"variant parameter {name} has no value (positions)")
+        elif not (x.range[0] * units.MM - EPS_M <= job.positions[name] <= x.range[1] * units.MM + EPS_M):
+            problems.append(f"{name} = {job.positions[name] / units.MM:g} mm outside its inventory range {x.range}")
     if missing:
         problems.append(f"positions missing {missing}")
     if extra:
@@ -418,6 +446,13 @@ def expand(job: JobSpec, cfg: Config) -> dict[str, Any]:
         for h in "ab":
             p[f"v_{d.name}{h}"] = defl.get(f"{d.name}{h}", 0.0)
     p.update(layout_params(job, cfg))
+    var = load_variant(cfg, job.variant_id)
+    if var is not None:
+        reg = {**reg, **variant_registry(var)}
+        for x in var.parameters:
+            p[x.name] = job.positions[x.name] if x.role == "variable" else int(job.variant_settings.get(x.name, x.as_built))
+        for part in var.parts:
+            p[f"v_{part.name}"] = pots.get(part.name, 0.0)
     unknown = sorted(set(p) - set(reg))
     if unknown:
         raise ValueError(f"expanded parameters not in the registry: {unknown}")
@@ -449,13 +484,17 @@ def expected_potentials(job: JobSpec, cfg: Config) -> dict[str, float]:
     for name in electrode_names(cfg):
         if name not in removed:
             out[f"sel_{name}"] = pots[name]
+    var = load_variant(cfg, job.variant_id)
+    for part in present_parts(var, job.variant_settings):
+        out[f"sel_{part.name}"] = pots.get(part.name, 0.0)
     defl = deflector_potentials(job, cfg)
     for d in cfg.constraints.electrodes.deflectors:
         if job.cfg in d.cfgs and d.name not in removed:
             # one value per deflector (2D models the pair as one ring at the mean of its halves)
             out[f"sel_{d.name}"] = 0.5 * (defl[d.name + "a"] + defl[d.name + "b"])
-    out["sel_mesh_plane"] = hv["mesh"]
-    out["sel_mesh_frame"] = hv["mesh"]
+    if not (var and "screen_mesh" in var.removed_base):
+        out["sel_mesh_plane"] = hv["mesh"]
+        out["sel_mesh_frame"] = hv["mesh"]
     out["sel_mcp_face"] = hv["mcp_front"]
     return out
 

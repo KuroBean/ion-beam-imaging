@@ -19,8 +19,12 @@ def build_job(cfg: Config, conf: ConfigurationDef, channels: dict[str, float], p
     The current spec.launch section is copied into the job so it is self-contained.
     """
     t = {"config_id": conf.config_id, **(tags or {})}
+    from .variants import load_variant
+
+    var = load_variant(cfg, conf.variant_id)
     kw = dict(fidelity=fidelity, cfg=conf.cfg, wiring=dict(conf.wiring), channels=dict(channels), positions=dict(positions),
-              removed=list(conf.removed),
+              removed=list(conf.removed), variant_id=conf.variant_id, variant_settings=dict(conf.variant_settings),
+              mesh_open_fraction=var.mesh_open_fraction if var else None,
               launch=cfg.spec.launch.model_copy(), mesh_level=mesh_level, ion_level=ion_level, tags=t)
     if job_id:
         kw["job_id"] = job_id

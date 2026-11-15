@@ -12,6 +12,7 @@ from ionopt.agents.roles import LoopContext
 from ionopt.agents.schemas import EditResult
 from ionopt.backends.mock import MockBackend
 from ionopt.runlog import RunLog
+from ionopt.variants import VariantManifest, load_variant, save_variant
 
 REPO = CONFIG_DIR.parent
 EINZEL = {"tip": "LV1", "e3": "LV2"}
@@ -124,7 +125,7 @@ def test_no_improvement_stop(make_ctx):
 
 def test_editor_missing_counts_failures(make_ctx):
     edit = plan(action="edit_then_optimize",
-                edit_request={"element": "grounded_grid", "description": "grid before the MCP", "reason": "x"})
+                edit_request={"inventory_items": ["no_screen_mesh"], "description": "no mesh", "reason": "x"})
     ctx = make_ctx({"planner": [edit, edit]}, loop={"editor_failure_cap": 2})
     s = run(ctx).state
     assert s.stop_reason == "editor_failures" and s.editor_failures == 2
@@ -132,16 +133,22 @@ def test_editor_missing_counts_failures(make_ctx):
 
 
 def _ok_editor(req, state, ctx, sandbox):
-    return EditResult(ok=True, variant_id="v1", script_path="build_axisym_v1.py", diff_summary="grid added")
+    save_variant(ctx.cfg, VariantManifest(variant_id="v1", removed_base=["screen_mesh"], mesh_open_fraction=1.0))
+    return EditResult(ok=True, variant_id="v1", script_path="build_axisym.py", diff_summary="mesh removed",
+                      n_solves=2)
 
 
 class VariantMock(MockBackend):
     supports_variants = True
 
 
+class NoVariantMock(MockBackend):
+    supports_variants = False
+
+
 def test_edit_approval_pause_and_resume(make_ctx, cfg_tmp):
     edit = plan(action="edit_then_optimize", budget=3,
-                edit_request={"element": "grounded_grid", "description": "grid before the MCP", "reason": "x"})
+                edit_request={"inventory_items": ["no_screen_mesh"], "description": "no mesh", "reason": "x"})
     ctx = make_ctx({"planner": [edit, STOP], "critic": [ACCEPT]}, editor=_ok_editor,
                    backend=VariantMock(cfg_tmp))
     with LoopRun(ctx, "r1") as lr:
@@ -154,11 +161,13 @@ def test_edit_approval_pause_and_resume(make_ctx, cfg_tmp):
     assert st.done and s.stop_reason == "planner_stop"
     assert [v.variant_id for v in s.model_variants] == ["v1"]
     assert s.history[0].proposal.configuration.variant_id == "v1"
+    assert s.budget.solves_used == 2 + 3            # editor check solves + the study
+    assert load_variant(ctx.cfg, "v1").approved
 
 
 def test_edit_rejected_goes_back_to_planner(make_ctx):
     edit = plan(action="edit_then_optimize",
-                edit_request={"element": "grounded_grid", "description": "grid", "reason": "x"})
+                edit_request={"inventory_items": ["no_screen_mesh"], "description": "no mesh", "reason": "x"})
     ctx = make_ctx({"planner": [edit, STOP]}, editor=_ok_editor)
     with LoopRun(ctx, "r1") as lr:
         lr.start(new_state(ctx, "r1"))
@@ -167,10 +176,10 @@ def test_edit_rejected_goes_back_to_planner(make_ctx):
     assert "no room for a grid there" in ctx.llm.calls[1]["prompt"]
 
 
-def test_variant_without_backend_support_is_not_solved(make_ctx):
+def test_variant_without_backend_support_is_not_solved(make_ctx, cfg_tmp):
     edit = plan(action="edit_then_optimize",
-                edit_request={"element": "grounded_grid", "description": "grid", "reason": "x"})
-    ctx = make_ctx({"planner": [edit, STOP]}, editor=_ok_editor)
+                edit_request={"inventory_items": ["no_screen_mesh"], "description": "no mesh", "reason": "x"})
+    ctx = make_ctx({"planner": [edit, STOP]}, editor=_ok_editor, backend=NoVariantMock(cfg_tmp))
     with LoopRun(ctx, "r1") as lr:
         lr.start(new_state(ctx, "r1"))
         s = lr.resume({"approved": True}).state

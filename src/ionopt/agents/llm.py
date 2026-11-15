@@ -85,6 +85,8 @@ class ClaudeCLIClient:
                "--system-prompt", system, "--no-session-persistence"]
         if rc.effort:
             cmd += ["--effort", rc.effort]
+        if rc.permission_mode:
+            cmd += ["--permission-mode", rc.permission_mode]
         if cli.restricted:
             cmd.append("--restricted")
         if cli.strict_mcp_config:

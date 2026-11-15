@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from ..config import Config, ConfigError, ConfigurationDef
 from ..electrodes import check_structure, layout_problems
+from ..variants import list_variants
 from ..optimize import SearchSpace
 from .config import AgentsConfig
 from .schemas import Bound, Configuration, PlannerProposal
@@ -28,7 +29,8 @@ def presence_supported(cfg: Config) -> bool:
 
 def to_configuration_def(c: Configuration, config_id: str, description: str = "") -> ConfigurationDef:
     return ConfigurationDef(config_id=config_id, description=description, cfg=c.cfg, wiring=dict(c.wiring),
-                            removed=list(c.removed), moved=list(c.moved))
+                            removed=list(c.removed), moved=list(c.moved), variant_id=c.variant_id,
+                            variant_settings=dict(c.variant_settings))
 
 
 def bounds_tuple(bounds: dict[str, Bound]) -> dict[str, tuple[float, float]]:
@@ -55,8 +57,10 @@ def bounds_overlap(full: dict[str, tuple[float, float]], a: dict[str, Bound], b:
 
 def check_configuration(c: Configuration, state: LoopState, cfg: Config) -> list[str]:
     p: list[str] = []
-    if c.variant_id not in state.variant_ids():
-        p.append(f"variant_id '{c.variant_id}' is not an approved variant (known: {sorted(state.variant_ids())})")
+    known = state.variant_ids() | {m.variant_id for m in list_variants(cfg)}
+    if c.variant_id not in known:
+        p.append(f"variant_id '{c.variant_id}' is not an approved variant (known: {sorted(known)})")
+        return p
     el = cfg.constraints.electrodes
     if "e1" in c.removed or "e1" in c.moved:
         p.append("e1 is the extractor and the stack reference: it cannot be removed or moved")
@@ -68,7 +72,7 @@ def check_configuration(c: Configuration, state: LoopState, cfg: Config) -> list
     both = sorted(set(c.moved) & set(c.removed))
     if both:
         p.append(f"{both} both removed and moved")
-    p += check_structure(cfg, c.cfg, c.wiring, c.removed)
+    p += check_structure(cfg, c.cfg, c.wiring, c.removed, c.variant_id, c.variant_settings)
     return p
 
 
@@ -81,6 +85,17 @@ def validate(p: PlannerProposal, state: LoopState, cfg: Config, acfg: AgentsConf
     warnings: list[str] = []
     if p.action == "edit_then_optimize" and state.method == "A2":
         reasons.append("the editor is disabled in this run (A2): use the existing switches only")
+    if p.action == "edit_then_optimize" and p.edit_request is not None:
+        req = p.edit_request
+        bad = [i for i in req.inventory_items if cfg.inventory.get(i) is None]
+        if bad:
+            reasons.append(f"edit_request: {bad} not in the inventory (config/inventory.yaml: "
+                           f"{[i.id for i in cfg.inventory.items]})")
+        if p.configuration is not None and p.configuration.variant_id != req.parent_variant:
+            reasons.append(f"edit_request.parent_variant {req.parent_variant} must be the configuration's variant "
+                           f"{p.configuration.variant_id} (the new variant replaces it after approval)")
+        if req.supply not in (None, "GND") and req.supply not in cfg.constraints.supplies.low_voltage.channels:
+            reasons.append(f"edit_request.supply {req.supply}: new conductors go on an LV channel or GND")
     c = p.configuration
     assert c is not None                                  # schema guarantees it for these actions
     reasons += check_configuration(c, state, cfg)
@@ -142,6 +157,5 @@ def validate(p: PlannerProposal, state: LoopState, cfg: Config, acfg: AgentsConf
     if reasons:
         return ValidationResult(status="invalid", reasons=reasons, warnings=warnings)
     if p.action == "edit_then_optimize":
-        warnings.append("constraints.yaml has no inventory block yet: buildability is checked by the author only")
         return ValidationResult(status="needs_edit", warnings=warnings)
     return ValidationResult(status="ok", warnings=warnings)

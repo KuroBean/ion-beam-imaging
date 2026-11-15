@@ -90,10 +90,13 @@ def derive_ions(launch: pd.DataFrame, final: pd.DataFrame, geom: dict, job: JobS
     in_flight = ~missing & (t_end is not None) & (t >= (t_end or 0) * (1 - 1e-9)) & (speed > 0)
 
     on_mcp_plane = np.abs(z - geom["z_mcp_m"]) <= tol
-    fz = geom["mesh_frame_z_m"]
-    fr = geom["mesh_frame_r_m"]
-    at_frame = (z >= fz[0] - tol) & (z <= fz[1] + tol) & (r >= fr[0] - tol) & \
-               ((r <= fr[1] + tol) if fr[1] is not None else True)
+    fz = geom.get("mesh_frame_z_m")
+    fr = geom.get("mesh_frame_r_m")
+    if fz is None or fr is None:          # variant without a screen mesh
+        at_frame = np.zeros(n, dtype=bool)
+    else:
+        at_frame = (z >= fz[0] - tol) & (z <= fz[1] + tol) & (r >= fr[0] - tol) & \
+                   ((r <= fr[1] + tol) if fr[1] is not None else True)
     at_el = np.zeros(n, dtype=bool)
     el_sel = np.full(n, "", dtype=object)
     for e in geom.get("electrodes", []):
@@ -291,7 +294,8 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
 
     # ---- step 4: requirements and validity
     req, tol = cfg.spec.requirements, cfg.spec.tolerances
-    open_frac = cfg.require("spec.detector.mesh_open_fraction")
+    open_frac = job.mesh_open_fraction if job.mesh_open_fraction is not None else \
+        cfg.require("spec.detector.mesh_open_fraction")
     eta_min = cfg.require("spec.requirements.eta_min")
     e_tol = cfg.require("spec.tolerances.energy_conservation_rel")
     v_tol = cfg.require("spec.tolerances.potential_match_V")
