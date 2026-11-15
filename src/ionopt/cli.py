@@ -262,6 +262,21 @@ def cmd_promote(a) -> int:
     return 0
 
 
+def _agents(name: str):
+    """Phase 2 commands live in agents/cli_agents.py (LangGraph is imported only when they run)."""
+    def fn(a) -> int:
+        from .agents import cli_agents
+        return getattr(cli_agents, f"cmd_{name}")(_load(a), a)
+    return fn
+
+
+def _agent_args(name: str):
+    def fn(p):
+        from .agents import cli_agents
+        getattr(cli_agents, f"args_{name}")(p)
+    return fn
+
+
 def _not_yet(task: str):
     def fn(a) -> int:
         print(f"not implemented yet ({task})", file=sys.stderr)
@@ -347,6 +362,10 @@ COMMANDS = {
     "promote": (cmd_promote, "rerun the top 2D results of a study in 3D", _args_promote),
     "fidelity-check": (cmd_fidelity_check, "2D vs 3D on identical settings (task 10)", _args_fidelity),
     "report": (cmd_report, "HTML index of runs with summary figures (results/report_*.html)", _args_report),
+    "agent-run": (_agents("agent_run"), "Phase 2: run the planner/critic agent loop", _agent_args("agent_run")),
+    "agent-resume": (_agents("agent_resume"), "Phase 2: continue a paused or interrupted agent run",
+                     _agent_args("agent_resume")),
+    "trace": (_agents("trace"), "Phase 2: export an agent run's rounds and calls (trace.md/json)", _agent_args("trace")),
 }
 
 

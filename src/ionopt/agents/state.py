@@ -97,6 +97,7 @@ class LoopState(_St):
     history: list[RoundRecord] = Field(default_factory=list)
     best: BestSoFar | None = None
     pending: Pending = Field(default_factory=Pending)
+    current: RoundRecord | None = None                   # the round between optimize and update_state
     no_improve_rounds: int = 0
     editor_failures: int = 0
     stop_reason: str | None = None
