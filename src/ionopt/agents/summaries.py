@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .. import units
 from ..config import Config
 from ..optimize import SearchSpace
 from ..runlog import RunLog
@@ -136,6 +137,12 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
         rules.append(f"extraction: the tip-e1 field accelerates the ions by >= {cfg.optimizer.min_extraction_V} V")
     if rules:
         lines.append("Optimizer rules (always enforced): " + "; ".join(rules) + ".")
+    hv = cs.supplies.high_voltage.roles
+    port = {role: k for k, role in hv.items()}
+    lines.append(f"Optimizer variables (the names bounds use): each LV channel used by the wiring (V), "
+                 f"{port.get('mcp_front')} (MCP front, V), {port.get('mesh')} (mesh, V), lens_gap_mm, mesh_gap_mm, "
+                 f"z_mcp_mm (mm). A position fixed by its range ([a, a]) is not a variable. Omitted variables keep "
+                 f"their full usable range.")
     v = [x.variant_id for x in state.model_variants]
     lines.append(f"Approved model variants: base{', ' + ', '.join(v) if v else ''}.")
     if state.method == "A2":
@@ -211,7 +218,7 @@ def b0_block(cfg: Config) -> str:
     if not db.is_file():
         return "(no B0 results in the run log)"
     ids = {c.config_id: c for c in cfg.b0_configs.configurations}
-    rows, old_spec = [], False
+    rows, settings, old_spec = [], [], False
     with RunLog(db) as rl:
         latest: dict[str, dict] = {}
         for s in rl._rows("SELECT * FROM studies ORDER BY started_at"):
@@ -230,12 +237,36 @@ def b0_block(cfg: Config) -> str:
                 score, eta = "none feasible", f"max {_fmt(max((r['eta'] or 0.0) for r in res))}"
             rows.append(f"| {s['study_id']}{'' if current else ' *'} | {config_str(ids[cid].model_dump())} | "
                         f"{len(res)} | {n_feas} | {score} | {eta} |")
+            pick = res[0] if n_feas else max(res, key=lambda r: r["eta"] or 0.0)
+            settings.append(f"- {cid} ({'best feasible' if n_feas else 'highest-eta'} run {pick['job_id'][:8]}): "
+                            + _settings_str(cfg, ids[cid], rl, pick["job_id"]))
     if not rows:
         return "(no B0 results in the run log)"
     head = ["| study | configuration | valid runs | feasible runs | best feasible score (deg) | its eta |",
             "|---|---|---|---|---|---|"]
     note = ["", "* scored under an earlier spec version (thresholds may differ); treat as indicative"] if old_spec else []
-    return "\n".join(head + rows + note)
+    tail = ["", "Settings of each study's best run, value [usable range] (V, mm):"] + settings if settings else []
+    return "\n".join(head + rows + note + tail)
+
+
+def _settings_str(cfg: Config, conf, rl: RunLog, job_id: str) -> str:
+    """'LV1 164.6 [1, 300], ..., lens_gap_mm 37.77 [10, 53]' for a stored job (fixed positions left out)."""
+    row = rl._rows("SELECT config_json FROM jobs WHERE job_id=?", (job_id,))
+    if not row:
+        return "(settings not in the run log)"
+    j = json.loads(row[0]["config_json"])
+    vals = {**j.get("channels", {}), **{f"{k}_mm": v / units.MM for k, v in j.get("positions", {}).items()}}
+    try:
+        rng = SearchSpace.from_config(cfg, conf).variable_ranges()
+    except Exception:                                       # noqa: BLE001
+        rng = {}
+    out = []
+    for k, v in vals.items():
+        lo, hi = rng.get(k, (None, None))
+        if lo is not None and lo == hi:
+            continue
+        out.append(f"{k} {_fmt(v, 4)}" + (f" [{_fmt(lo, 4)}, {_fmt(hi, 4)}]" if lo is not None else ""))
+    return ", ".join(out)
 
 
 # --------------------------------------------------------------------------- prompts

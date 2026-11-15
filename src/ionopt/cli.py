@@ -363,6 +363,8 @@ COMMANDS = {
     "fidelity-check": (cmd_fidelity_check, "2D vs 3D on identical settings (task 10)", _args_fidelity),
     "report": (cmd_report, "HTML index of runs with summary figures (results/report_*.html)", _args_report),
     "agent-run": (_agents("agent_run"), "Phase 2: run the planner/critic agent loop", _agent_args("agent_run")),
+    "agent-plan": (_agents("agent_plan"), "Phase 2: one planner call on the run log (no solves)",
+                   _agent_args("agent_plan")),
     "agent-resume": (_agents("agent_resume"), "Phase 2: continue a paused or interrupted agent run",
                      _agent_args("agent_resume")),
     "trace": (_agents("trace"), "Phase 2: export an agent run's rounds and calls (trace.md/json)", _agent_args("trace")),

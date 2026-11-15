@@ -27,6 +27,7 @@ from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
 
+from ..config import ConfigError
 from ..optimize import optimize
 from ..utils import now_iso
 from .critic import review
@@ -58,7 +59,10 @@ def new_state(ctx: LoopContext, run_id: str, method: Method = "agent", case_id: 
     assumptions = list(ASSUMPTIONS)
     r = cfg.spec.requirements
     if r.impact_threshold_eV_per_charge is None and r.impact_threshold_mps is None:
-        assumptions.append("impact threshold not set: the fast-fraction requirement always passes")
+        raise ConfigError("spec.requirements.impact_threshold_* is TBD: the checker cannot score runs. Set it in "
+                          "config/spec.yaml or run with --overrides config/dev_overrides.yaml (placeholder)")
+    if cfg.overrides:
+        assumptions.append("config overrides (placeholders, not author decisions): " + ", ".join(cfg.overrides))
     return LoopState(
         run_id=run_id, method=method, case_id=case_id, seed=cfg.optimizer.seed,
         models={k: v.model for k, v in acfg.roles.items()},

@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .roles import LoopContext
 
 
-def _ctx(cfg: Config, a) -> "LoopContext":
+def _ctx(cfg: Config, a, backend: bool = True) -> "LoopContext":
     from ..backends import make_backend
     from .config import load_agents_config
     from .llm import ClaudeCLIClient
@@ -31,13 +31,13 @@ def _ctx(cfg: Config, a) -> "LoopContext":
         llm = FakeLLM.from_dir(a.fake_llm)
     else:
         llm = ClaudeCLIClient(acfg)
-    return LoopContext(cfg=cfg, acfg=acfg, llm=llm, backend=make_backend(cfg),
+    return LoopContext(cfg=cfg, acfg=acfg, llm=llm, backend=make_backend(cfg) if backend else None,
                        runs_dir=cfg.path("results_dir") / "runs", prompts_dir=cfg.root_dir / "prompts",
                        log=lambda s: print(s, flush=True))
 
 
 def _close(ctx: "LoopContext") -> None:
-    if hasattr(ctx.backend, "close"):
+    if ctx.backend is not None and hasattr(ctx.backend, "close"):
         ctx.backend.close()
 
 
@@ -110,6 +110,34 @@ def cmd_agent_resume(cfg: Config, a) -> int:
     return _report(st, a.run_id)
 
 
+def cmd_agent_plan(cfg: Config, a) -> int:
+    """One planner call on the current run log (no solves, no loop): prompt, proposal, validator verdict."""
+    from .graph import new_state
+    from .llm import LLMError
+    from .planner import planner_prompt, propose
+    from .validator import validate
+
+    run_id = a.run_id or f"plan-{time.strftime('%Y%m%d-%H%M%S')}"
+    ctx = _ctx(cfg, a, backend=False)
+    state = new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds)
+    if a.prompt_only:
+        out = ctx.run_dir(run_id) / "planner_prompt.md"
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(planner_prompt(ctx, state), encoding="utf-8")
+        print(f"written: {out}")
+        return 0
+    try:
+        p, call_id = propose(ctx, state)
+    except LLMError as e:
+        print(f"planner failed: {e}", file=sys.stderr)
+        return 1
+    v = validate(p, state, cfg, ctx.acfg)
+    print(json.dumps(p.model_dump(mode="json", exclude_none=True), indent=1))
+    print(f"\nvalidator: {v.status}" + "".join(f"\n  - {r}" for r in v.reasons))
+    print(f"call folder: {ctx.run_dir(run_id) / 'calls'} ({call_id})")
+    return 0
+
+
 def trace(cfg: Config, run_id: str) -> tuple[dict, str]:
     """A run's rounds, agent calls and metrics as JSON and markdown (for the lab report)."""
     with RunLog(cfg.path("db_path")) as rl:
@@ -161,6 +189,11 @@ def args_agent_run(p) -> None:
     p.add_argument("--rounds", type=int, default=None, help="round cap (default config/agents.yaml)")
     p.add_argument("--fake-llm", type=Path, default=None,
                    help="folder of scripted responses <role>_<n>.json instead of Claude (testing)")
+
+
+def args_agent_plan(p) -> None:
+    args_agent_run(p)
+    p.add_argument("--prompt-only", action="store_true", help="write the planner prompt, make no LLM call")
 
 
 def args_agent_resume(p) -> None:

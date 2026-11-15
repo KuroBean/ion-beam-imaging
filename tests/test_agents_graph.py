@@ -195,3 +195,12 @@ def test_resume_after_crash(make_ctx):
     s = run(ctx).state
     # critic failure is not fatal: the round is kept with a note, the next planner call fails (queue empty)
     assert s.history[0].note.startswith("critic error") and s.stop_reason.startswith("planner_error")
+
+
+def test_new_state_needs_an_impact_threshold(make_ctx):
+    from ionopt.config import ConfigError
+    ctx = make_ctx({})
+    ctx.cfg.spec.requirements.impact_threshold_eV_per_charge = None
+    ctx.cfg.spec.requirements.impact_threshold_mps = None
+    with pytest.raises(ConfigError, match="impact_threshold"):
+        new_state(ctx, "r0")
