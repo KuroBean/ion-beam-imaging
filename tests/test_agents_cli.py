@@ -43,3 +43,16 @@ def test_agent_run_pause_resume_trace(tmp_path, capsys):
     md = (tmp_path / "results" / "runs" / "t1" / "trace.md").read_text(encoding="utf-8")
     assert "| 1 | optimize | none | ok | t1-r01 | 10 |" in md
     assert main(["agent-run", *common, "--run-id", "t1", "--fake-llm", str(script)]) == 2   # exists
+
+
+def test_agent_plan_goal_reaches_the_planner_prompt(tmp_path, capsys):
+    common = _args(tmp_path, "--set", "backend.backend=mock")
+    goal = "Test whether a wider screen mesh (inventory screen_mesh_wide) improves the design."
+    assert main(["agent-plan", *common, "--run-id", "g1", "--goal", goal, "--prompt-only"]) == 0
+    out = capsys.readouterr().out
+    path = out.split("written: ")[1].strip()
+    text = open(path, encoding="utf-8").read()
+    assert text.startswith("# Author's goal for this run\n" + goal)
+    assert main(["agent-plan", *common, "--run-id", "g2", "--prompt-only"]) == 0
+    path = capsys.readouterr().out.split("written: ")[1].strip()
+    assert "Author's goal" not in open(path, encoding="utf-8").read()

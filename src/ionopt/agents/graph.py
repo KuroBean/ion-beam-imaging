@@ -55,9 +55,12 @@ def _hash(data: Any) -> str:
 
 
 def new_state(ctx: LoopContext, run_id: str, method: Method = "agent", case_id: str = "nominal",
-              solve_budget: int | None = None, round_cap: int | None = None) -> LoopState:
+              solve_budget: int | None = None, round_cap: int | None = None, goal: str | None = None) -> LoopState:
     cfg, acfg = ctx.cfg, ctx.acfg
     assumptions = list(ASSUMPTIONS)
+    goal = (goal or "").strip() or None
+    if goal:
+        assumptions.append(f"author goal given to the planner (steered run, not a blind evaluation): {goal}")
     r = cfg.spec.requirements
     if r.impact_threshold_eV_per_charge is None and r.impact_threshold_mps is None:
         raise ConfigError("spec.requirements.impact_threshold_* is TBD: the checker cannot score runs. Set it in "
@@ -69,7 +72,7 @@ def new_state(ctx: LoopContext, run_id: str, method: Method = "agent", case_id: 
         models={k: v.model for k, v in acfg.roles.items()},
         budget=Budget(solves_total=solve_budget or acfg.loop.solve_budget, round_cap=round_cap or acfg.loop.round_cap),
         spec_hash=cfg.spec_hash(), constraints_hash=_hash(cfg.resolved()["constraints"]), agents_hash=acfg.hash(),
-        assumptions=assumptions)
+        assumptions=assumptions, goal=goal)
 
 
 # --------------------------------------------------------------------------- nodes

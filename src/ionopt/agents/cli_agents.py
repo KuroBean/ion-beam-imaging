@@ -75,7 +75,7 @@ def cmd_agent_run(cfg: Config, a) -> int:
         return 2
     try:
         with LoopRun(ctx, run_id) as lr:
-            st = lr.start(new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds))
+            st = lr.start(new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds, a.goal))
     finally:
         _close(ctx)
     return _report(st, run_id)
@@ -120,7 +120,7 @@ def cmd_agent_plan(cfg: Config, a) -> int:
 
     run_id = a.run_id or f"plan-{time.strftime('%Y%m%d-%H%M%S')}"
     ctx = _ctx(cfg, a, backend=False)
-    state = new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds)
+    state = new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds, a.goal)
     if a.prompt_only:
         out = ctx.run_dir(run_id) / "planner_prompt.md"
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -221,6 +221,8 @@ def args_agent_run(p) -> None:
     p.add_argument("--case", default="nominal", help="held-out case id (recorded; spec overrides via --set)")
     p.add_argument("--budget", type=int, default=None, help="total solves (default config/agents.yaml)")
     p.add_argument("--rounds", type=int, default=None, help="round cap (default config/agents.yaml)")
+    p.add_argument("--goal", default=None, metavar="TEXT",
+                   help="optional author direction shown to the planner every round (recorded as a run assumption)")
     p.add_argument("--fake-llm", type=Path, default=None,
                    help="folder of scripted responses <role>_<n>.json instead of Claude (testing)")
 

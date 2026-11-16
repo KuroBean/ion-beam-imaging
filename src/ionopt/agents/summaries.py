@@ -356,6 +356,10 @@ def planner_context(cfg: Config, acfg: AgentsConfig, state: LoopState, last_metr
         f"- the loop stops after {lp.no_improvement_rounds} rounds without improving the best score by more "
         f"than {lp.improvement_tol_deg} deg",
     ]
+    if state.goal:
+        parts.insert(0, "# Author's goal for this run\n" + state.goal + "\n(A direction to explore, not a new "
+                     "requirement: the specification still decides what counts as better. Report honestly if the "
+                     "results argue against it, and stop pursuing it when they do.)")
     if last is not None:
         parts.append("# Last round's best result\n" + metrics_block(last_metrics or last.metrics))
         if last.critic:
