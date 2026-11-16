@@ -8,8 +8,6 @@ constraints:
       z_mcp_mm: [145, 145]
       mesh_gap_mm: [12.7, 12.7]
       lens_gap_mm: [5, 15]
-  mesh:
-    min_gap_to_mcp_mm: 5
   supplies:
     mcp_back_offset_V: 1000
     phosphor_offset_V: 3000

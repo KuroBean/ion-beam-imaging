@@ -18,6 +18,35 @@ if TYPE_CHECKING:
     from .graph import LoopStatus
     from .roles import LoopContext
 
+RUN_CONFIG = "run_config.json"
+
+
+def _save_run_config(cfg: Config, run_dir: Path) -> None:
+    """Remember the config overrides a run started with, so agent-resume uses the same ones."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / RUN_CONFIG).write_text(json.dumps({"overrides": cfg.overrides}, indent=1), encoding="utf-8")
+
+
+def _run_config(cfg: Config, a, run_dir: Path) -> Config | None:
+    """The config of the run being resumed: its stored overrides. None (with a message) on a mismatch."""
+    from ..config import load_config
+
+    f = run_dir / RUN_CONFIG
+    if not f.is_file():
+        return cfg
+    stored = json.loads(f.read_text(encoding="utf-8"))["overrides"]
+    if cfg.overrides == stored:
+        return cfg
+    if cfg.overrides:
+        print(f"run {run_dir.name} started with overrides {stored}; this command gives {cfg.overrides}. Resume "
+              "without --set/--overrides to use the run's own.", file=sys.stderr)
+        return None
+    files = [o[len("@file:"):] for o in stored if o.startswith("@file:")]
+    files = [f if Path(f).is_file() else str(cfg.root_dir / f) for f in files]
+    sets = [o for o in stored if not o.startswith("@file:")]
+    print("using the run's config overrides: " + (", ".join(stored) or "(none)"), flush=True)
+    return load_config(getattr(a, "config_dir", None), sets, files)
+
 
 def _ctx(cfg: Config, a, backend: bool = True) -> "LoopContext":
     from ..backends import make_backend
@@ -74,6 +103,7 @@ def cmd_agent_run(cfg: Config, a) -> int:
     if checkpoint_path(ctx, run_id).is_file():
         print(f"run {run_id} exists: use ionopt agent-resume {run_id}", file=sys.stderr)
         return 2
+    _save_run_config(cfg, ctx.run_dir(run_id))
     try:
         with LoopRun(ctx, run_id) as lr:
             st = lr.start(new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds, a.goal))
@@ -85,6 +115,9 @@ def cmd_agent_run(cfg: Config, a) -> int:
 def cmd_agent_resume(cfg: Config, a) -> int:
     from .graph import LoopRun, checkpoint_path
 
+    cfg = _run_config(cfg, a, cfg.path("results_dir") / "runs" / a.run_id)
+    if cfg is None:
+        return 2
     ctx = _ctx(cfg, a)
     if not checkpoint_path(ctx, a.run_id).is_file():
         print(f"no run {a.run_id} under {ctx.runs_dir}", file=sys.stderr)

@@ -93,6 +93,7 @@ class LoopState(_St):
     constraints_hash: str = ""
     agents_hash: str = ""
     assumptions: list[str] = Field(default_factory=list)
+    backend: str = ""                                    # backend the run started on; resuming on another stops
     goal: str | None = None                              # optional author direction for the planner (--goal)
     model_variants: list[Variant] = Field(default_factory=list)
     history: list[RoundRecord] = Field(default_factory=list)

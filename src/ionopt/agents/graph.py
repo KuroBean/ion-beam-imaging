@@ -72,7 +72,7 @@ def new_state(ctx: LoopContext, run_id: str, method: Method = "agent", case_id: 
         models={k: v.model for k, v in acfg.roles.items()},
         budget=Budget(solves_total=solve_budget or acfg.loop.solve_budget, round_cap=round_cap or acfg.loop.round_cap),
         spec_hash=cfg.spec_hash(), constraints_hash=_hash(cfg.resolved()["constraints"]), agents_hash=acfg.hash(),
-        assumptions=assumptions, goal=goal)
+        assumptions=assumptions, goal=goal, backend=cfg.backend.backend)
 
 
 # --------------------------------------------------------------------------- nodes
@@ -200,6 +200,9 @@ def build_graph(ctx: LoopContext, checkpointer=None):
         p, cur = s.pending.proposal, s.current
         study_id = f"{s.run_id}-r{cur.round:02d}"
         variant = p.configuration.variant_id
+        if s.backend and cfg.backend.backend != s.backend:
+            raise RuntimeError(f"run {s.run_id} started on backend {s.backend!r} but this process uses "
+                               f"{cfg.backend.backend!r}: resume with the run's own config (no solves made)")
         if variant != "base" and not getattr(ctx.backend, "supports_variants", False):
             note = f"variant {variant} cannot be solved: the backend has no model-variant support yet"
             return {"current": cur.model_copy(update={"note": note, "counted": False}),

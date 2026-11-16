@@ -63,3 +63,17 @@ def test_round_max_caps_the_planner_study(tmp_path, capsys):
     assert main(["agent-plan", *common, "--run-id", "m1", "--budget", "60", "--round-max", "30", "--prompt-only"]) == 0
     path = capsys.readouterr().out.split("written: ")[1].strip()
     assert "solve_budget for this round: 10 to 30" in open(path, encoding="utf-8").read()
+
+
+def test_resume_refuses_other_overrides(tmp_path, capsys):
+    script = _script(tmp_path / "script", [("planner_0", {"diagnosis": "none", "diagnosis_evidence": "-",
+                                                          "action": "escalate_spec", "escalation": "Q?",
+                                                          "rationale": "r"})])
+    common = _args(tmp_path, "--set", "backend.backend=mock", "--set", "optimizer.write_plots=false")
+    assert main(["agent-run", *common, "--run-id", "o1", "--budget", "30", "--fake-llm", str(script)]) == 3
+    stored = json.loads((tmp_path / "results" / "runs" / "o1" / "run_config.json").read_text())["overrides"]
+    assert "backend.backend=mock" in stored
+    capsys.readouterr()
+    assert main(["agent-resume", "o1", *common, "--set", "optimizer.seed=7", "--answer", "x",
+                 "--fake-llm", str(script)]) == 2
+    assert "started with overrides" in capsys.readouterr().err

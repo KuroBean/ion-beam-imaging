@@ -29,7 +29,7 @@ chamber_setups:              # 2 physical chambers, 3 setups (same numbering as 
                                  # end +4.533; deflectors end +0.770) -> 298.704 - 105 - 140.698 = 53.006 mm
 
 mesh:
-  min_gap_to_mcp_mm: null    # TBD, lower bound on mesh_gap (current model 12.7)
+  min_gap_to_mcp_mm: 12.7    # author 2026-11-15: as-built gap, lower bound on mesh_gap in every setup
 
 electrodes:
   count: 9                   # E1..E9 = L1..L9, E1 = extractor
