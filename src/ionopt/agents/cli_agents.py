@@ -25,7 +25,8 @@ def _ctx(cfg: Config, a, backend: bool = True) -> "LoopContext":
     from .llm import ClaudeCLIClient
     from .roles import LoopContext
 
-    acfg = load_agents_config(cfg.root_dir / "config")
+    loop = {"study_budget_max": a.round_max} if getattr(a, "round_max", None) else {}
+    acfg = load_agents_config(cfg.root_dir / "config", overrides={"loop": loop} if loop else None)
     if getattr(a, "fake_llm", None):
         from .llm_fake import FakeLLM
         llm = FakeLLM.from_dir(a.fake_llm)
@@ -221,6 +222,8 @@ def args_agent_run(p) -> None:
     p.add_argument("--case", default="nominal", help="held-out case id (recorded; spec overrides via --set)")
     p.add_argument("--budget", type=int, default=None, help="total solves (default config/agents.yaml)")
     p.add_argument("--rounds", type=int, default=None, help="round cap (default config/agents.yaml)")
+    p.add_argument("--round-max", type=int, default=None, metavar="N",
+                   help="largest optimizer study per round (overrides loop.study_budget_max; give it again on resume)")
     p.add_argument("--goal", default=None, metavar="TEXT",
                    help="optional author direction shown to the planner every round (recorded as a run assumption)")
     p.add_argument("--fake-llm", type=Path, default=None,
@@ -251,6 +254,7 @@ def args_agent_resume(p) -> None:
     g.add_argument("--reject", default=None, metavar="REASON", help="reject the pending model edit")
     g.add_argument("--answer", default=None, metavar="TEXT", help="answer the planner's escalation")
     g.add_argument("--stop", action="store_true", help="stop the run at the escalation")
+    p.add_argument("--round-max", type=int, default=None, metavar="N", help="same as agent-run --round-max")
     p.add_argument("--fake-llm", type=Path, default=None)
 
 

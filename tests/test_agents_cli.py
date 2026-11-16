@@ -56,3 +56,10 @@ def test_agent_plan_goal_reaches_the_planner_prompt(tmp_path, capsys):
     assert main(["agent-plan", *common, "--run-id", "g2", "--prompt-only"]) == 0
     path = capsys.readouterr().out.split("written: ")[1].strip()
     assert "Author's goal" not in open(path, encoding="utf-8").read()
+
+
+def test_round_max_caps_the_planner_study(tmp_path, capsys):
+    common = _args(tmp_path, "--set", "backend.backend=mock")
+    assert main(["agent-plan", *common, "--run-id", "m1", "--budget", "60", "--round-max", "30", "--prompt-only"]) == 0
+    path = capsys.readouterr().out.split("written: ")[1].strip()
+    assert "solve_budget for this round: 10 to 30" in open(path, encoding="utf-8").read()
