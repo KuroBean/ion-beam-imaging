@@ -131,6 +131,11 @@ def cmd_agent_resume(cfg: Config, a) -> int:
         answer = {"answer": a.answer}
     elif a.stop:
         answer = {"stop": True}
+    if answer is not None and (a.extend_rounds or a.extend_solves):
+        answer["extend"] = {"rounds": a.extend_rounds or 0, "solves": a.extend_solves or 0}
+    elif a.extend_rounds or a.extend_solves:
+        print("--extend-rounds/--extend-solves go with --approve, --reject or --answer", file=sys.stderr)
+        return 2
     try:
         with LoopRun(ctx, a.run_id) as lr:
             st = lr.status()
@@ -288,6 +293,8 @@ def args_agent_resume(p) -> None:
     g.add_argument("--answer", default=None, metavar="TEXT", help="answer the planner's escalation")
     g.add_argument("--stop", action="store_true", help="stop the run at the escalation")
     p.add_argument("--round-max", type=int, default=None, metavar="N", help="same as agent-run --round-max")
+    p.add_argument("--extend-rounds", type=int, default=0, metavar="N", help="raise the run's round cap by N")
+    p.add_argument("--extend-solves", type=int, default=0, metavar="N", help="raise the run's solve budget by N")
     p.add_argument("--fake-llm", type=Path, default=None)
 
 

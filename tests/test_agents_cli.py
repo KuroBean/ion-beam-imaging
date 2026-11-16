@@ -77,3 +77,23 @@ def test_resume_refuses_other_overrides(tmp_path, capsys):
     assert main(["agent-resume", "o1", *common, "--set", "optimizer.seed=7", "--answer", "x",
                  "--fake-llm", str(script)]) == 2
     assert "started with overrides" in capsys.readouterr().err
+
+
+def test_resume_extends_rounds_and_solves(tmp_path, capsys):
+    plan = {"diagnosis": "none", "diagnosis_evidence": "-", "action": "optimize",
+            "configuration": {"cfg": 1, "wiring": {"tip": "LV1", "e3": "LV2"}}, "solve_budget": 10,
+            "claims": [{"id": "c1", "statement": "valid", "evidence_needed": "flags"}], "rationale": "r"}
+    stop = {"diagnosis": "parametric", "diagnosis_evidence": "-", "action": "stop", "rationale": "r"}
+    common = _args(tmp_path, "--set", "backend.backend=mock", "--set", "optimizer.write_plots=false")
+    first = _script(tmp_path / "s1", [("planner_0", {"diagnosis": "none", "diagnosis_evidence": "-",
+                                                     "action": "escalate_spec", "escalation": "Q?", "rationale": "r"})])
+    assert main(["agent-run", *common, "--run-id", "x1", "--budget", "10", "--rounds", "1",
+                 "--fake-llm", str(first)]) == 3
+    rest = _script(tmp_path / "s2", [("planner_0", plan), ("critic_0", {"verdict": "accept", "reasons": "ok"}),
+                                     ("planner_1", stop)])
+    assert main(["agent-resume", "x1", *common, "--answer", "go", "--extend-rounds", "1", "--extend-solves", "5",
+                 "--fake-llm", str(rest)]) == 0
+    summary = json.loads((tmp_path / "results" / "runs" / "x1" / "summary.json").read_text())
+    # without the extension the run would stop at round_cap (1 round) / budget (10 solves) before planner_1
+    assert summary["stop_reason"] not in ("round_cap", "budget") and summary["rounds"] == 1
+    assert any("extended the run by 1 rounds and 5 solves" in x for x in summary["assumptions"])

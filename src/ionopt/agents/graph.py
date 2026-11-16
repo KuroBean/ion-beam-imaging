@@ -78,6 +78,17 @@ def new_state(ctx: LoopContext, run_id: str, method: Method = "agent", case_id: 
 # --------------------------------------------------------------------------- nodes
 
 
+def _extend(s: LoopState, ans: dict) -> dict:
+    """The author's budget extension in a resume answer ({"extend": {"rounds": n, "solves": m}})."""
+    ext = ans.get("extend") or {}
+    r, n = int(ext.get("rounds") or 0), int(ext.get("solves") or 0)
+    if not (r or n):
+        return {}
+    b = s.budget.model_copy(update={"round_cap": s.budget.round_cap + r, "solves_total": s.budget.solves_total + n})
+    return {"budget": b, "assumptions": s.assumptions + [f"author extended the run by {r} rounds and {n} solves "
+                                                          f"(now {b.round_cap} rounds, {b.solves_total} solves)"]}
+
+
 def build_graph(ctx: LoopContext, checkpointer=None):
     cfg, acfg = ctx.cfg, ctx.acfg
     lp = acfg.loop
@@ -161,6 +172,7 @@ def build_graph(ctx: LoopContext, checkpointer=None):
         ans = interrupt({"type": "edit_approval", "edit_id": s.pending.edit_id,
                          "sandbox": str(ctx.run_dir(s.run_id) / "edits"), "edit_result": res.model_dump(mode="json")})
         ans = ans or {}
+        ext = _extend(s, ans)
         if ans.get("approved"):
             var = Variant(variant_id=res.variant_id, parent=s.pending.edit_request.parent_variant,
                           edit_id=s.pending.edit_id, script_path=res.script_path,
@@ -173,11 +185,11 @@ def build_graph(ctx: LoopContext, checkpointer=None):
             settings = {**c.variant_settings, **{n: 1.0 for n in res.new_switches}}   # the requested parts exist
             p = p.model_copy(update={"configuration": c.model_copy(update={
                 "variant_id": res.variant_id, "wiring": wiring, "variant_settings": settings})})
-            return {"model_variants": s.model_variants + [var], "editor_failures": 0,
+            return {**ext, "model_variants": s.model_variants + [var], "editor_failures": 0,
                     "pending": s.pending.model_copy(update={"approval": "approved", "proposal": p}),
                     "current": s.current.model_copy(update={"proposal": p})}
         reason = ans.get("reason") or "no reason given"
-        return {"pending": s.pending.model_copy(update={
+        return {**ext, "pending": s.pending.model_copy(update={
             "approval": "rejected", "approval_reason": reason,
             "feedback": [f"the author rejected edit {s.pending.edit_id}: {reason}"]})}
 
@@ -190,7 +202,7 @@ def build_graph(ctx: LoopContext, checkpointer=None):
         ans = ans or {}
         if ans.get("stop"):
             return {"stop_reason": "author_stop"}
-        return {"pending": s.pending.model_copy(update={
+        return {**_extend(s, ans), "pending": s.pending.model_copy(update={
             "feedback": [f"the author answered your escalation: {ans.get('answer') or '(no answer)'}"]})}
 
     def route_escalate(s: LoopState) -> str:
