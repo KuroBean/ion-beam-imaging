@@ -100,6 +100,7 @@ class SearchSpace:
     q_sign: int = 1
     min_extraction: float | None = None
     fixed_extraction: float | None = None  # optimizer.fixed_extraction_V: E1 follows the tip at this q (V_tip - V_E1)
+    max_extraction: float | None = None    # optimizer.max_extraction_V: upper limit on q (V_tip - V_E1)
     # no-mirror rule: channels in `capped` stay on the passing side of V_tip
     mirror_tip: str | None = None          # tip channel (None: tip grounded)
     capped: list[str] = field(default_factory=list)
@@ -202,7 +203,8 @@ class SearchSpace:
             sp.offsets = {n: (lo, max(lo, hi)) for n, (lo, hi) in sp.offsets.items()}
             sp.stack_length = sp.stack_end({n: lo for n, (lo, _) in sp.offsets.items()})
         sp.fixed_extraction = cfg.optimizer.fixed_extraction_V
-        if cfg.spec.launch.preaccel or sp.fixed_extraction is not None:
+        sp.max_extraction = cfg.optimizer.max_extraction_V
+        if cfg.spec.launch.preaccel or sp.fixed_extraction is not None or sp.max_extraction is not None:
             sp._extraction_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, cfg.optimizer.min_extraction_V)
         if cfg.optimizer.no_mirror:
             sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1,
@@ -274,17 +276,22 @@ class SearchSpace:
         if self.fixed_extraction is not None:
             self._fixed_extraction_rule(tip, e1, q_sign, u_min)
             return
+        u_max = self.max_extraction if self.max_extraction is not None else math.inf
+        if u_max < u_min:
+            raise ConfigError(f"optimizer.max_extraction_V = {u_max} V is below optimizer.min_extraction_V = {u_min} V")
         if tip is not None:
             lo, hi = self.channels[tip]
             e_lo, e_hi = self.channels[e1] if e1 else (0.0, 0.0)
-            # positive ions: V_tip >= min(V_E1) + u_min; negative: V_tip <= max(V_E1) - u_min
-            lo, hi = (max(lo, e_lo + u_min), hi) if q_sign > 0 else (lo, min(hi, e_hi - u_min))
+            # positive ions: min(V_E1) + u_min <= V_tip <= max(V_E1) + u_max; negative: mirrored
+            lo, hi = ((max(lo, e_lo + u_min), min(hi, e_hi + u_max)) if q_sign > 0
+                      else (max(lo, e_lo - u_max), min(hi, e_hi - u_min)))
             if lo > hi:
-                raise ConfigError(f"'{self.conf.config_id}': no tip voltage gives an accelerating extraction field")
+                raise ConfigError(f"'{self.conf.config_id}': no tip voltage gives an extraction field in "
+                                  f"[{u_min:g}, {u_max:g}] V")
             self.channels[tip] = (lo, hi)
         elif e1 is not None:        # grounded tip
             lo, hi = self.channels[e1]
-            lo, hi = (lo, min(hi, -u_min)) if q_sign > 0 else (max(lo, u_min), hi)
+            lo, hi = (max(lo, -u_max), min(hi, -u_min)) if q_sign > 0 else (max(lo, u_min), min(hi, u_max))
             if lo > hi:
                 raise ConfigError(f"'{self.conf.config_id}': no E1 voltage gives an accelerating field at a grounded tip")
             self.channels[e1] = (lo, hi)
@@ -344,7 +351,9 @@ class SearchSpace:
             return v, v
         if ch == self.e1_ch and self.tip_ch is not None:
             vt, u = channels[self.tip_ch], self.min_extraction
-            lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
+            u_max = self.max_extraction if self.max_extraction is not None else math.inf
+            lo, hi = ((max(lo, vt - u_max), min(hi, vt - u)) if self.q_sign > 0
+                      else (max(lo, vt + u), min(hi, vt + u_max)))
         elif ch in self.capped:
             m = channels[self.mirror_tip] if self.mirror_tip else 0.0
             lo, hi = (lo, min(hi, m)) if self.q_sign > 0 else (max(lo, m), hi)

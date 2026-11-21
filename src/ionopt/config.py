@@ -393,6 +393,8 @@ class OptimizerConfig(_Model):
     min_extraction_V: float = Field(1.0, gt=0)
     # optional fixed extraction voltage dV (V): E1 follows the tip at q (V_tip - V_E1) = dV and is not sampled
     fixed_extraction_V: float | None = Field(None, gt=0)
+    # optional upper limit (V) on q (V_tip - V_E1); E1 is then sampled in [min, max] below the tip
+    max_extraction_V: float | None = Field(None, gt=0)
     # no ion mirrors: q V <= q V_tip for every electrode and the mesh, and q V_tip >= 0 (grounded parts)
     no_mirror: bool = True
 

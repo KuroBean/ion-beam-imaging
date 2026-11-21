@@ -21,10 +21,29 @@ if TYPE_CHECKING:
 RUN_CONFIG = "run_config.json"
 
 
-def _save_run_config(cfg: Config, run_dir: Path) -> None:
-    """Remember the config overrides a run started with, so agent-resume uses the same ones."""
+LOOP_FLAGS = {"round_max": "study_budget_max", "no_improvement_rounds": "no_improvement_rounds",
+              "improvement_tol": "improvement_tol_deg"}
+
+
+def _loop_overrides(a) -> dict:
+    """agents.yaml loop settings given on the command line (agent-run / agent-resume flags)."""
+    return {key: getattr(a, flag) for flag, key in LOOP_FLAGS.items() if getattr(a, flag, None) is not None}
+
+
+def _save_run_config(cfg: Config, run_dir: Path, loop: dict | None = None) -> None:
+    """Remember the config overrides (and loop flags) a run started with, so agent-resume uses the same ones."""
     run_dir.mkdir(parents=True, exist_ok=True)
-    (run_dir / RUN_CONFIG).write_text(json.dumps({"overrides": cfg.overrides}, indent=1), encoding="utf-8")
+    (run_dir / RUN_CONFIG).write_text(json.dumps({"overrides": cfg.overrides, "loop": loop or {}}, indent=1),
+                                      encoding="utf-8")
+
+
+def _stored_loop_flags(a, run_dir: Path) -> None:
+    """Fill loop flags not given on resume from the run's run_config.json."""
+    f = run_dir / RUN_CONFIG
+    stored = json.loads(f.read_text(encoding="utf-8")).get("loop", {}) if f.is_file() else {}
+    for flag, key in LOOP_FLAGS.items():
+        if getattr(a, flag, None) is None and key in stored:
+            setattr(a, flag, stored[key])
 
 
 def _run_config(cfg: Config, a, run_dir: Path) -> Config | None:
@@ -54,7 +73,7 @@ def _ctx(cfg: Config, a, backend: bool = True) -> "LoopContext":
     from .llm import ClaudeCLIClient
     from .roles import LoopContext
 
-    loop = {"study_budget_max": a.round_max} if getattr(a, "round_max", None) else {}
+    loop = _loop_overrides(a)
     acfg = load_agents_config(cfg.root_dir / "config", overrides={"loop": loop} if loop else None)
     if getattr(a, "fake_llm", None):
         from .llm_fake import FakeLLM
@@ -103,7 +122,7 @@ def cmd_agent_run(cfg: Config, a) -> int:
     if checkpoint_path(ctx, run_id).is_file():
         print(f"run {run_id} exists: use ionopt agent-resume {run_id}", file=sys.stderr)
         return 2
-    _save_run_config(cfg, ctx.run_dir(run_id))
+    _save_run_config(cfg, ctx.run_dir(run_id), _loop_overrides(a))
     try:
         with LoopRun(ctx, run_id) as lr:
             st = lr.start(new_state(ctx, run_id, a.method, a.case, a.budget, a.rounds, a.goal))
@@ -118,6 +137,7 @@ def cmd_agent_resume(cfg: Config, a) -> int:
     cfg = _run_config(cfg, a, cfg.path("results_dir") / "runs" / a.run_id)
     if cfg is None:
         return 2
+    _stored_loop_flags(a, cfg.path("results_dir") / "runs" / a.run_id)
     ctx = _ctx(cfg, a)
     if not checkpoint_path(ctx, a.run_id).is_file():
         print(f"no run {a.run_id} under {ctx.runs_dir}", file=sys.stderr)
@@ -261,7 +281,11 @@ def args_agent_run(p) -> None:
     p.add_argument("--budget", type=int, default=None, help="total solves (default config/agents.yaml)")
     p.add_argument("--rounds", type=int, default=None, help="round cap (default config/agents.yaml)")
     p.add_argument("--round-max", type=int, default=None, metavar="N",
-                   help="largest optimizer study per round (overrides loop.study_budget_max; give it again on resume)")
+                   help="largest optimizer study per round (overrides loop.study_budget_max; kept on resume)")
+    p.add_argument("--no-improvement-rounds", type=int, default=None, metavar="N",
+                   help="stop after N rounds without improvement (overrides loop.no_improvement_rounds; kept on resume)")
+    p.add_argument("--improvement-tol", type=float, default=None, metavar="DEG",
+                   help="smallest score gain (deg) that counts as improvement (overrides loop.improvement_tol_deg)")
     p.add_argument("--goal", default=None, metavar="TEXT",
                    help="optional author direction shown to the planner every round (recorded as a run assumption)")
     p.add_argument("--fake-llm", type=Path, default=None,
@@ -293,6 +317,8 @@ def args_agent_resume(p) -> None:
     g.add_argument("--answer", default=None, metavar="TEXT", help="answer the planner's escalation")
     g.add_argument("--stop", action="store_true", help="stop the run at the escalation")
     p.add_argument("--round-max", type=int, default=None, metavar="N", help="same as agent-run --round-max")
+    p.add_argument("--no-improvement-rounds", type=int, default=None, metavar="N", help="same as agent-run")
+    p.add_argument("--improvement-tol", type=float, default=None, metavar="DEG", help="same as agent-run")
     p.add_argument("--extend-rounds", type=int, default=0, metavar="N", help="raise the run's round cap by N")
     p.add_argument("--extend-solves", type=int, default=0, metavar="N", help="raise the run's solve budget by N")
     p.add_argument("--fake-llm", type=Path, default=None)

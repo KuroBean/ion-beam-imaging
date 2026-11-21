@@ -181,7 +181,10 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
         rules.append("no ion mirrors: every lens channel and the mesh stay below the tip potential (positive ions) "
                      "and the tip stays above ground")
     if cfg.spec.launch.preaccel:
-        rules.append(f"extraction: the tip-e1 field accelerates the ions by >= {cfg.optimizer.min_extraction_V} V")
+        ex_max = cfg.optimizer.max_extraction_V
+        rules.append(f"extraction: the tip-e1 field accelerates the ions by >= {cfg.optimizer.min_extraction_V:g} V"
+                     + (f" and <= {ex_max:g} V (author's window for V_tip - V_e1; the optimizer samples e1 inside it "
+                        "below the tip)" if ex_max is not None else ""))
     if cfg.optimizer.fixed_extraction_V is not None:
         sign = 1 if cfg.spec.launch.charge > 0 else -1
         rules.append(f"fixed extraction (author): e1 follows the tip at V_tip - V_e1 = "

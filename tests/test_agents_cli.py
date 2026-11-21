@@ -65,6 +65,30 @@ def test_round_max_caps_the_planner_study(tmp_path, capsys):
     assert "solve_budget for this round: 10 to 30" in open(path, encoding="utf-8").read()
 
 
+def test_stop_rule_flags_reach_the_prompt_and_survive_resume(tmp_path, capsys):
+    from argparse import Namespace
+
+    from ionopt.agents.cli_agents import _stored_loop_flags
+
+    common = _args(tmp_path, "--set", "backend.backend=mock", "--set", "optimizer.write_plots=false")
+    assert main(["agent-plan", *common, "--run-id", "p1", "--no-improvement-rounds", "12",
+                 "--improvement-tol", "0.002", "--prompt-only"]) == 0
+    path = capsys.readouterr().out.split("written: ")[1].strip()
+    assert "stops after 12 rounds without improving the best score by more than 0.002 deg" in \
+        open(path, encoding="utf-8").read()
+    script = _script(tmp_path / "script", [("planner_0", {"diagnosis": "none", "diagnosis_evidence": "-",
+                                                          "action": "escalate_spec", "escalation": "Q?",
+                                                          "rationale": "r"})])
+    assert main(["agent-run", *common, "--run-id", "p2", "--budget", "30", "--round-max", "20",
+                 "--no-improvement-rounds", "12", "--improvement-tol", "0.002", "--fake-llm", str(script)]) == 3
+    run_dir = tmp_path / "results" / "runs" / "p2"
+    assert json.loads((run_dir / "run_config.json").read_text())["loop"] == {
+        "study_budget_max": 20, "no_improvement_rounds": 12, "improvement_tol_deg": 0.002}
+    a = Namespace(round_max=None, no_improvement_rounds=5, improvement_tol=None)   # a flag given on resume wins
+    _stored_loop_flags(a, run_dir)
+    assert (a.round_max, a.no_improvement_rounds, a.improvement_tol) == (20, 5, 0.002)
+
+
 def test_resume_refuses_other_overrides(tmp_path, capsys):
     script = _script(tmp_path / "script", [("planner_0", {"diagnosis": "none", "diagnosis_evidence": "-",
                                                           "action": "escalate_spec", "escalation": "Q?",
