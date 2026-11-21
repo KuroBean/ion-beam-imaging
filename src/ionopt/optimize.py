@@ -99,6 +99,7 @@ class SearchSpace:
     e1_ch: str | None = None
     q_sign: int = 1
     min_extraction: float | None = None
+    fixed_extraction: float | None = None  # optimizer.fixed_extraction_V: E1 follows the tip at this q (V_tip - V_E1)
     # no-mirror rule: channels in `capped` stay on the passing side of V_tip
     mirror_tip: str | None = None          # tip channel (None: tip grounded)
     capped: list[str] = field(default_factory=list)
@@ -200,7 +201,8 @@ class SearchSpace:
                                       f"(electrodes.min_gap_mm to its neighbours)")
             sp.offsets = {n: (lo, max(lo, hi)) for n, (lo, hi) in sp.offsets.items()}
             sp.stack_length = sp.stack_end({n: lo for n, (lo, _) in sp.offsets.items()})
-        if cfg.spec.launch.preaccel:
+        sp.fixed_extraction = cfg.optimizer.fixed_extraction_V
+        if cfg.spec.launch.preaccel or sp.fixed_extraction is not None:
             sp._extraction_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1, cfg.optimizer.min_extraction_V)
         if cfg.optimizer.no_mirror:
             sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1,
@@ -269,6 +271,9 @@ class SearchSpace:
             raise ConfigError(f"configuration '{self.conf.config_id}': tip and E1 are at the same potential, so "
                               f"there is no extraction field (pre-acceleration needs V_tip != V_E1)")
         self.tip_ch, self.e1_ch, self.q_sign, self.min_extraction = tip, e1, q_sign, u_min
+        if self.fixed_extraction is not None:
+            self._fixed_extraction_rule(tip, e1, q_sign, u_min)
+            return
         if tip is not None:
             lo, hi = self.channels[tip]
             e_lo, e_hi = self.channels[e1] if e1 else (0.0, 0.0)
@@ -284,6 +289,29 @@ class SearchSpace:
                 raise ConfigError(f"'{self.conf.config_id}': no E1 voltage gives an accelerating field at a grounded tip")
             self.channels[e1] = (lo, hi)
 
+    def _fixed_extraction_rule(self, tip: str | None, e1: str | None, q_sign: int, u_min: float) -> None:
+        """optimizer.fixed_extraction_V: q (V_tip - V_E1) = dV exactly. E1 follows the tip (or a grounded
+        partner sets the other one to a constant), so only one of the two is a variable."""
+        dv = self.fixed_extraction
+        if dv < u_min:
+            raise ConfigError(f"optimizer.fixed_extraction_V = {dv} V is below optimizer.min_extraction_V = {u_min} V")
+        s = q_sign * dv                                   # V_tip - V_E1
+        cid = self.conf.config_id
+        if tip is not None:
+            lo, hi = self.channels[tip]
+            e_lo, e_hi = self.channels[e1] if e1 else (0.0, 0.0)
+            lo, hi = max(lo, e_lo + s), min(hi, e_hi + s)
+            if lo > hi:
+                raise ConfigError(f"'{cid}': no tip voltage keeps E1 = V_tip - ({s:g} V) inside its channel range")
+            self.channels[tip] = (lo, hi)
+            if e1 is not None:                            # sampled range of E1 (it is set from the tip)
+                self.channels[e1] = (lo - s, hi - s)
+        else:                                             # grounded tip: E1 is a constant
+            lo, hi = self.channels[e1]
+            if not lo <= -s <= hi:
+                raise ConfigError(f"'{cid}': E1 = {-s:g} V (grounded tip, fixed extraction) is outside its range")
+            self.channels[e1] = (-s, -s)
+
     def _mirror_rule(self, wiring: dict[str, str], q_sign: int, mcp_port: str) -> None:
         """No ion mirrors: lens channels and the mesh on the passing side of the tip potential, the tip on the
         passing side of ground (deflectors, unwired plates and the chamber are grounded)."""
@@ -298,6 +326,9 @@ class SearchSpace:
                 raise ConfigError(f"'{self.conf.config_id}': the tip range {self.channels[self.mirror_tip]} has no "
                                   f"voltage on the passing side of the grounded parts")
             self.channels[self.mirror_tip] = (lo, hi)
+            if self.fixed_extraction is not None and self.e1_ch is not None and self.tip_ch == self.mirror_tip:
+                s = q_sign * self.fixed_extraction            # E1 follows the tip: keep its range in step
+                self.channels[self.e1_ch] = (lo - s, hi - s)
         t_lo, t_hi = self.channels[self.mirror_tip] if self.mirror_tip else (0.0, 0.0)
         for ch in self.capped:
             lo, hi = self.channels[ch]
@@ -308,6 +339,9 @@ class SearchSpace:
     def _sub_range(self, ch: str, channels: dict[str, float]) -> tuple[float, float]:
         """Sampling range of a dependent channel (E1 or a capped channel) given the tip voltage."""
         lo, hi = self.channels[ch]
+        if ch == self.e1_ch and self.tip_ch is not None and self.fixed_extraction is not None:
+            v = channels[self.tip_ch] - self.q_sign * self.fixed_extraction
+            return v, v
         if ch == self.e1_ch and self.tip_ch is not None:
             vt, u = channels[self.tip_ch], self.min_extraction
             lo, hi = (lo, min(hi, vt - u)) if self.q_sign > 0 else (max(lo, vt + u), hi)
@@ -469,6 +503,8 @@ def optimize(cfg: Config, config_id: str, budget: int | None = None, fidelity: s
     if conf is None:
         conf = cfg.b0_configs.get(config_id)
     config_id = conf.config_id
+    if bounds is None and conf.bounds:
+        bounds = {k: (float(v[0]), float(v[1])) for k, v in conf.bounds.items()}
     space = SearchSpace.from_config(cfg, conf, bounds)
     # values the checker needs: fail now, not after the first solve
     for key in ("spec.detector.sigma_mcp_um", "spec.detector.mesh_open_fraction", "spec.requirements.eta_min",

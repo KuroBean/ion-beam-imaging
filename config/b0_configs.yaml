@@ -46,3 +46,23 @@ configurations:
     description: "DRAFT: grounded tip, negative extractor E1, Einzel centre E3, E2+E4"
     cfg: 3
     wiring: {e1: LV1, e3: LV2, e2: LV3, e4: LV3}
+
+  # ---- run 1 "no deflectors" (author 2026-11-20): Einzel lens, deflectors d1/d2 removed so they do not
+  # impede the beam, screen mesh opening fixed large (approved variant, 37-40 mm window of 10-40).
+  - config_id: c3_einzel_nodefl_widemesh
+    description: "Run 1: tip, E1, Einzel centre E3; deflectors removed; screen mesh opening 37-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3}
+    removed: [d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [37, 40]}
+
+  # ---- run 1 (author 2026-11-20): Einzel lens on E2-E3-E4 (E2 = E4 on one channel), every unused plate and both
+  # deflectors removed so nothing obstructs the beam, wide screen mesh. Run with --set optimizer.fixed_extraction_V=120.
+  - config_id: c3_einzel_234_nodefl_widemesh
+    description: "Run 1: tip, E1 (fixed dV), Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9, d1, d2 removed; mesh opening 37-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    removed: [e5, e6, e7, e8, e9, d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [37, 40]}

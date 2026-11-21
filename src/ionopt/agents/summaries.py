@@ -94,6 +94,33 @@ def metrics_block(s: dict) -> str:
 # --------------------------------------------------------------------------- spec / design space
 
 
+def _meniscus_line(cfg: Config) -> str:
+    """What theta means in the meniscus picture, with an example angle map (planner and critic misread
+    the clipped angles as launch angles otherwise)."""
+    L, R, D = cfg.spec.launch, cfg.spec.requirements, cfg.spec.detector
+    text = (f"- emission angles: theta in every metric, r(theta) and weight is the angle at the meniscus. The "
+            f"emitter field bends the {L.E0_eV:g} eV ions toward the axis before the model launch point, so launch "
+            f"angles are several times smaller. Weights are Gaussian(HWHM {L.hwhm_deg:g} deg) x sin(theta): about "
+            f"half of the emission lies above the HWHM. Because a narrower accepted cone gives a larger dr/dtheta "
+            f"on the fixed MCP, the best designs tend to clip angles until eta just meets eta_min "
+            f"({R.eta_min:g} with mesh transmission {D.mesh_open_fraction:g}).")
+    dv = cfg.optimizer.fixed_extraction_V
+    if dv is None:
+        return text
+    try:
+        import numpy as np
+
+        from ..launch import meniscus_angle_map, preacceleration
+        gap = 20e-3                                   # nominal lens_gap for the example; the map changes slowly with it
+        amap = meniscus_angle_map(L, preacceleration(L, dv, 0.0, gap))
+        th = np.radians([10.0, 20.0, 30.0, 50.0])
+        out = np.degrees(amap(th, L.E0_eV))
+        ex = ", ".join(f"{a:g} -> {b:.1f}" for a, b in zip([10, 20, 30, 50], out))
+        return text + f" Example at the fixed {dv:g} V extraction and lens_gap 20 mm (meniscus -> launch, deg): {ex}."
+    except Exception:                                  # the example is a hint only; never break the prompt
+        return text
+
+
 def spec_block(cfg: Config) -> str:
     L, D, R = cfg.spec.launch, cfg.spec.detector, cfg.spec.requirements
     if R.impact_threshold_eV_per_charge is not None:
@@ -109,6 +136,7 @@ def spec_block(cfg: Config) -> str:
         f"- ions: mass {L.mass_Da} Da, charge {L.charge:+d}, E0 {L.E0_eV} eV, energy spread {L.dE_eV} eV, "
         f"emission HWHM {L.hwhm_deg} deg at the {L.emission_angle_at}, pre-acceleration "
         f"{'on' if L.preaccel else 'off'}",
+        *([_meniscus_line(cfg)] if L.preaccel and L.emission_angle_at == "meniscus" else []),
         f"- goal: minimize the worst angular resolution dtheta (deg) over the evaluated emission angles, "
         f"so the MCP spot maps emission angle to radius as finely as possible",
         f"- feasible requires: collection efficiency eta >= {R.eta_min} (MCP active area x mesh "
@@ -154,6 +182,11 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
                      "and the tip stays above ground")
     if cfg.spec.launch.preaccel:
         rules.append(f"extraction: the tip-e1 field accelerates the ions by >= {cfg.optimizer.min_extraction_V} V")
+    if cfg.optimizer.fixed_extraction_V is not None:
+        sign = 1 if cfg.spec.launch.charge > 0 else -1
+        rules.append(f"fixed extraction (author): e1 follows the tip at V_tip - V_e1 = "
+                     f"{sign * cfg.optimizer.fixed_extraction_V:g} V, so e1's channel is not a variable: do not "
+                     "bound it, bound the tip channel instead")
     if rules:
         lines.append("Optimizer rules (always enforced): " + "; ".join(rules) + ".")
     hv = cs.supplies.high_voltage.roles

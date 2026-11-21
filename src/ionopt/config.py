@@ -148,8 +148,8 @@ class LaunchConfig(_Model):
     emission_distance_um: float | None = Field(None, gt=0)
     # where hwhm_deg applies (with preaccel): 'launch' = beam spread at the model launch point;
     # 'meniscus' = velocity directions of the E0 ions at the meniscus, bent toward the axis by the
-    # emitter field before the launch point (launch.trace_preacceleration)
-    emission_angle_at: Literal["launch", "meniscus"] = "launch"
+    # emitter field before the launch point (launch.trace_preacceleration). Default 'meniscus' (author 2026-11-21)
+    emission_angle_at: Literal["launch", "meniscus"] = "meniscus"
 
     @field_validator("charge")
     @classmethod
@@ -391,6 +391,8 @@ class OptimizerConfig(_Model):
     write_plots: bool = False
     # with pre-acceleration, keep q (V_tip - V_E1) >= this (V): E1 is sampled inside the accelerating range
     min_extraction_V: float = Field(1.0, gt=0)
+    # optional fixed extraction voltage dV (V): E1 follows the tip at q (V_tip - V_E1) = dV and is not sampled
+    fixed_extraction_V: float | None = Field(None, gt=0)
     # no ion mirrors: q V <= q V_tip for every electrode and the mesh, and q V_tip >= 0 (grounded parts)
     no_mirror: bool = True
 
@@ -412,6 +414,7 @@ class ConfigurationDef(_Model):
     moved: list[str] = []                  # plates whose offset the optimizer tunes (electrodes.movable)
     variant_id: str = "base"               # model variant (results/variants/<id>/variant.json)
     variant_settings: dict[str, float] = {}   # values of the variant's switch parameters (others: as built)
+    bounds: dict[str, list[float]] = {}    # optional [lo, hi] narrowing optimizer variables (SearchSpace.raw_ranges keys)
 
 
 class B0Config(_Model):
