@@ -42,6 +42,17 @@ PROFILES: dict[str, list[tuple[float, float, float, float]]] = {
     "deflector": [(5, 6.5, 0, 12.77), (6.5, 32.5, 0.77, 12.0)],
 }
 
+# What sits behind the stack (scripts/build_axisym.py), as radial bands (r_lo, r_hi, front_dz) in mm: the
+# front surface relative to a reference plane. The stack keeps electrodes.min_gap_mm to it (author 2026-11-22:
+# any gap is fine as long as nothing collides).
+REAR: dict[str, list[tuple[float, float, float]]] = {
+    # plane = MCP front face (plate r < 20); the Al2O3 surround stands 1 mm (r 20..25) and 4 mm (r 25..33) ahead
+    "mcp": [(0, 20, 0.0), (20, 25, -1.0), (25, 33, -4.0)],
+    # plane = screen mesh disc (r < 5.5); the cross hub stands 2.9 mm ahead of it, taken at every radius
+    # (the hub ring and the cross arms; variants move the hub out with a wider mesh opening)
+    "mesh": [(0, 5.5, 0.0), (5.5, math.inf, -2.9)],
+}
+
 
 class JobValidationError(ValueError):
     def __init__(self, problems: list[str]):
@@ -160,6 +171,38 @@ def face_shift(profile_a: str, profile_b: str) -> float:
             if min(hi_a, hi_b) - max(lo_a, lo_b) > 1e-9:          # radial bands overlap
                 best = min(best, front_b - back_a)
     return best * units.MM
+
+
+def rear_reach(profile: str, rear: str) -> float:
+    """Distance (m) from a part's front face to the reference plane of the rear obstacle (REAR) at which they
+    just touch; the part clears the obstacle by g when the plane is this + g behind its front face."""
+    best = -math.inf
+    for lo_a, hi_a, _, back_a in PROFILES[profile]:
+        for lo_b, hi_b, front_b in REAR[rear]:
+            if min(hi_a, hi_b) - max(lo_a, lo_b) > 1e-9:
+                best = max(best, back_a - front_b)
+    return best * units.MM
+
+
+def has_screen_mesh(cfg: Config, variant_id: str | None) -> bool:
+    var = load_variant(cfg, variant_id)
+    return var is None or "screen_mesh" not in var.removed_base
+
+
+def rear_plane(cfg: Config, variant_id: str | None, z_mcp: float, mesh_gap: float) -> tuple[str, float]:
+    """The first obstacle behind the stack and its reference plane (m): the screen mesh, or the MCP without one."""
+    return ("mesh", z_mcp - mesh_gap) if has_screen_mesh(cfg, variant_id) else ("mcp", z_mcp)
+
+
+def mcp_max_from_e1(cfg: Config, chamber: int) -> float | None:
+    """Largest z_mcp - lens_gap (m) when the MCP sits on the tie rods (chamber_setups.<n>.mcp_rod_margin_mm)."""
+    margin = cfg.chamber(chamber).mcp_rod_margin_mm
+    if margin is None:
+        return None
+    rod = cfg.constraints.electrodes.max_offset_mm
+    if rod is None:
+        raise TBDError("constraints.electrodes.max_offset_mm")
+    return (rod - margin) * units.MM
 
 
 def part_gap(a: dict, b: dict) -> float:
@@ -363,10 +406,18 @@ def validate_job(job: JobSpec, cfg: Config) -> list[str]:
     if lg <= 0:
         problems.append("lens_gap must be > 0 (E1 would touch the tip apex)")
     parts = job_layout(job, cfg)
-    last = max(parts, key=lambda e: e["z_back_m"])
-    if last["z_back_m"] >= z_mesh - EPS_M:
-        problems.append(f"the lens stack ends at {last['z_back_m'] / units.MM:g} mm ({last['name']}), "
-                        f"at or past the mesh plane ({z_mesh / units.MM:g} mm)")
+    rear, z_ref = rear_plane(cfg, job.variant_id, z_mcp, gap)
+    g = (cs.electrodes.min_gap_mm or 0.0) * units.MM
+    worst = max(parts, key=lambda e: e["z_front_m"] + rear_reach(e["profile"], rear))
+    reach = worst["z_front_m"] + rear_reach(worst["profile"], rear)
+    if reach + g > z_ref + 1e-9:
+        what = "screen mesh / cross hub" if rear == "mesh" else "MCP / surround"
+        problems.append(f"{worst['name']} clears the {what} by {(z_ref - reach) / units.MM:.3f} mm < "
+                        f"electrodes.min_gap_mm {cs.electrodes.min_gap_mm} (reference plane at {z_ref / units.MM:g} mm)")
+    mcp_max = mcp_max_from_e1(cfg, job.cfg)
+    if mcp_max is not None and z_mcp - lg > mcp_max + 1e-9:
+        problems.append(f"MCP face {(z_mcp - lg) / units.MM:.3f} mm behind the E1 front face > "
+                        f"{mcp_max / units.MM:.3f} mm (rod end minus chamber_setups.{job.cfg}.mcp_rod_margin_mm)")
 
     # ---- arcing limit between neighbours (tip, plates, deflectors, mesh)
     emax = cs.electrical.max_field_kV_per_mm

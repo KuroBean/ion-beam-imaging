@@ -14,7 +14,8 @@ def test_repo_config_loads_with_tbds():
     cfg = load_config(CONFIG_DIR)
     tbd = cfg.list_tbd()
     assert "spec.requirements.eta_min" not in tbd                 # author 2026-11-14: 0.4
-    assert "constraints.chamber_setups.1.z_mcp_mm" in tbd
+    assert "constraints.chamber_setups.2.z_mcp_mm" in tbd
+    assert not any(k.startswith("constraints.chamber_setups.1.") for k in tbd)   # author 2026-11-22
     assert "parameters.parameters.v_phosphor.comsol_name" in tbd   # not modelled
     assert not any(k.startswith("spec.requirements.impact_threshold") for k in tbd)   # author 2026-11-15
     assert cfg.spec.requirements.impact_threshold_mps == pytest.approx(1.6e5)
@@ -31,7 +32,7 @@ def test_require_names_exact_key():
         cfg.require("constraints.supplies.mcp_back_offset_V")
     assert str(e.value) == "constraints.supplies.mcp_back_offset_V is TBD; set it in config/constraints.yaml"
     with pytest.raises(TBDError):
-        cfg.require("constraints.chamber_setups.1.z_mcp_mm")   # [null, null]
+        cfg.require("constraints.chamber_setups.2.z_mcp_mm")   # [null, null]
     assert cfg.require("spec.launch.hwhm_deg") == 20
 
 

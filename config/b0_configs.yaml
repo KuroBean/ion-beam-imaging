@@ -66,3 +66,11 @@ configurations:
     removed: [e5, e6, e7, e8, e9, d1, d2]
     variant_id: v-demo-1-r01-e0
     bounds: {mesh_open_diameter_mm: [37, 40]}
+
+  # ---- cfg 1 (tube chamber alone; deflectors do not exist there). DRAFT by Claude 2026-11-22 to test the
+  # cfg 1 pipeline: Einzel on E2-E3-E4, screen mesh deleted (approved no-mesh variant) to make room.
+  - config_id: c1_einzel_234_nomesh
+    description: "DRAFT cfg 1: tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); screen mesh deleted"
+    cfg: 1
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    variant_id: v-run-2-high-collection-r06-e1

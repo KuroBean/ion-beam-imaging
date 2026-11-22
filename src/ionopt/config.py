@@ -36,6 +36,7 @@ NOT_TBD = (
     "backend.mock.fold_theta_deg",           # null = no fold
     "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)
     "constraints.electrodes.stack.*.plate_mm",
+    "constraints.chamber_setups.*.mcp_rod_margin_mm",   # null = MCP not on the rods
     "spec.requirements.impact_threshold_mps",   # alternative to impact_threshold_eV_per_charge
     "spec.launch.emission_distance_um",         # null = model_tip_radius_um / tan(hwhm_deg)
 )
@@ -232,6 +233,10 @@ class ChamberSetup(_Model):
     z_mcp_mm: Range = [None, None]
     mesh_gap_mm: Range = [None, None]
     lens_gap_mm: Range = [None, None]      # tip apex to the L1 (E1) front face
+    # MCP mounted on the stack's tie rods (the last part on them): its front face stays at least this far in
+    # front of the rod end (electrodes.max_offset_mm behind the E1 front face), so z_mcp - lens_gap <=
+    # max_offset_mm - margin. null = the MCP is held by the chamber, independent of the stack.
+    mcp_rod_margin_mm: float | None = Field(None, ge=0)
 
 
 class MeshConstraints(_Model):

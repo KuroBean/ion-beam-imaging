@@ -8,9 +8,20 @@
 chamber_setups:              # 2 physical chambers, 3 setups (same numbering as the cfg parameter)
   1:
     name: chamber 1 alone (tube)
-    z_mcp_mm: [null, null]       # TBD allowed range of the MCP front face
-    mesh_gap_mm: [null, null]    # TBD, mesh distance in front of the MCP face
-    lens_gap_mm: [null, null]    # TBD, tip apex to the E1 (L1) front face (models: 13.482)
+    # Author 2026-11-22: the MCP is the last part on the tie rods (rails). Its front face goes anywhere from
+    # behind the last stack part (or the screen mesh, which it carries) to the rod end minus 10 mm; the
+    # deflectors do not exist here, and any plate or the screen mesh may be removed to make room. The rods end
+    # 140.698 mm behind the E1 front face (electrodes.max_offset_mm), so the MCP is at most 130.698 mm behind
+    # it. Measured: the tube output flange face is at model z 298.704 mm = 193.704 mm from the tip; as built
+    # (lens_gap 13.482) the rods end at 154.180 mm, 39.52 mm before the flange face.
+    z_mcp_mm: [10, 183.704]      # outer limits; the optimizer narrows them per configuration: >= lens_gap + the
+                                 # room the stack (+ mesh) needs, <= lens_gap + 130.698. Upper end = flange face
+                                 # - 10 mm (rods at the flange face, lens_gap at its upper end)
+    mesh_gap_mm: [12.7, 52.7]    # same as cfg 3 (not given by the author for cfg 1; mesh on the MCP holder)
+    lens_gap_mm: [10, 53.0]      # same as cfg 3: >= 10 mm (emission), rods stay inside the tube (end at most at
+                                 # the output flange face: 193.704 - 140.698 = 53.006); the stack and MCP limits
+                                 # on top of this follow from the rails (author 2026-11-22)
+    mcp_rod_margin_mm: 10        # MCP front face at least 10 mm in front of the rod end (author 2026-11-22)
   2:
     name: chamber 2 alone (sphere)   # unusable for now: the MCP sits inside L8/L9 (KNOWN_ISSUES #12)
     z_mcp_mm: [null, null]       # TBD (current model: fixed at the sphere centre)
@@ -59,7 +70,9 @@ electrodes:
   # deflector = tube + plates (electrodes.PROFILES, same shapes as scripts/build_axisym.py).
   removable: [e2, e3, e4, e5, e6, e7, e8, e9, d1, d2]
   movable: [e2, e3, e4, e5, e6, e7, e8, e9]
-  min_gap_mm: 2.23           # smallest axial gap between facing surfaces of neighbouring parts (as built)
+  min_gap_mm: 2.23           # smallest axial gap between facing surfaces of neighbouring parts (as built); also
+                             # between the last part and the screen mesh hub, or the MCP + surround without a
+                             # mesh (author 2026-11-22: any gap that avoids a collision; electrodes.REAR)
   max_offset_mm: 140.698     # furthest back (from the E1 front face) a moved plate may reach: the far face of
                              # the four 2.54 mm rods (CAD "Part 2", z -140.467..+4.533; E1 front at -136.165),
                              # author 2026-11-15

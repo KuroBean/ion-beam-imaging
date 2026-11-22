@@ -5,12 +5,13 @@ from ionopt.backends.transports import LocalFSTransport
 from ionopt.cli import main
 from ionopt.runlog import RunLog
 
-from conftest import CONFIG_DIR, DEV_OVERRIDES
+from conftest import CFG1_PINS, CONFIG_DIR, DEV_OVERRIDES
 from helpers import einzel_job
 
 
 def _args(tmp_path, *extra):
     return ["--config-dir", str(CONFIG_DIR), "--overrides", str(DEV_OVERRIDES),
+            *[a for p in CFG1_PINS for a in ("--set", p)],
             "--set", f"paths.results_dir={(tmp_path / 'results').as_posix()}",
             "--set", f"paths.queue_dir={(tmp_path / 'queue').as_posix()}",
             "--set", f"paths.db_path={(tmp_path / 'log.sqlite').as_posix()}",

@@ -2,12 +2,10 @@
 # These are NOT physical decisions. Use with:  ionopt --overrides config/dev_overrides.yaml ...
 # Every key here must already exist in the main config files (typos are rejected).
 
+# (The cfg 1 placeholders that used to be here are in tests/conftest.py TEST_PINS: cfg 1 has real values
+# in constraints.yaml since 2026-11-22, and this file must not overwrite them.)
+
 constraints:
-  chamber_setups:
-    1:
-      z_mcp_mm: [145, 145]
-      mesh_gap_mm: [12.7, 12.7]
-      lens_gap_mm: [5, 15]
   supplies:
     mcp_back_offset_V: 1000
     phosphor_offset_V: 3000

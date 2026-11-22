@@ -156,6 +156,15 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
         else:
             lines.append(f"- cfg {k} ({c.name}): z_mcp {c.z_mcp_mm}, mesh_gap {c.mesh_gap_mm}, "
                          f"lens_gap {c.lens_gap_mm}")
+            if c.mcp_rod_margin_mm is not None and cs.electrodes.max_offset_mm is not None:
+                lines.append(f"  The MCP is the last part on the stack's tie rods: its face sits behind the last "
+                             f"present part (and behind the screen mesh, which it carries at mesh_gap) and at most "
+                             f"{cs.electrodes.max_offset_mm - c.mcp_rod_margin_mm:g} mm behind the e1 front face "
+                             f"(rod end minus {c.mcp_rod_margin_mm:g} mm). The optimizer keeps every sample inside "
+                             f"these limits, so z_mcp's usable range depends on the configuration: removing plates "
+                             f"(or the screen mesh) lets the MCP come closer to the tip."
+                             + (" The deflectors do not exist in this setup."
+                                if not any(k in d.cfgs for d in cs.electrodes.deflectors) else ""))
     lines.append(f"Supplies: {len(lv.channels)} low-voltage channels {lv.channels}, range {lv.range_V} V. Each of "
                  f"{lv.connectable} is wired to one channel or GND; electrodes on one channel share its voltage. "
                  f"HV ports have fixed roles {cs.supplies.high_voltage.roles}; MCP front {cs.supplies.mcp_front_V} V, "
@@ -173,7 +182,8 @@ def design_space_block(cfg: Config, state: LoopState) -> str:
                      + (f" and ending before {el.max_offset_mm} mm" if el.max_offset_mm else "") +
                      ". As built, every plate already sits at that minimum gap, so a plate can only move into room "
                      "made by removing a neighbour (or, without deflectors, the last plate can move back toward the "
-                     "mesh).")
+                     "mesh). The last part keeps the same minimum gap to the screen mesh's cross hub, or to the MCP "
+                     "and its surround when the variant has no screen mesh.")
     else:
         lines.append("Part switches: NOT available (keep every part as built).")
     rules = []

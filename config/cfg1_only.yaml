@@ -1,0 +1,9 @@
+# Restrict a run to chamber setup 1 (tube alone, MCP on the rods): cfg 3 is marked NOT USABLE for the
+# planner and the optimizer by clearing its position ranges (cfg 2 is unusable anyway, KNOWN_ISSUES #12).
+# Use with:  ionopt agent-run ... --overrides config/cfg1_only.yaml
+constraints:
+  chamber_setups:
+    3:
+      z_mcp_mm: [null, null]
+      mesh_gap_mm: [null, null]
+      lens_gap_mm: [null, null]

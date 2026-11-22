@@ -30,7 +30,8 @@ from . import units
 from .backends import SimulationBackend, make_backend
 from .checker import check
 from .config import Config, ConfigError, ConfigurationDef, range_known
-from .electrodes import OFFSET, check_structure, face_shift, layout_problems, stack_layout, used_lv_channels
+from .electrodes import (OFFSET, check_structure, face_shift, has_screen_mesh, layout_problems, mcp_max_from_e1,
+                         rear_reach, stack_layout, used_lv_channels)
 from .jobs import build_job
 from .runlog import RunLog
 from .variants import load_variant
@@ -43,16 +44,35 @@ def _rng(cfg: Config, key: str) -> list[float]:
     return cfg.require(key)
 
 
+def _rear_setup(cfg: Config, conf: ConfigurationDef, parts: list[dict]
+                ) -> tuple[str, dict[str, float], float | None]:
+    """Rear obstacle ("mesh" or "mcp"), each part's reach to its plane (min gap included), and the largest
+    z_mcp - lens_gap when the MCP sits on the rods (None otherwise)."""
+    rear = "mesh" if has_screen_mesh(cfg, conf.variant_id) else "mcp"
+    g = (cfg.constraints.electrodes.min_gap_mm or 0.0) * units.MM
+    return rear, {e["name"]: rear_reach(e["profile"], rear) + g for e in parts}, mcp_max_from_e1(cfg, conf.cfg)
+
+
+def _end_room_max(z_mcp_hi: float, gap_lo: float, lens_lo: float, rear: str, mcp_max: float | None) -> float:
+    """Largest offset (m, from the E1 front face) the rear reference plane can have."""
+    gap = gap_lo if rear == "mesh" else 0.0
+    room = z_mcp_hi - gap - lens_lo
+    if mcp_max is not None:
+        room = min(room, mcp_max - gap)
+    return room - EPS_M
+
+
 def offset_windows(parts: list[dict], moved: list[str], bounds: dict[str, tuple[float, float]], gap: float,
-                   end_room: float, max_offset: float | None, placed: dict[str, float] | None = None
-                   ) -> dict[str, tuple[float, float]]:
+                   end_room: float, max_offset: float | None, placed: dict[str, float] | None = None,
+                   reach: dict[str, float] | None = None) -> dict[str, tuple[float, float]]:
     """Allowed front offsets (m, from the E1 front face) of the moved plates not yet placed.
 
     parts: present stack parts at lens_gap 0, as built (stack_layout); bounds: plate -> (lo, hi) m;
-    end_room: the stack must end before this offset (mesh plane - smallest lens_gap); placed: plates
-    already sampled (beam order). Lower limits come from the upstream neighbours, upper limits from the
-    downstream ones (at their own upper limits) and the end, so any value in a window leaves room for
-    every later plate.
+    end_room: offset of the rear obstacle's reference plane (mesh or MCP plane - smallest lens_gap);
+    reach: part -> room it needs in front of that plane, from its front face (min gap included; default
+    its full length); placed: plates already sampled (beam order). Lower limits come from the upstream
+    neighbours, upper limits from the downstream ones (at their own upper limits) and the end, so any
+    value in a window leaves room for every later plate.
     """
     placed = placed or {}
     names = [e["name"] for e in parts]
@@ -75,7 +95,7 @@ def offset_windows(parts: list[dict], moved: list[str], bounds: dict[str, tuple[
         if n in placed or n not in moved:
             hi[n] = placed.get(n, front[n])
             continue
-        v = min(bounds.get(n, (-math.inf, math.inf))[1], end_room - ext[n])
+        v = min(bounds.get(n, (-math.inf, math.inf))[1], end_room - (reach[n] if reach else ext[n]))
         if max_offset is not None:
             v = min(v, max_offset - ext[n])
         if i + 1 < len(names):
@@ -92,7 +112,8 @@ class SearchSpace:
     z_mcp: tuple[float, float]                             # m
     mesh_gap: tuple[float, float]                          # m
     lens_gap: tuple[float, float]                          # m
-    stack_length: float                                    # m, E1 front to the end of the last stack part
+    stack_length: float                                    # m, E1 front face to the closest allowed rear plane
+                                                           # (moved plates at their lowest offsets, min gap included)
     names: list[str] = field(default_factory=list)
     # extraction rule (pre-acceleration on): q (V_tip - V_E1) >= min_extraction (V)
     tip_ch: str | None = None
@@ -110,6 +131,14 @@ class SearchSpace:
     parts: list[dict] = field(default_factory=list)
     min_gap: float = 0.0
     max_offset: float | None = None
+    # what the stack must clear at the back: "mesh" (plane z_mcp - mesh_gap) or, without a screen mesh, "mcp"
+    # (plane z_mcp); reach = part -> room it needs in front of that plane from its front face (m, min gap included)
+    rear: str = "mesh"
+    reach: dict[str, float] = field(default_factory=dict)
+    # MCP on the tie rods (chamber_setups.<n>.mcp_rod_margin_mm): z_mcp - lens_gap <= mcp_max (m); then z_mcp
+    # is sampled first, mesh_gap within the room it leaves (u_mesh_gap) and lens_gap from z_mcp - mcp_max up
+    mcp_max: float | None = None
+    gap_dependent: bool = False
 
     @staticmethod
     def raw_ranges(cfg: Config, conf: ConfigurationDef) -> dict[str, tuple[float, float]]:
@@ -147,9 +176,11 @@ class SearchSpace:
         if conf.moved:
             el = cfg.constraints.electrodes
             parts = stack_layout(cfg, conf.cfg, 0.0, conf.removed)
-            end = (out["z_mcp_mm"][1] - lo_g - out["lens_gap_mm"][0]) * units.MM - EPS_M
+            rear, reach, mcp_max = _rear_setup(cfg, conf, parts)
+            end = _end_room_max(out["z_mcp_mm"][1] * units.MM, lo_g * units.MM, out["lens_gap_mm"][0] * units.MM,
+                                rear, mcp_max)
             w = offset_windows(parts, _beam_order(parts, conf.moved), {}, el.min_gap_mm * units.MM, end,
-                               None if el.max_offset_mm is None else el.max_offset_mm * units.MM)
+                               None if el.max_offset_mm is None else el.max_offset_mm * units.MM, reach=reach)
             for n, (lo, hi) in w.items():
                 if lo > hi + EPS_M:
                     raise ConfigError(f"configuration '{conf.config_id}': no room to move {n} "
@@ -193,21 +224,24 @@ class SearchSpace:
         chan = {k: v for k, v in raw.items() if not k.endswith("_mm")}
         parts = stack_layout(cfg, conf.cfg, 0.0, conf.removed)
         el = cfg.constraints.electrodes
+        rear, reach, mcp_max = _rear_setup(cfg, conf, parts)
         sp = cls(conf=conf, channels=chan, z_mcp=mm(raw["z_mcp_mm"]), mesh_gap=mm(raw["mesh_gap_mm"]),
-                 lens_gap=mm(raw["lens_gap_mm"]), stack_length=max(e["z_back_m"] for e in parts),
+                 lens_gap=mm(raw["lens_gap_mm"]), stack_length=0.0,
                  parts=parts, min_gap=(el.min_gap_mm or 0.0) * units.MM,
                  max_offset=None if el.max_offset_mm is None else el.max_offset_mm * units.MM,
-                 variant_vars={n: mm(raw[k]) for k, n in vnames.items()})
+                 variant_vars={n: mm(raw[k]) for k, n in vnames.items()}, rear=rear, reach=reach, mcp_max=mcp_max)
+        sp.stack_length = sp.stack_reach({})
         if conf.moved:
             b = {n: mm(raw[f"{n}{OFFSET}_mm"]) for n in conf.moved}
-            end = sp.z_mcp[1] - sp.mesh_gap[0] - sp.lens_gap[0] - EPS_M
-            sp.offsets = offset_windows(parts, _beam_order(parts, conf.moved), b, sp.min_gap, end, sp.max_offset)
+            end = _end_room_max(sp.z_mcp[1], sp.mesh_gap[0], sp.lens_gap[0], rear, mcp_max)
+            sp.offsets = offset_windows(parts, _beam_order(parts, conf.moved), b, sp.min_gap, end, sp.max_offset,
+                                        reach=reach)
             for n, (lo, hi) in sp.offsets.items():
                 if lo > hi + EPS_M:
                     raise ConfigError(f"'{conf.config_id}': the bounds leave no room for {n} "
                                       f"(electrodes.min_gap_mm to its neighbours)")
             sp.offsets = {n: (lo, max(lo, hi)) for n, (lo, hi) in sp.offsets.items()}
-            sp.stack_length = sp.stack_end({n: lo for n, (lo, _) in sp.offsets.items()})
+            sp.stack_length = sp.stack_reach({})
         sp.fixed_extraction = cfg.optimizer.fixed_extraction_V
         sp.max_extraction = cfg.optimizer.max_extraction_V
         if cfg.spec.launch.preaccel or sp.fixed_extraction is not None or sp.max_extraction is not None:
@@ -215,10 +249,26 @@ class SearchSpace:
         if cfg.optimizer.no_mirror:
             sp._mirror_rule(conf.wiring, 1 if cfg.spec.launch.charge > 0 else -1,
                             cfg.constraints.supplies.hv_port("mcp_front"))
-        # worst case (mesh closest to the tip, stack furthest out) must still fit
-        if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - sp.mesh_gap[1] - EPS_M:
-            raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the mesh "
-                              f"even at the smallest lens_gap, z_mcp and largest mesh_gap")
+        what = "screen mesh" if rear == "mesh" else "MCP"
+        gap_lo, gap_hi = (sp.mesh_gap if rear == "mesh" else (0.0, 0.0))
+        if mcp_max is None:
+            # MCP held by the chamber: the worst case (mesh closest to the tip, stack furthest out) must still fit
+            if sp.lens_gap[0] + sp.stack_length >= sp.z_mcp[0] - gap_hi - EPS_M:
+                raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit in front of the "
+                                  f"{what} even at the smallest lens_gap, z_mcp and largest mesh_gap")
+            return sp
+        # MCP on the rods: it goes behind the stack (+ mesh gap) and no further than mcp_max behind E1
+        if sp.stack_length + gap_lo > mcp_max - 2 * EPS_M:
+            raise ConfigError(f"configuration '{conf.config_id}': the lens stack does not fit on the rods in front of "
+                              f"the {what} (needs {(sp.stack_length + gap_lo) / units.MM:.2f} mm behind the E1 front "
+                              f"face, the MCP may be at most {mcp_max / units.MM:.2f} mm)")
+        lo = max(sp.z_mcp[0], sp.lens_gap[0] + sp.stack_length + gap_lo + 4 * EPS_M)
+        hi = min(sp.z_mcp[1], sp.lens_gap[1] + mcp_max)
+        if lo > hi:
+            raise ConfigError(f"configuration '{conf.config_id}': no MCP position fits behind the stack within "
+                              f"z_mcp {raw['z_mcp_mm']} mm and lens_gap {raw['lens_gap_mm']} mm")
+        sp.z_mcp = (lo, hi)
+        sp.gap_dependent = rear == "mesh" and gap_hi - gap_lo > 1e-12
         return sp
 
     def variable_ranges(self) -> dict[str, tuple[float, float]]:
@@ -235,15 +285,35 @@ class SearchSpace:
         return out
 
     # ---- moved plates
-    def stack_end(self, offsets: dict[str, float]) -> float:
-        """End of the last present part (m from the E1 front face) with these plate offsets."""
-        shift = {n: offsets[n] - e["z_front_m"] for e in self.parts for n in [e["name"]] if n in offsets}
-        return max(e["z_back_m"] + shift.get(e["name"], 0.0) for e in self.parts)
+    def stack_reach(self, offsets: dict[str, float]) -> float:
+        """Closest allowed rear plane (m from the E1 front face) with these plate offsets; moved plates not
+        given sit at their lowest offsets."""
+        full = {n: lo for n, (lo, _) in self.offsets.items()}
+        full.update(offsets)
+        shift = {n: full[n] - e["z_front_m"] for e in self.parts for n in [e["name"]] if n in full}
+        return max(e["z_front_m"] + shift.get(e["name"], 0.0) + self.reach[e["name"]] for e in self.parts)
 
-    def window(self, name: str, placed: dict[str, float], z_mesh: float) -> tuple[float, float]:
-        """Offset window of a moved plate given the plates placed before it and the mesh plane."""
+    def z_ref(self, z_mcp: float, gap: float) -> float:
+        """Reference plane of the rear obstacle (m): the mesh plane, or the MCP face without a mesh."""
+        return z_mcp - gap if self.rear == "mesh" else z_mcp
+
+    def lens_gap_min(self, z_mcp: float) -> float:
+        """Smallest lens_gap at this MCP position (MCP on the rods: at most mcp_max behind E1)."""
+        lo = self.lens_gap[0]
+        return lo if self.mcp_max is None else max(lo, z_mcp - self.mcp_max)
+
+    def mesh_gap_max(self, z_mcp: float) -> float:
+        """Largest mesh_gap at this MCP position that still leaves room for the stack."""
+        hi = self.mesh_gap[1]
+        if self.gap_dependent:
+            hi = min(hi, z_mcp - self.lens_gap_min(z_mcp) - self.stack_length - 2 * EPS_M)
+        return max(self.mesh_gap[0], hi)
+
+    def window(self, name: str, placed: dict[str, float], z_ref: float, lens_lo: float) -> tuple[float, float]:
+        """Offset window of a moved plate given the plates placed before it, the rear plane and the
+        smallest lens_gap."""
         lo, hi = offset_windows(self.parts, list(self.offsets), self.offsets, self.min_gap,
-                                z_mesh - self.lens_gap[0] - EPS_M, self.max_offset, placed)[name]
+                                z_ref - lens_lo - EPS_M, self.max_offset, placed, reach=self.reach)[name]
         return lo, max(lo, hi)
 
     def contains(self, channels: dict[str, float], positions: dict[str, float], tol: float = 1e-9) -> bool:
@@ -255,20 +325,21 @@ class SearchSpace:
             if not (lo - tol <= v <= hi + tol):
                 return False
         z, g, lg = positions["z_mcp"], positions["mesh_gap"], positions["lens_gap"]
-        ok = (self.z_mcp[0] - tol <= z <= self.z_mcp[1] + tol and self.mesh_gap[0] - tol <= g <= self.mesh_gap[1] + tol)
+        ok = (self.z_mcp[0] - tol <= z <= self.z_mcp[1] + tol and self.mesh_gap[0] - tol <= g <= self.mesh_gap_max(z) + tol)
         offs = {k[: -len(OFFSET)]: v for k, v in positions.items() if k.endswith(OFFSET)}
         if set(offs) != set(self.offsets):
             return False
         for n, (lo, hi) in self.variant_vars.items():
             if n not in positions or not (lo - tol <= positions[n] <= hi + tol):
                 return False
+        z_ref, lens_lo = self.z_ref(z, g), self.lens_gap_min(z)
         placed: dict[str, float] = {}
         for n in self.offsets:
-            lo, hi = self.window(n, placed, z - g)
+            lo, hi = self.window(n, placed, z_ref, lens_lo)
             if not (lo - tol <= offs[n] <= hi + tol):
                 return False
             placed[n] = offs[n]
-        return ok and self.lens_gap[0] - tol <= lg <= self.lens_gap_max(z - g, placed) + tol
+        return ok and lens_lo - tol <= lg <= self.lens_gap_max(z_ref, placed) + tol
 
     def _extraction_rule(self, wiring: dict[str, str], q_sign: int, u_min: float) -> None:
         """Restrict the tip / E1 channel ranges so that q (V_tip - V_E1) >= u_min is always possible."""
@@ -388,31 +459,35 @@ class SearchSpace:
                     p[f"u_{ch}"] = frac(channels[ch], lo, hi)
             else:
                 p[ch] = indep[ch]
-        z_mcp, gap = clip(positions["z_mcp"], self.z_mcp), clip(positions["mesh_gap"], self.mesh_gap)
+        z_mcp = clip(positions["z_mcp"], self.z_mcp)
+        gap = clip(positions["mesh_gap"], (self.mesh_gap[0], self.mesh_gap_max(z_mcp)))
         if self.z_mcp[1] - self.z_mcp[0] > 1e-12:
             p["z_mcp_mm"] = z_mcp / units.MM
-        if self.mesh_gap[1] - self.mesh_gap[0] > 1e-12:
+        if self.gap_dependent:
+            g_lo, g_hi = self.mesh_gap[0], self.mesh_gap_max(z_mcp)
+            if g_hi - g_lo > 1e-12:
+                p["u_mesh_gap"] = frac(gap, g_lo, g_hi)
+        elif self.mesh_gap[1] - self.mesh_gap[0] > 1e-12:
             p["mesh_gap_mm"] = gap / units.MM
         for n, (lo, hi) in self.variant_vars.items():
             if hi - lo > 1e-12:
                 p[f"{n}_mm"] = clip(positions.get(n, lo), (lo, hi)) / units.MM
+        z_ref, lens_lo = self.z_ref(z_mcp, gap), self.lens_gap_min(z_mcp)
         placed: dict[str, float] = {}
         for n in self.offsets:
-            lo, hi = self.window(n, placed, z_mcp - gap)
+            lo, hi = self.window(n, placed, z_ref, lens_lo)
             v = clip(positions.get(f"{n}{OFFSET}", lo), (lo, hi))
             if hi - lo > 1e-12:
                 p[f"u_{n}{OFFSET}"] = frac(v, lo, hi)
             placed[n] = v
-        lo, hi = self.lens_gap[0], self.lens_gap_max(z_mcp - gap, placed)
+        lo, hi = lens_lo, self.lens_gap_max(z_ref, placed)
         if hi - lo > 1e-12:
             p["u_lens_gap"] = frac(positions["lens_gap"], lo, hi)
         return p
 
-    def lens_gap_max(self, z_mesh: float, offsets: dict[str, float] | None = None) -> float:
-        """Largest lens_gap that keeps the whole stack upstream of the mesh plane."""
-        end = self.stack_end(offsets) if offsets else self.stack_length if not self.offsets else \
-            self.stack_end({n: lo for n, (lo, _) in self.offsets.items()})
-        return min(self.lens_gap[1], z_mesh - end - EPS_M)
+    def lens_gap_max(self, z_ref: float, offsets: dict[str, float] | None = None) -> float:
+        """Largest lens_gap that keeps the whole stack min_gap in front of the rear plane (mesh or MCP)."""
+        return min(self.lens_gap[1], z_ref - self.stack_reach(offsets or {}) - EPS_M)
 
     # ---- optuna
     def suggest(self, trial: optuna.Trial) -> tuple[dict[str, float], dict[str, float]]:
@@ -433,16 +508,21 @@ class SearchSpace:
                 channels[ch] = lo0
         channels = {ch: channels[ch] for ch in self.channels}   # keep the channel order
         z_mcp = f("z_mcp_mm", self.z_mcp[0] / units.MM, self.z_mcp[1] / units.MM) * units.MM
-        gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM
+        if self.gap_dependent:     # MCP on the rods: mesh_gap as a fraction of the room the stack leaves
+            lo, hi = self.mesh_gap[0], self.mesh_gap_max(z_mcp)
+            gap = lo if hi - lo <= 1e-12 else lo + trial.suggest_float("u_mesh_gap", 0.0, 1.0) * (hi - lo)
+        else:
+            gap = f("mesh_gap_mm", self.mesh_gap[0] / units.MM, self.mesh_gap[1] / units.MM) * units.MM
         variant = {n: f(f"{n}_mm", lo / units.MM, hi / units.MM) * units.MM
                    for n, (lo, hi) in self.variant_vars.items()}
+        z_ref, lens_lo = self.z_ref(z_mcp, gap), self.lens_gap_min(z_mcp)
         # moved plates in beam order, each as a fraction of the window its neighbours leave
         placed: dict[str, float] = {}
         for n in self.offsets:
-            lo, hi = self.window(n, placed, z_mcp - gap)
+            lo, hi = self.window(n, placed, z_ref, lens_lo)
             placed[n] = lo if hi - lo <= 1e-12 else lo + trial.suggest_float(f"u_{n}{OFFSET}", 0.0, 1.0) * (hi - lo)
-        # lens_gap as a fraction of its feasible range, so the stack never reaches the mesh
-        lo, hi = self.lens_gap[0], self.lens_gap_max(z_mcp - gap, placed)
+        # lens_gap as a fraction of its feasible range, so the stack never reaches the mesh / MCP
+        lo, hi = lens_lo, self.lens_gap_max(z_ref, placed)
         lens_gap = lo if hi - lo <= 1e-12 else lo + trial.suggest_float("u_lens_gap", 0.0, 1.0) * (hi - lo)
         return channels, {"lens_gap": lens_gap, "z_mcp": z_mcp, "mesh_gap": gap,
                           **{f"{n}{OFFSET}": v for n, v in placed.items()}, **variant}
