@@ -159,6 +159,12 @@ class SearchSpace:
         if var is not None:
             for x in var.variables():
                 out[f"{x.name}_mm"] = (float(x.range[0]), float(x.range[1]))
+                item = cfg.inventory.get(x.inventory_item) if x.inventory_item else None
+                if item is not None and item.replaces in var.removed_base:
+                    # dimension of a part the variant has since removed (e.g. the opening of a mesh that is
+                    # gone): it no longer reaches the geometry, so hold it at its as-built value
+                    v = float(x.as_built if x.as_built is not None else x.range[0])
+                    out[f"{x.name}_mm"] = (v, v)
             if "screen_mesh" in var.removed_base:      # no mesh: its voltage and gap do nothing
                 lo, hi = out[s.hv_port("mesh")]
                 v = min(max(0.0, lo), hi)

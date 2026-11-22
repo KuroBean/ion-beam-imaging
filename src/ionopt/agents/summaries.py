@@ -215,9 +215,13 @@ def variants_lines(cfg: Config, state: LoopState) -> list[str]:
     out = ["- base: the as-built model"]
     for m in seen.values():
         bits = [f"from {m.parent} with {m.inventory_items}"]
+        dead = inactive_variables(cfg, m)
         if m.variables():
-            bits.append("variables " + ", ".join(f"{x.name}_mm [{x.range[0]:g}, {x.range[1]:g}] (as built "
-                                                 f"{x.as_built:g})" for x in m.variables()))
+            bits.append("variables " + ", ".join(
+                f"{x.name}_mm " + (f"INACTIVE (its part was removed; held at {x.as_built:g}, not a variable)"
+                                   if x.name in dead else
+                                   f"[{x.range[0]:g}, {x.range[1]:g}] (as built {x.as_built:g})")
+                for x in m.variables()))
         if m.switches():
             bits.append("switches (variant_settings) " + ", ".join(f"{x.name} (as built {x.as_built:g})"
                                                                   for x in m.switches()))
@@ -230,6 +234,41 @@ def variants_lines(cfg: Config, state: LoopState) -> list[str]:
             bits.append(f"mesh transmission {m.mesh_open_fraction:g}")
         out.append(f"- {m.variant_id}: " + "; ".join(bits) + (f". {m.description}" if m.description else ""))
     return out
+
+
+def inactive_variables(cfg: Config, m) -> set[str]:
+    """Variant variables of a part the variant has since removed (optimize.SearchSpace holds them fixed)."""
+    out = set()
+    for x in m.variables():
+        item = cfg.inventory.get(x.inventory_item) if x.inventory_item else None
+        if item is not None and item.replaces in m.removed_base:
+            out.add(x.name)
+    return out
+
+
+def variant_note(cfg: Config, variant_id: str | None) -> str:
+    """Plain statement of what a run's model variant changed, for the critic (it cannot see the manifest)."""
+    if not variant_id or variant_id == "base":
+        return "- model: the as-built 2D model (screen mesh present)"
+    m = load_variant(cfg, variant_id)
+    if m is None:
+        return f"- model variant {variant_id} (manifest not found)"
+    lines = [f"- model variant {variant_id} (from {m.parent}, inventory {m.inventory_items})"]
+    if "screen_mesh" in m.removed_base:
+        lines.append("- THIS MODEL HAS NO SCREEN MESH: the mesh disc and its cross hub were removed. Nothing sits "
+                     "between the lens stack and the MCP front, whose field reaches into the chamber. Mesh "
+                     "transmission is 1, so eta = fraction on the active MCP. The mesh voltage (HV4), mesh_gap and "
+                     "any mesh opening value in the job do nothing, no mesh is drawn in the plots, and "
+                     "'mesh_frame' losses are impossible.")
+    dead = inactive_variables(cfg, m)
+    for x in m.variables():
+        if x.name in dead:
+            lines.append(f"- {x.name} is inactive (dimension of a removed part)")
+        else:
+            lines.append(f"- variable {x.name}_mm swept in [{x.range[0]:g}, {x.range[1]:g}] (as built {x.as_built:g})")
+    if m.parts:
+        lines.append("- new conductors: " + ", ".join(pt.name for pt in m.parts))
+    return "\n".join(lines)
 
 
 def inventory_block(cfg: Config) -> str:
@@ -422,7 +461,7 @@ def critic_context(cfg: Config, state: LoopState, metrics: dict | None, study_li
     return "\n\n".join([
         "# Specification\n" + spec_block(cfg),
         "# What was run\n" + (f"- {config_str(p.configuration.model_dump())}\n" if p and p.configuration else "")
-        + study_line,
+        + study_line + "\n" + variant_note(cfg, p.configuration.variant_id if p and p.configuration else None),
         "# Checker output for the best job\n" + metrics_block(metrics_summary(metrics)),
         "# Full metrics.json\n```json\n" + json.dumps(metrics_summary(metrics, n_rows=26), indent=0) + "\n```",
         "# Planner claims to check\n" + claims,

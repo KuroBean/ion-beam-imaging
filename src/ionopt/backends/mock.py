@@ -63,6 +63,7 @@ def mock_geometry(job: JobSpec, cfg: Config) -> dict:
         "z_launch_m": (job.launch.launch_offset_um or 0.0) * units.UM,
         "z_mcp_m": z_mcp,
         "r_mcp_active_m": spec.detector.mcp_active_diameter_mm / 2 * units.MM,
+        "mesh_present": not no_mesh,
         "z_mesh_m": z_mesh,
         "r_mesh_open_m": None if no_mesh else r_mesh,
         "mesh_frame_z_m": None if no_mesh else [z_mesh, z_mesh],

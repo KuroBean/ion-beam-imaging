@@ -121,3 +121,21 @@ def test_resume_extends_rounds_and_solves(tmp_path, capsys):
     # without the extension the run would stop at round_cap (1 round) / budget (10 solves) before planner_1
     assert summary["stop_reason"] not in ("round_cap", "budget") and summary["rounds"] == 1
     assert any("extended the run by 1 rounds and 5 solves" in x for x in summary["assumptions"])
+
+
+def test_resume_has_no_unregistered_type_warnings(tmp_path, capsys, caplog):
+    """The checkpoint serializer allowlists our state models: no LangGraph 'unregistered type' warning on
+    resume, and the state comes back as typed objects (strict LangGraph versions will block the rest)."""
+    import logging
+
+    script = _script(tmp_path / "script", [("planner_0", {"diagnosis": "none", "diagnosis_evidence": "-",
+                                                          "action": "escalate_spec", "escalation": "Q?",
+                                                          "rationale": "r"})])
+    common = _args(tmp_path, "--set", "backend.backend=mock", "--set", "optimizer.write_plots=false")
+    assert main(["agent-run", *common, "--run-id", "w1", "--budget", "30", "--fake-llm", str(script)]) == 3
+    from langgraph.checkpoint.serde import jsonplus
+    jsonplus._warned_unregistered_types.clear()      # LangGraph warns once per type per process
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        assert main(["agent-resume", "w1", *common, "--fake-llm", str(script)]) == 3   # repeats the question
+    assert not [r for r in caplog.records if "unregistered type" in r.getMessage()]

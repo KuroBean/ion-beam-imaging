@@ -100,3 +100,37 @@ def test_optimize_a_variant_on_the_mock(vcfg, vid, settings):
         m = json.loads((vcfg.path("results_dir") / res.best_job_id / "metrics.json").read_text())
         assert m["requirements"]["mesh_open_fraction"] == 1.0
         assert m["fate_counts"].get("mesh_frame", 0) == 0
+
+
+def test_mesh_removed_after_a_wide_mesh(vcfg):
+    """A no-mesh variant built on a wide-mesh one (run 2): the opening diameter it inherited is held fixed,
+    plots draw no mesh and say so, and the critic is told the model has no mesh."""
+    from ionopt.agents.summaries import variant_note, variants_lines
+    from ionopt.plots import _stats_text, make_plots, mesh_present
+    from ionopt.results import load_job
+
+    m = wide_mesh().model_copy(update={"variant_id": "v-wide-then-none", "parent": "v-wide-mesh",
+                                       "inventory_items": ["no_screen_mesh", "screen_mesh_wide"],
+                                       "removed_base": ["screen_mesh"], "mesh_open_fraction": 1.0})
+    save_variant(vcfg, m)
+    conf = ConfigurationDef(config_id="wn", cfg=1, wiring=WIRING, variant_id="v-wide-then-none")
+    assert SearchSpace.raw_ranges(vcfg, conf)["mesh_open_diameter_mm"] == (11.0, 11.0)
+    c = vcfg.with_overrides(["optimizer.write_plots=true"])
+    res = optimize(c, "ignored", budget=3, backend=MockBackend(c), study_id="s-wn", conf=conf)
+    assert res.n_failed == 0
+    d = c.path("results_dir") / res.best_job_id
+    assert res.best_positions["mesh_open_diameter"] == pytest.approx(11 * MM)   # never sampled
+    geom = json.loads((d / "geometry.json").read_text())
+    assert geom["mesh_present"] is False and not mesh_present(geom)
+    assert not mesh_present({"r_mesh_open_m": None}) and mesh_present({"r_mesh_open_m": 0.005})  # old results
+    make_plots(d, c)
+    assert (d / "plots" / "summary.png").is_file()
+    txt = _stats_text(load_job(d), c, json.loads((d / "metrics.json").read_text()), {}, {}, geom)
+    assert "collected (no mesh)" in txt and "MESH  none" in txt and "mesh_gap" not in txt
+    note = variant_note(c, "v-wide-then-none")
+    assert "NO SCREEN MESH" in note and "mesh_open_diameter is inactive" in note
+    assert "NO SCREEN MESH" not in variant_note(c, "v-wide-mesh")
+
+    class _S:                                   # variants_lines only needs the run's own variants
+        model_variants = []
+    assert any("mesh_open_diameter_mm INACTIVE" in ln for ln in variants_lines(c, _S()))

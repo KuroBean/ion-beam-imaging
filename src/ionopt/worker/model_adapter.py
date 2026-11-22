@@ -509,10 +509,10 @@ class ModelAdapter:
             fz1, fr1 = self._numerical("max", "sel_mesh_frame", rz)
             mz0, _ = self._numerical("min", "sel_mesh_plane", rz)
             mz1, mr1 = self._numerical("max", "sel_mesh_plane", rz)
-            mesh = {"z_mesh_m": (0.5 * (mz0 + mz1) - tip_mm) * mm, "r_mesh_open_m": fr0 * mm,
+            mesh = {"mesh_present": True, "z_mesh_m": (0.5 * (mz0 + mz1) - tip_mm) * mm, "r_mesh_open_m": fr0 * mm,
                     "mesh_frame_z_m": [(fz0 - tip_mm) * mm, (fz1 - tip_mm) * mm], "mesh_frame_r_m": [fr0 * mm, fr1 * mm]}
         else:                    # variant without a screen mesh: nominal plane, no frame
-            mesh = {"z_mesh_m": pos["z_mcp_m"] - job.positions["mesh_gap"], "r_mesh_open_m": None,
+            mesh = {"mesh_present": False, "z_mesh_m": pos["z_mcp_m"] - job.positions["mesh_gap"], "r_mesh_open_m": None,
                     "mesh_frame_z_m": None, "mesh_frame_r_m": None}
         _, r_mcp = self._numerical("max", "sel_mcp_face", rz)
         la = job.launch

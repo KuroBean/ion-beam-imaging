@@ -90,7 +90,7 @@ def variant_figure(out: Path, var: dict, points: list[dict], rounds: dict[int, d
     scores = [p["score"] for p in points if p["score"] is not None and p["score"] > 0]
     bests: list[str] = []
     for i, rnd in enumerate(rnds):
-        col = SERIES[i]
+        col = SERIES[i % len(SERIES)]   # long runs: more rounds than palette slots
         pts = [p for p in points if p["round"] == rnd]
         for feas in (True, False):
             sel = [p for p in pts if bool(p["feasible"]) == feas]
@@ -197,7 +197,9 @@ def planner_md(cdir: Path, first: bool) -> list[str]:
 
 def editor_md(cfg, cdir: Path, run_dir: Path) -> list[str]:
     o = load_json(cdir / "output.json")
-    res_f = next(run_dir.glob("edits/*/edit_result.json"), None)
+    rnd, _, n = cdir.name.partition("_editor_")         # call r06_editor_1 -> edits/r06_e1 (one per attempt)
+    res_f = run_dir / "edits" / f"{rnd}_e{n}" / "edit_result.json"
+    res_f = res_f if res_f.is_file() else None
     res = load_json(res_f) if res_f else {}
     out = ["**Request** (from the planner): see the round's planner decision above; the editor gets it with the "
            f"build script, its parent copy and API notes (`{cdir.name}/prompt_0.md`).", "",
@@ -208,11 +210,15 @@ def editor_md(cfg, cdir: Path, run_dir: Path) -> list[str]:
     if o.get("notes"):
         out += ["", "*Notes for the author:*", "", quote(o["notes"])]
     vid = res.get("variant_id")
-    if vid:
+    if res and not res.get("ok"):                     # failed attempt: no variant was saved
+        out += ["", f"**Automatic checks failed:** {res.get('checks')}; {res.get('notes', '')}"]
+        vid = None
+    if vid and (cfg.path("results_dir") / "variants" / vid / "variant.json").is_file():
         vdir = cfg.path("results_dir") / "variants" / vid
         man = load_json(vdir / "variant.json")
         ch = {k: v for k, v in man["checks"].items() if isinstance(v, bool)}
-        eq = json.loads(man["checks"].get("equivalence_detail") or "{}")
+        _eqd = man["checks"].get("equivalence_detail") or "{}"
+        eq = json.loads(_eqd) if _eqd.lstrip().startswith("{") else {}   # "n/a: ..." when a base part is removed
         out += ["", f"**Automatic checks on variant `{vid}`:** " + ", ".join(f"{k} {'pass' if v else 'FAIL'}"
                                                                             for k, v in ch.items())]
         if eq:

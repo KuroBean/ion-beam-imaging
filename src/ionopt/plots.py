@@ -123,11 +123,12 @@ def plot_field_map(d: Path, out: Path, cfg: Config, job, geom: dict) -> Path | N
     ax.contour(zs / units.MM, rs / units.MM, grid, levels=15, colors=INK2, linewidths=0.3, alpha=0.6)
     _electrode_rects(ax, geom)
     ax.axvline(geom["z_mcp_m"] / units.MM, color=INK, lw=1.2)
-    ax.axvline(geom["z_mesh_m"] / units.MM, color=INK, lw=0.8, ls="--")
+    _mesh_line(ax, geom, color=INK, lw=0.8)
     ax.set_xlim(*z_limits_mm(cfg, job.cfg, geom))
     ax.set(xlabel="z from tip (mm)", ylabel="r (mm)", title="Potential map (r–z plane)")
     ax.grid(False)
-    _subtitle(ax, "solid: MCP face  ·  dashed: mesh  ·  boxes: electrodes  ·  color: symmetric log scale (linear within ±10 V)")
+    _subtitle(ax, "solid: MCP face  ·  " + ("dashed: mesh" if mesh_present(geom) else "no screen mesh") +
+              "  ·  boxes: electrodes  ·  color: symmetric log scale (linear within ±10 V)")
     fig.colorbar(m, ax=ax, label="V (V)", pad=0.01)
     return _save(fig, out / "field_map.png")
 
@@ -224,11 +225,12 @@ def plot_axis_potential(d: Path, out: Path, cfg: Config, job, geom: dict) -> Pat
     ax.axhline(0, color=AXIS, lw=0.8)
     for e in geom.get("electrodes", []):
         ax.axvline(e["z_m"] / units.MM, color=MUTED, lw=0.6, ls=":")
-    ax.axvline(geom["z_mesh_m"] / units.MM, color=INK2, lw=0.8, ls="--")
+    _mesh_line(ax, geom, color=INK2, lw=0.8)
     ax.axvline(geom["z_mcp_m"] / units.MM, color=INK, lw=1.0)
     ax.set_xlim(*z_limits_mm(cfg, job.cfg, geom))
     ax.set(xlabel="z from tip (mm)", ylabel="V on axis (V)", title="Axis potential")
-    _subtitle(ax, "dotted: electrodes  ·  dashed: mesh  ·  solid: MCP face. Ions slow down where V nears the tip potential")
+    _subtitle(ax, "dotted: electrodes  ·  " + ("dashed: mesh" if mesh_present(geom) else "no screen mesh") +
+              "  ·  solid: MCP face. Ions slow down where V nears the tip potential")
     return _save(fig, out / "axis_potential.png")
 
 
@@ -292,11 +294,22 @@ def _trajectories(ax, tr: pd.DataFrame, dv: pd.DataFrame, cfg: Config, z_max: fl
     return norm
 
 
+def mesh_present(geom: dict) -> bool:
+    """True when the run's model has a screen mesh. Results from before the explicit flag: a model without
+    the mesh has no opening radius in geometry.json (worker and mock backend alike)."""
+    return bool(geom.get("mesh_present", geom.get("r_mesh_open_m") is not None))
+
+
+def _mesh_line(ax, geom: dict, **kw) -> None:
+    if mesh_present(geom):
+        ax.axvline(geom["z_mesh_m"] / units.MM, ls="--", **kw)
+
+
 def _n(v, fmt: str) -> str:
     return "–" if v is None or (isinstance(v, float) and not math.isfinite(v)) else format(v, fmt)
 
 
-def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict) -> str:
+def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict, geom: dict | None = None) -> str:
     f = metrics.get("fates", {})
     req = metrics.get("requirements", {})
     mp = metrics.get("mapping", {})
@@ -304,13 +317,18 @@ def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict) -> str:
     pre = meta.get("preacceleration") or {}
     lost = {k: f.get(k, 0) for k in LOST_FATES if f.get(k, 0) > 0}
     L = cfg.spec.launch
+    has_mesh = mesh_present(geom) if geom is not None else True
+    # without a mesh its gap and any opening dimension do nothing: leave them out of the positions
+    pos = {k: v for k, v in job.positions.items()
+           if has_mesh or not (k == "mesh_gap" or (k.startswith("mesh_") and k.endswith("diameter")))}
     lines = [
         f"job {job.job_id[:12]}   {job.fidelity.upper()}   cfg {job.cfg}",
         "   ".join(f"{k}={v}" for k, v in (job.tags or {}).items() if k in ("study_id", "trial", "purpose", "setting")),
         "",
         "TRANSMISSION",
         f"  reach active MCP     {f.get('mcp_active', 0):6.1%}",
-        f"  collected (x mesh)   {_n(req.get('eta'), '6.1%')}",
+        (f"  collected (x mesh)   {_n(req.get('eta'), '6.1%')}" if has_mesh else
+         f"  collected (no mesh)  {_n(req.get('eta'), '6.1%')}"),
         "  lost: " + (", ".join(f"{k.replace('_', ' ')} {v:.1%}" for k, v in lost.items()) or "none"),
         "",
         "IMAGE",
@@ -326,7 +344,8 @@ def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict) -> str:
             f"{k.upper()} {v:+.0f}" for k, v in pots.items() if k.startswith("e") and v),
         "  wiring " + " ".join(f"{k}:{v}" for k, v in job.wiring.items()),
         "",
-        "POSITIONS (mm)   " + "  ".join(f"{k} {v / units.MM:.1f}" for k, v in job.positions.items()),
+        "POSITIONS (mm)   " + "  ".join(f"{k} {v / units.MM:.1f}" for k, v in pos.items()),
+        *([] if has_mesh else [f"MESH  none: variant {job.variant_id} removes the screen mesh"]),
         "",
         f"LAUNCH  Na+ {L.E0_eV:g} eV, {L.hwhm_deg:g}° HWHM at the {L.emission_angle_at}",
     ]
@@ -369,14 +388,15 @@ def plot_summary(d: Path, out: Path, cfg: Config, job, geom: dict, metrics: dict
     else:
         _electrodes_filled(ax, geom)
     norm = _trajectories(ax, tr, dv, cfg)
-    ax.axvline(geom["z_mesh_m"] / units.MM, color=INK, lw=0.8, ls="--")
+    _mesh_line(ax, geom, color=INK, lw=0.8)
     ax.axvline(geom["z_mcp_m"] / units.MM, color=INK, lw=1.4)
     ax.axhline(_r_active_mm(cfg), xmin=0.95, color=INK, lw=0.8)
     ax.set_xlim(z_lo, z_hi)
     r_beam = float(np.nanmax(np.hypot(tr["x_m"], tr["y_m"]))) / units.MM if len(tr) else 0.0
     ax.set_ylim(0, 1.15 * max(_r_active_mm(cfg), min(r_beam, 1.4 * r_el)))
     ax.set(xlabel="z from tip (mm)", ylabel="r (mm)", title="Beam through the chamber")
-    _subtitle(ax, "blue: reaches the MCP (shade = emission angle θ)  ·  red: lost  ·  dashed: mesh  ·  solid: MCP  ·  "
+    _subtitle(ax, "blue: reaches the MCP (shade = emission angle θ)  ·  red: lost  ·  " +
+              ("dashed: mesh" if mesh_present(geom) else "no screen mesh") + "  ·  solid: MCP  ·  "
                   "background: potential (symmetric log, linear within ±10 V)")
 
     # lens region
@@ -409,7 +429,7 @@ def plot_summary(d: Path, out: Path, cfg: Config, job, geom: dict, metrics: dict
     # numbers
     ax = fig.add_subplot(gs[1:, 2])
     ax.axis("off")
-    ax.text(0, 1, _stats_text(job, cfg, metrics, meta, pots), transform=ax.transAxes, va="top", ha="left",
+    ax.text(0, 1, _stats_text(job, cfg, metrics, meta, pots, geom), transform=ax.transAxes, va="top", ha="left",
             family="monospace", fontsize=8.3, color=INK, linespacing=1.35)
 
     # axis potential

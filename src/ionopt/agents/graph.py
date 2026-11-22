@@ -23,6 +23,7 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, interrupt
@@ -332,6 +333,17 @@ def _best_valid_job(ctx: LoopContext, study_id: str) -> str | None:
 # --------------------------------------------------------------------------- running
 
 
+def checkpoint_serde() -> JsonPlusSerializer:
+    """Checkpoint serializer that may rebuild our own state models (LangGraph warns on, and will later block,
+    unregistered types): every pydantic model in ionopt.agents.state and ionopt.agents.schemas."""
+    from pydantic import BaseModel
+
+    from . import schemas, state
+    allowed = [(m.__name__, n) for m in (state, schemas) for n, o in vars(m).items()
+               if isinstance(o, type) and issubclass(o, BaseModel) and o.__module__ == m.__name__]
+    return JsonPlusSerializer(allowed_msgpack_modules=allowed)
+
+
 class LoopRun:
     """A compiled graph bound to one run's checkpoint file."""
 
@@ -340,7 +352,7 @@ class LoopRun:
         d = ctx.run_dir(run_id)
         d.mkdir(parents=True, exist_ok=True)
         self.con = sqlite3.connect(str(d / "checkpoints.sqlite"), check_same_thread=False)
-        self.graph = build_graph(ctx, SqliteSaver(self.con))
+        self.graph = build_graph(ctx, SqliteSaver(self.con, serde=checkpoint_serde()))
         self.config = {"configurable": {"thread_id": run_id}, "recursion_limit": 2000}
 
     def close(self) -> None:
