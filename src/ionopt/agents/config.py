@@ -47,6 +47,9 @@ class LoopConfig(_M):
     editor_build_timeout_s: float = Field(900, gt=0)
     min_bound_fraction: float = Field(0.1, gt=0, le=1)
     warm_start_top_k: int = Field(3, ge=0)
+    # base parts every configuration's model must have removed (variants.REMOVABLE_BASE, e.g. screen_mesh):
+    # an author rule for one run, e.g. "no screen mesh" for a setup the lab can build without ordering parts
+    require_removed: list[str] = []
 
 
 class AgentsConfig(_M):

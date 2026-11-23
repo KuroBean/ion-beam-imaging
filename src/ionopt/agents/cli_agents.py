@@ -22,7 +22,7 @@ RUN_CONFIG = "run_config.json"
 
 
 LOOP_FLAGS = {"round_max": "study_budget_max", "no_improvement_rounds": "no_improvement_rounds",
-              "improvement_tol": "improvement_tol_deg"}
+              "improvement_tol": "improvement_tol_deg", "require_removed": "require_removed"}
 
 
 def _loop_overrides(a) -> dict:
@@ -286,6 +286,9 @@ def args_agent_run(p) -> None:
                    help="stop after N rounds without improvement (overrides loop.no_improvement_rounds; kept on resume)")
     p.add_argument("--improvement-tol", type=float, default=None, metavar="DEG",
                    help="smallest score gain (deg) that counts as improvement (overrides loop.improvement_tol_deg)")
+    p.add_argument("--require-removed", nargs="+", default=None, metavar="PART",
+                   help="base parts every configuration's model must have removed, e.g. screen_mesh "
+                        "(overrides loop.require_removed; kept on resume)")
     p.add_argument("--goal", default=None, metavar="TEXT",
                    help="optional author direction shown to the planner every round (recorded as a run assumption)")
     p.add_argument("--fake-llm", type=Path, default=None,

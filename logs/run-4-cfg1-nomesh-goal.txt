@@ -1,0 +1,15 @@
+Run 4, chamber setup 1 (tube alone) WITHOUT the screen mesh: find the finest worst-case dtheta for a setup the lab can build now, without ordering a new mesh. Every configuration must use a model variant that removes the screen mesh (the validator enforces it); v-run-2-high-collection-r06-e1 is the approved one. eta_min is 0.6 (with no mesh, transmission is 1, so 60% of the emitted weight on the active MCP, meniscus angles out to about 23-24 deg). The tip-E1 extraction voltage may be chosen between 120 and 300 V.
+
+Setup reminders: the MCP is the last part on the stack's tie rods, anywhere from just behind the last present part to 130.7 mm behind the E1 front face; there are no deflectors. Resolution is detector limited, dtheta = sigma_MCP / (dr/dtheta), so the ideal is a linear r(theta) that puts the ~24 deg cut at the 20 mm MCP edge: about 0.07 x 24 / 20 = 0.084 deg.
+
+What earlier runs found for cfg 1 without the mesh (255 solves, runs 2 and 3), all well short of that:
+- Einzel E2-E3-E4 behind E1, E5-E9 removed (145 solves): best 0.216-0.219 deg. The image only reached 12-15.5 mm and r(theta) was convex, with the worst dtheta on axis (0.22 deg at theta = 0 against 0.10 deg at 18 deg). A longer throw and a weaker MCP voltage helped most (run 3 round 2).
+- The last plate as a shield in front of the MCP (E3 moved back with E4-E9 removed, or E9 grounded and moved close to the MCP with E5-E8 removed; 80 solves): 0.35-0.43 deg, image only about 5 mm.
+- Tip and E1 only, nothing else (30 solves): 0.349 deg, image about 5 mm.
+The common cause: without the mesh, the MCP's strong negative potential reaches up the open bore. Near the stack it acts as a strong converging lens, and the accelerating field compresses the image (the ions gain kV over the last part of the path, so their transverse drift is short). Run 3 critics also noted that a 5 mm plate bore behind a widened beam clips it.
+
+For comparison: with the wide mesh kept, cfg 1 reached 0.1275 deg filling 19.3 mm (tip + E1 only, point projection, MCP 130 mm behind E1, MCP front -3.5 kV); in cfg 3 without a mesh, run 2 reached 0.0879 deg with E1 + Einzel E2-E3-E4, because there the MCP field acts only at the end of a 400 mm path.
+
+Levers not yet explored well in cfg 1 without the mesh: the full throw (MCP up to 130.7 mm behind E1) together with a weak MCP field (the 3.05 keV impact threshold with the tip at most +300 V puts the weakest MCP front voltage near -2.75 kV); lens settings that diverge the beam (rather than focus it) before the MCP field takes over; moved plates that shape the field near the MCP instead of clipping the beam; wiring a downstream plate on its own channel. The MCP field is part of the optics here: design with it rather than against it.
+
+You have many rounds: probe new structures with small studies and refine the promising ones.

@@ -423,13 +423,24 @@ def _settings_str(cfg: Config, conf, rl: RunLog, job_id: str) -> str:
 # --------------------------------------------------------------------------- prompts
 
 
+def required_removals_line(acfg: AgentsConfig) -> str:
+    """loop.require_removed, stated for the planner (the validator enforces it)."""
+    need = acfg.loop.require_removed
+    if not need:
+        return ""
+    names = {"screen_mesh": "the screen mesh (and its cross hub)"}
+    what = ", ".join(names.get(n, n) for n in need)
+    return (f"\nAuthor rule for this run (enforced by the validator): every configuration runs WITHOUT {what}. Use "
+            f"only model variants whose removed parts include {need}; an edit must start from such a variant.")
+
+
 def planner_context(cfg: Config, acfg: AgentsConfig, state: LoopState, last_metrics: dict | None) -> str:
     b, lp = state.budget, acfg.loop
     last = state.history[-1] if state.history else None
     lo_b, hi_b = min(lp.study_budget_min, b.solves_left), min(lp.study_budget_max, b.solves_left)
     parts = [
         "# Specification\n" + spec_block(cfg),
-        "# Design space\n" + design_space_block(cfg, state),
+        "# Design space\n" + design_space_block(cfg, state) + required_removals_line(acfg),
         "# Baseline B0 (fixed hand-made configurations, same optimizer)\n" + b0_block(cfg),
         "# Inventory (hypothetical parts we could order; action edit_then_optimize builds them into a 2D model "
         "variant, the author approves it)\n" + inventory_block(cfg),

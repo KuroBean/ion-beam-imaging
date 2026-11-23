@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from ..config import Config, ConfigError, ConfigurationDef
 from ..electrodes import check_structure, layout_problems
-from ..variants import list_variants
+from ..variants import list_variants, load_variant
 from ..optimize import SearchSpace
 from .config import AgentsConfig
 from .schemas import Bound, Configuration, PlannerProposal
@@ -76,6 +76,21 @@ def check_configuration(c: Configuration, state: LoopState, cfg: Config) -> list
     return p
 
 
+def required_removals(variant_id: str, acfg: AgentsConfig, cfg: Config) -> list[str]:
+    """loop.require_removed: the configuration's model (for an edit, its parent, which the new variant keeps)
+    must have these base parts removed."""
+    need = set(acfg.loop.require_removed)
+    if not need:
+        return []
+    var = load_variant(cfg, variant_id)
+    missing = sorted(need - set(var.removed_base if var else []))
+    if not missing:
+        return []
+    ok = sorted(m.variant_id for m in list_variants(cfg) if need <= set(m.removed_base))
+    return [f"variant_id {variant_id} still has {missing}; the author requires every configuration in this run to "
+            f"run without them: use a variant that removes them ({ok or 'none approved yet'})"]
+
+
 def validate(p: PlannerProposal, state: LoopState, cfg: Config, acfg: AgentsConfig) -> ValidationResult:
     if p.action == "stop":
         return ValidationResult(status="stop")
@@ -99,6 +114,7 @@ def validate(p: PlannerProposal, state: LoopState, cfg: Config, acfg: AgentsConf
     c = p.configuration
     assert c is not None                                  # schema guarantees it for these actions
     reasons += check_configuration(c, state, cfg)
+    reasons += required_removals(c.variant_id, acfg, cfg)
     if reasons:
         return ValidationResult(status="invalid", reasons=reasons)
 

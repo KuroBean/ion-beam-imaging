@@ -86,3 +86,14 @@ configurations:
     # region of run 3's good trials of this layout (395 valid solves)
     bounds: {mesh_open_diameter_mm: [36, 40], z_mcp_mm: [135, 183.7], lens_gap_mm: [15, 45], LV1: [40, 260],
              HV1: [-6000, -2700], HV4: [-300, 0], mesh_gap_mm: [12.7, 40]}
+
+  # ---- cfg 3 fill study (2026-11-23): run 2's mesh-kept layout (Einzel E2-E3-E4 behind E1, wide screen mesh),
+  # searched with the image required to reach 19 mm (optional constraint min_r_max_mm). Same structure as
+  # c3_einzel_234_nodefl_widemesh, separate id so its B0 row stays run 1's.
+  - config_id: c3_einzel_234_widemesh_fill
+    description: "cfg 3: tip, E1, Einzel E2-E3-E4 (E2+E4 one channel); E5-E9, d1, d2 removed; wide mesh 36-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    removed: [e5, e6, e7, e8, e9, d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [36, 40]}

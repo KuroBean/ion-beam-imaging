@@ -160,3 +160,18 @@ def test_removed_and_moved_parts(cfg, acfg):
     assert v.status == "ok", v.reasons
     v = validate(prop(configuration=c, bounds={"e5_offset_mm": {"lo": 50, "hi": 60}}), state(), cfg, acfg)
     assert v.status == "invalid" and any("not a variable" in r for r in v.reasons)
+
+
+def test_require_removed_screen_mesh(cfg_tmp, acfg):
+    """loop.require_removed (author rule for one run, e.g. no screen mesh): only variants without the part pass."""
+    from ionopt.agents.summaries import required_removals_line
+    from ionopt.variants import VariantManifest, save_variant
+    save_variant(cfg_tmp, VariantManifest(variant_id="v-no-mesh", inventory_items=["no_screen_mesh"], approved=True,
+                                          removed_base=["screen_mesh"], mesh_open_fraction=1.0))
+    strict = acfg.model_copy(update={"loop": acfg.loop.model_copy(update={"require_removed": ["screen_mesh"]})})
+    v = validate(prop(), state(), cfg_tmp, strict)
+    assert v.status == "invalid" and any("still has ['screen_mesh']" in r and "v-no-mesh" in r for r in v.reasons)
+    ok = prop(configuration={"cfg": 1, "wiring": EINZEL, "variant_id": "v-no-mesh"})
+    assert validate(ok, state(), cfg_tmp, strict).status == "ok"
+    assert validate(prop(), state(), cfg_tmp, acfg).status == "ok"          # no rule: base is fine
+    assert "WITHOUT the screen mesh" in required_removals_line(strict) and required_removals_line(acfg) == ""
