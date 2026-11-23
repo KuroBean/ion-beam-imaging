@@ -2,6 +2,9 @@
 
     python scripts/agent_run_report.py demo-1 [--overrides config/dev_overrides.yaml]
 
+Without --overrides/--set the run's own stored overrides (run_config.json) are used. Afterwards the run's
+overview page and the cross-run index are rebuilt (scripts/runs_index.py; --no-index skips that).
+
 Writes results/runs/<run_id>/report/:
   transcript.md          every agent call in order (inputs the agent was given, its JSON answer in words),
                          the author's interventions, each round's study and best-run summary plot
@@ -253,9 +256,15 @@ def main() -> int:
     ap.add_argument("run_id")
     ap.add_argument("--overrides", action="append", default=[], help="config override files (as the run used)")
     ap.add_argument("--set", action="append", default=[])
+    ap.add_argument("--no-index", action="store_true", help="do not rebuild the run overview pages")
     a = ap.parse_args()
 
-    cfg = load_config(None, a.set, a.overrides)
+    if a.set or a.overrides:
+        cfg = load_config(None, a.set, a.overrides)
+    else:
+        from runs_index import run_config
+        base = load_config()
+        cfg = run_config(base, base.path("results_dir") / "runs" / a.run_id)
     run_dir = cfg.path("results_dir") / "runs" / a.run_id
     out = run_dir / "report"
     out.mkdir(parents=True, exist_ok=True)
@@ -351,6 +360,9 @@ def main() -> int:
     print(f"written: {out / 'transcript.md'}")
     for f in figs:
         print(f"written: {f}")
+    if not a.no_index:
+        from runs_index import build
+        build([a.run_id], study_reports=True)
     return 0
 
 

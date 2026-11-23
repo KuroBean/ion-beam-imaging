@@ -19,6 +19,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -83,6 +84,17 @@ class Sup:
         return rc, "".join(out)
 
 
+def write_reports(sup: Sup) -> None:
+    """Finished run: transcript, round-by-round overview page, cross-run index (scripts/agent_run_report.py)."""
+    try:
+        r = subprocess.run([str(PY), str(REPO / "scripts" / "agent_run_report.py"), sup.run_id], cwd=REPO,
+                           capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=3600,
+                           env={**os.environ, "PYTHONIOENCODING": "utf-8"})
+        sup.note(f"reports: exit {r.returncode}" + ("" if r.returncode == 0 else f": {r.stderr.strip()[-500:]}"))
+    except Exception as e:      # noqa: BLE001 - reports must never fail the run
+        sup.note(f"reports failed: {e}")
+
+
 def kill_orphan_comsol(sup: Sup) -> None:
     """COMSOL servers whose parent process is gone (left by a killed run) hold RAM: stop them."""
     ps = ("Get-CimInstance Win32_Process -Filter \"Name='comsolmphserver.exe'\" | ForEach-Object { "
@@ -124,6 +136,7 @@ def main() -> int:
 
         if rc == 0:
             if "already finished" in out or re.search(r"run \S+: stop ", out):
+                write_reports(sup)
                 sup.status("DONE", solves=sup.solves(), summary=out.strip().splitlines()[-2:])
                 return 0
         if rc == 3 or "PAUSED:" in out:
@@ -134,6 +147,7 @@ def main() -> int:
                     f.write(f"[{now()}] {m.group(0) if m else out[-500:]}\n")
                 rc, out = sup.call(["agent-resume", a.run_id, "--approve"])
                 if rc == 0 and re.search(r"run \S+: stop ", out):
+                    write_reports(sup)
                     sup.status("DONE", solves=sup.solves(), summary=out.strip().splitlines()[-2:])
                     return 0
                 if rc == 3 or "PAUSED:" in out:
