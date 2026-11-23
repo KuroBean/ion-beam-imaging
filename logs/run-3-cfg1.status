@@ -1,0 +1,10 @@
+{
+ "state": "DONE",
+ "time": "2026-11-23 00:05:53",
+ "run_id": "run-3-cfg1",
+ "solves": 700,
+ "summary": [
+  "run run-3-cfg1: stop budget; 18 rounds, 700/700 solves; best 0.143 deg (job bdf3ffdb1cef4691854817fff4b4998f, round 9)",
+  "trace: ionopt trace run-3-cfg1"
+ ]
+}

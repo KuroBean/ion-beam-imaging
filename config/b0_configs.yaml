@@ -74,3 +74,15 @@ configurations:
     cfg: 1
     wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
     variant_id: v-run-2-high-collection-r06-e1
+
+  # ---- run 3 result (2026-11-23): best cfg 1 design, point projection. Tip + extractor E1 only (E2-E9 removed),
+  # wide screen mesh close in front of the MCP on the rods. Run 3 best 0.143 deg (job bdf3ffdb), image 16.6 of 20 mm.
+  - config_id: c1_point_projection_widemesh
+    description: "cfg 1: tip + E1 only, E2-E9 removed, wide screen mesh (36-40 mm); MCP on the rods"
+    cfg: 1
+    wiring: {tip: LV1, e1: LV2}
+    removed: [e2, e3, e4, e5, e6, e7, e8, e9]
+    variant_id: v-demo-1-r01-e0
+    # region of run 3's good trials of this layout (395 valid solves)
+    bounds: {mesh_open_diameter_mm: [36, 40], z_mcp_mm: [135, 183.7], lens_gap_mm: [15, 45], LV1: [40, 260],
+             HV1: [-6000, -2700], HV4: [-300, 0], mesh_gap_mm: [12.7, 40]}

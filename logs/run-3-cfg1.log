@@ -1,0 +1,85 @@
+
+===== [2026-11-22 03:35:06] ionopt agent-run --run-id =====
+[run-3-cfg1] start: method agent, budget 700 solves, 50 rounds
+[run-3-cfg1] round 1 planner: optimize (none)
+[run-3-cfg1] round 1 optimize: study run-3-cfg1-r01, 40 solves
+[run-3-cfg1] round 1: 40 solves, 21 feasible, best 0.3167686602524312
+[run-3-cfg1] round 1 critic: dispute
+[run-3-cfg1] round 2 planner: optimize (parametric)
+[run-3-cfg1] round 2 optimize: study run-3-cfg1-r02, 40 solves
+[run-3-cfg1] round 2: 40 solves, 19 feasible, best 0.21887176211210782
+[run-3-cfg1] round 2 critic: dispute
+[run-3-cfg1] round 3 planner: optimize (structural)
+[run-3-cfg1] round 3 optimize: study run-3-cfg1-r03, 40 solves
+[run-3-cfg1] round 3: 40 solves, 22 feasible, best 0.34858733174180095
+[run-3-cfg1] round 3 critic: dispute
+[run-3-cfg1] round 4 planner: optimize (parametric)
+[run-3-cfg1] round 4 optimize: study run-3-cfg1-r04, 40 solves
+[run-3-cfg1] round 4: 40 solves, 15 feasible, best 0.35180392947718897
+[run-3-cfg1] round 4 critic: dispute
+[run-3-cfg1] round 5 planner: optimize (structural)
+[run-3-cfg1] round 5 optimize: study run-3-cfg1-r05, 40 solves
+[run-3-cfg1] round 5: 40 solves, 16 feasible, best 0.42990215913407004
+[run-3-cfg1] round 5 critic: dispute
+[run-3-cfg1] round 6 planner: optimize (structural)
+[run-3-cfg1] round 6 optimize: study run-3-cfg1-r06, 35 solves
+[run-3-cfg1] round 6: 35 solves, 11 feasible, best 0.36686902040373487
+[run-3-cfg1] round 6 critic: dispute
+[run-3-cfg1] round 7 planner: optimize (structural)
+[run-3-cfg1] round 7 optimize: study run-3-cfg1-r07, 30 solves
+[run-3-cfg1] round 7: 30 solves, 17 feasible, best 0.21512181477116968
+[run-3-cfg1] round 7 critic: accept
+[run-3-cfg1] round 8 planner: optimize (parametric)
+[run-3-cfg1] round 8 optimize: study run-3-cfg1-r08, 40 solves
+[run-3-cfg1] round 8: 40 solves, 33 feasible, best 0.1788663473913952
+[run-3-cfg1] round 8 critic: dispute
+[run-3-cfg1] round 9 planner: optimize (parametric)
+[run-3-cfg1] round 9 optimize: study run-3-cfg1-r09, 45 solves
+[run-3-cfg1] round 9: 45 solves, 25 feasible, best 0.1427271189748714
+[run-3-cfg1] round 9 critic: dispute
+[run-3-cfg1] round 10 planner: optimize (parametric)
+[run-3-cfg1] round 10 optimize: study run-3-cfg1-r10, 45 solves
+[run-3-cfg1] round 10: 45 solves, 32 feasible, best 0.1541663840770529
+[run-3-cfg1] round 10 critic: dispute
+[run-3-cfg1] round 11 planner: optimize (structural)
+[run-3-cfg1] round 11 optimize: study run-3-cfg1-r11, 30 solves
+[run-3-cfg1] round 11: 30 solves, 25 feasible, best 0.3492223236634717
+[run-3-cfg1] round 11 critic: dispute
+[run-3-cfg1] round 12 planner: optimize (parametric)
+[run-3-cfg1] validator: invalid (1): bounds: HV4 = [-700, 0] is narrower than 10% of its usable range [-10000, 0]; the optimizer picks values, the planner only sets regions
+[run-3-cfg1] round 12 planner: optimize (structural)
+[run-3-cfg1] round 12 optimize: study run-3-cfg1-r12, 35 solves
+[run-3-cfg1] round 12: 35 solves, 9 feasible, best 0.17164396093167592
+[run-3-cfg1] round 12 critic: dispute
+[run-3-cfg1] round 13 planner: optimize (parametric)
+[run-3-cfg1] validator: invalid (1): bounds: HV4 = [-800, 0] is narrower than 10% of its usable range [-10000, 0]; the optimizer picks values, the planner only sets regions
+[run-3-cfg1] round 13 planner: optimize (structural)
+[run-3-cfg1] validator: invalid (2): bounds: e2_offset_mm = [60, 98.87] is outside the allowed range [11.23, 98.868]
+[run-3-cfg1] round 13 planner: optimize (structural)
+[run-3-cfg1] round 13 optimize: study run-3-cfg1-r13, 35 solves
+[run-3-cfg1] round 13: 35 solves, 0 feasible, best -
+[run-3-cfg1] round 13 critic: dispute
+[run-3-cfg1] round 14 planner: optimize (parametric)
+[run-3-cfg1] round 14 optimize: study run-3-cfg1-r14, 50 solves
+[run-3-cfg1] round 14: 50 solves, 42 feasible, best 0.14440200453435015
+[run-3-cfg1] round 14 critic: dispute
+[run-3-cfg1] round 15 planner: optimize (parametric)
+[run-3-cfg1] round 15 optimize: study run-3-cfg1-r15, 45 solves
+[run-3-cfg1] round 15: 45 solves, 38 feasible, best 0.15128375818595796
+[run-3-cfg1] round 15 critic: dispute
+[run-3-cfg1] round 16 planner: optimize (parametric)
+[run-3-cfg1] round 16 optimize: study run-3-cfg1-r16, 35 solves
+[run-3-cfg1] round 16: 35 solves, 27 feasible, best 0.24296163390733194
+[run-3-cfg1] round 16 critic: dispute
+[run-3-cfg1] round 17 planner: optimize (parametric)
+[run-3-cfg1] round 17 optimize: study run-3-cfg1-r17, 55 solves
+[run-3-cfg1] round 17: 55 solves, 34 feasible, best 0.14306931734057726
+[run-3-cfg1] round 17 critic: accept
+[run-3-cfg1] round 18 planner: optimize (parametric)
+[run-3-cfg1] round 18 optimize: study run-3-cfg1-r18, 20 solves
+[run-3-cfg1] round 18: 20 solves, 10 feasible, best 0.16665259758013934
+[run-3-cfg1] round 18 critic: dispute
+[run-3-cfg1] stop: budget; best 0.143 (success)
+
+run run-3-cfg1: stop budget; 18 rounds, 700/700 solves; best 0.143 deg (job bdf3ffdb1cef4691854817fff4b4998f, round 9)
+trace: ionopt trace run-3-cfg1

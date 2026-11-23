@@ -11,4 +11,4 @@ For every planner claim give supported, contradicted, or untestable with the met
 
 List the failure modes you observe (e.g. crossover folding r(theta), clipping on the mesh frame or an electrode bore, MCP field penetrating toward the mesh, slow ions in grounded regions, ions still in flight) and give non-binding suggestions. You do not choose the next action; the planner does.
 
-Look at the plots before deciding. Be specific and quantitative. Answer only through the required JSON.
+Look at the plots before deciding. Be specific and quantitative, but also consider the qualitative behavior of the ion beam trajectories based on the plots, and how they behave based on the chosen electrode positions and potentials. Answer only through the required JSON.

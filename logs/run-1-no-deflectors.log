@@ -1,0 +1,25 @@
+[run-1-no-deflectors] start: method agent, budget 100 solves, 5 rounds
+[run-1-no-deflectors] round 1 planner: optimize (none)
+[run-1-no-deflectors] round 1 optimize: study run-1-no-deflectors-r01, 25 solves
+[run-1-no-deflectors] round 1: 25 solves, 15 feasible, best 0.07884246832258948
+[run-1-no-deflectors] round 1 critic: dispute
+[run-1-no-deflectors] round 2 planner: optimize (parametric)
+[run-1-no-deflectors] round 2 optimize: study run-1-no-deflectors-r02, 25 solves
+[run-1-no-deflectors] round 2: 25 solves, 18 feasible, best 0.08354649803043439
+[run-1-no-deflectors] round 2 critic: dispute
+[run-1-no-deflectors] round 3 planner: optimize (parametric)
+[run-1-no-deflectors] round 3 optimize: study run-1-no-deflectors-r03, 25 solves
+[run-1-no-deflectors] round 3: 25 solves, 17 feasible, best 0.09582332152063681
+[run-1-no-deflectors] round 3 critic: dispute
+[run-1-no-deflectors] round 4 planner: optimize (parametric)
+[run-1-no-deflectors] round 4 optimize: study run-1-no-deflectors-r04, 15 solves
+[run-1-no-deflectors] round 4: 15 solves, 7 feasible, best 0.09694284825795414
+[run-1-no-deflectors] round 4 critic: dispute
+[run-1-no-deflectors] stop: no_improvement; best 0.0788 (success)
+Deserializing unregistered type ionopt.agents.state.Budget from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('ionopt.agents.state', 'Budget')]
+Deserializing unregistered type ionopt.agents.state.RoundRecord from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('ionopt.agents.state', 'RoundRecord')]
+Deserializing unregistered type ionopt.agents.state.BestSoFar from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('ionopt.agents.state', 'BestSoFar')]
+Deserializing unregistered type ionopt.agents.state.Pending from checkpoint. This will be blocked in a future version. Set LANGGRAPH_STRICT_MSGPACK=true to block now, or add to allowed_msgpack_modules to allow explicitly: [('ionopt.agents.state', 'Pending')]
+
+run run-1-no-deflectors: stop no_improvement; 4 rounds, 90/100 solves; best 0.0788 deg (job 751625c890814b8687a41b408ba4e646, round 1)
+trace: ionopt trace run-1-no-deflectors
