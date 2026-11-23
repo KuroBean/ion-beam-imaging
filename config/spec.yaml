@@ -59,6 +59,9 @@ tolerances:
   convergence_rel: 0.05 # max relative change of dtheta and eta in a convergence rerun
   fate_position_tol_um: 50 # all 2D/3D runs so far classified every ion at 50 um
   eval_range_landed_frac: 0.99 # theta is in the evaluation range while this fraction of its weight lands on the active MCP
+  max_ghost_frac: 0.01 # author 2026-11-23: eta counts only the main image (0 deg up to the first angle with nothing on the
+  # active MCP); "ghost" rays at wider angles that still land (between plates, inside the image) may carry at most
+  # this fraction of the beam (x mesh transmission), else the run is infeasible
 
 analysis:
   drdtheta_method: central # central | spline

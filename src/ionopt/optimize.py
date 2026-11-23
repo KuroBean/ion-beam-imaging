@@ -575,7 +575,8 @@ def _constraints(m, cfg: Config) -> dict[str, float]:
     c = {"eta": cfg.spec.requirements.eta_min - r["eta"],
          "frac_fast": cfg.spec.requirements.frac_fast_min - r["frac_fast"],
          "monotonic": 0.0 if r["monotonic"] else 1.0,
-         "evaluable": 0.0 if r["evaluable"] else 1.0}
+         "evaluable": 0.0 if r["evaluable"] else 1.0,
+         "ghosts": r.get("ghost_frac", 0.0) - r.get("max_ghost_frac", cfg.spec.tolerances.max_ghost_frac)}
     c.update({k: 0.0 if v else 1.0 for k, v in r.items() if k.startswith("opt_")})
     return c
 

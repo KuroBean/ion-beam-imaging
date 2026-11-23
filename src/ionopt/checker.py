@@ -215,6 +215,12 @@ def mapping(dv: pd.DataFrame, cfg: Config) -> dict[str, Any]:
     n_eval = 0
     while n_eval < len(th_deg) and landed[n_eval] >= frac_min - 1e-12:
         n_eval += 1
+    # main image: from 0 deg up to the first angle with nothing on the active MCP; anything landing at a wider
+    # angle after that is a "ghost" (slipped between plates, lands inside the image at a small angle's radius)
+    n_main = 0
+    while n_main < len(th_deg) and landed[n_main] > 1e-12:
+        n_main += 1
+    ghost_theta = [float(t) for t, f in zip(th_deg[n_main:], landed[n_main:]) if f > 1e-12]
     th = np.radians(th_deg[:n_eval])
     re, se = r_m[:n_eval], s_m[:n_eval]
 
@@ -254,6 +260,8 @@ def mapping(dv: pd.DataFrame, cfg: Config) -> dict[str, Any]:
         "sigma_mcp_mm": sigma_mcp / units.MM,
         "n_eval": int(n_eval),
         "eval_theta_max_deg": float(th_deg[n_eval - 1]) if n_eval else None,
+        "main_theta_max_deg": float(th_deg[n_main - 1]) if n_main else None,
+        "ghost_theta_deg": ghost_theta,
         "monotonic": monotonic,
         "score_dtheta_deg": _nn(score) if score is not None else None,
         "flags": flags,
@@ -302,8 +310,14 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
     w = dv["weight"].to_numpy()
     act = dv["fate"].to_numpy() == "mcp_active"
     w_all = w.sum()
-    eta = open_frac * w[act].sum() / w_all if w_all > 0 else 0.0
-    frac_fast = float(w[act & dv["above_threshold"].to_numpy()].sum() / w[act].sum()) if w[act].sum() > 0 else 0.0
+    th_max = mp["main_theta_max_deg"]
+    main = dv["theta_deg"].to_numpy() <= (th_max + 1e-9 if th_max is not None else -1.0)
+    eta = open_frac * w[act & main].sum() / w_all if w_all > 0 else 0.0
+    eta_all = open_frac * w[act].sum() / w_all if w_all > 0 else 0.0
+    ghost_frac = open_frac * w[act & ~main].sum() / w_all if w_all > 0 else 0.0
+    max_ghost = tol.max_ghost_frac
+    sig = act & main
+    frac_fast = float(w[sig & dv["above_threshold"].to_numpy()].sum() / w[sig].sum()) if w[sig].sum() > 0 else 0.0
 
     flags = list(mp.pop("flags"))
     validity: dict[str, bool] = {}
@@ -358,8 +372,12 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
         "monotonic": mp["monotonic"],
         "eta_ok": eta >= eta_min,
         "fast_ok": frac_fast >= req.frac_fast_min,
+        "ghosts_ok": ghost_frac <= max_ghost + 1e-12,
         **{f"opt_{k}": v for k, v in opt_results.items()},
     }
+    if not feas["ghosts_ok"]:
+        flags.append(f"ghost rays: {ghost_frac:.3g} of the beam lands from angles past the main image "
+                     f"({mp['ghost_theta_deg']} deg) > max_ghost_frac {max_ghost}")
     if not feas["eta_ok"]:
         flags.append(f"collection efficiency {eta:.3g} < eta_min {eta_min}")
     if not feas["fast_ok"]:
@@ -373,7 +391,8 @@ def check(result_dir: Path | str, cfg: Config, write: bool = True) -> Metrics:
     m = Metrics.model_validate(clean(dict(
         job_id=job.job_id, spec_hash=cfg.spec_hash(), valid=valid, feasible=feasible, score=score,
         flags=flags, validity=validity, fates=fates, fate_counts=counts, spot=spot, mapping=mp,
-        requirements={"eta": eta, "eta_min": eta_min, "mesh_open_fraction": open_frac, "frac_fast": frac_fast,
+        requirements={"eta": eta, "eta_all": eta_all, "ghost_frac": ghost_frac, "max_ghost_frac": max_ghost,
+                      "eta_min": eta_min, "mesh_open_fraction": open_frac, "frac_fast": frac_fast,
                       "frac_fast_min": req.frac_fast_min, "max_energy_error_rel": max_err, **feas},
         n_launched=int(len(launch)), fidelity=job.fidelity,
     )))

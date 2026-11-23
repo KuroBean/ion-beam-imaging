@@ -210,6 +210,10 @@ class TolerancesConfig(_Model):
     convergence_rel: float | None = Field(None, gt=0)
     fate_position_tol_um: float | None = Field(None, ge=0)
     eval_range_landed_frac: float = Field(0.99, gt=0, le=1)
+    # "ghost" rays: wide angles that slip past the stack after a fully lost angle and land inside the image at
+    # the radius of a small angle. eta counts only the main image (0 deg up to the first angle with nothing on
+    # the active MCP); ghosts may carry at most this fraction of the beam (author 2026-11-23)
+    max_ghost_frac: float = Field(0.01, ge=0, le=1)
 
 
 class AnalysisConfig(_Model):
