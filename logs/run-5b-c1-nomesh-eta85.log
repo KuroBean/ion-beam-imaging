@@ -1,0 +1,7 @@
+
+===== [2026-11-23 22:24:09] ionopt baseline-b0 --configs =====
+== c1_asbuilt_einzel_nomesh: Run 5b B0: cfg 1, tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9 present, grounded; no screen mesh
+  [c1_asbuilt_einzel_nomesh 1] valid=True feasible=False score=149 mcp=0.20
+  [c1_asbuilt_einzel_nomesh 2] valid=True feasible=False score=23.3 mcp=0.48
+  [c1_asbuilt_einzel_nomesh 3] valid=True feasible=False score=0.789 mcp=0.26
+  [c1_asbuilt_einzel_nomesh 4] valid=True feasible=False score=72.7 mcp=0.92

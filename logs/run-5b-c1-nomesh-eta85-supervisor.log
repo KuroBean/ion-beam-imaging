@@ -1,0 +1,2 @@
+[2026-11-23 22:24:09] status B0 {'study': 'b0-c1_asbuilt_einzel_nomesh-2d-run5b', 'solves': 0}
+[2026-11-23 22:24:09] ionopt baseline-b0 --configs c1_asbuilt_einzel_nomesh --budget 500 --tag run5b --overrides config\exp_c1_nomesh_eta85.yaml
