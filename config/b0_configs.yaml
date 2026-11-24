@@ -107,3 +107,12 @@ configurations:
     cfg: 3
     wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
     variant_id: v-run-2-high-collection-r06-e1
+
+  # ---- run 5b (author 2026-11-23): B0 for the cfg 1 no-mesh, eta_min 0.85 test (agent loop vs optimizer alone).
+  # Same wiring as run 5's cfg 3 B0. Tube chamber alone: E1-E9 present (unwired ones grounded), no deflectors,
+  # no screen mesh (approved no-mesh variant). Run with --overrides config/exp_c1_nomesh_eta85.yaml.
+  - config_id: c1_asbuilt_einzel_nomesh
+    description: "Run 5b B0: cfg 1, tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9 present, grounded; no screen mesh"
+    cfg: 1
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    variant_id: v-run-2-high-collection-r06-e1

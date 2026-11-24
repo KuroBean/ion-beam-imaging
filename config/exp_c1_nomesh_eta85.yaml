@@ -1,0 +1,29 @@
+# Run 5b (author 2026-11-23): chamber setup 1 without the screen mesh, high collection (counterpart of run 5, cfg 3).
+# The same file is used for the B0 study and the agent run, so both see identical requirements:
+#   ionopt baseline-b0 --configs c1_asbuilt_einzel_nomesh --budget 500 --tag run5b --overrides config/exp_c1_nomesh_eta85.yaml
+#   ionopt agent-run ... --require-removed screen_mesh --overrides config/exp_c1_nomesh_eta85.yaml
+backend:
+  backend: comsol
+
+spec:
+  requirements:
+    eta_min: 0.85
+
+optimizer:
+  min_extraction_V: 120
+  max_extraction_V: 300
+
+constraints:
+  chamber_setups:
+    3:                         # cfg 3 marked NOT USABLE (as config/cfg1_only.yaml): cfg 1 only
+      z_mcp_mm: [null, null]
+      mesh_gap_mm: [null, null]
+      lens_gap_mm: [null, null]
+
+b0_configs:
+  configurations:
+    - config_id: c1_asbuilt_einzel_nomesh
+      description: "Run 5b B0: cfg 1, tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9 present, grounded; no screen mesh"
+      cfg: 1
+      wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+      variant_id: v-run-2-high-collection-r06-e1
