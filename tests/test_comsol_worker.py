@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import pytest
+from conftest import CFG1_PINS
 
 from ionopt.backends import make_backend
 from ionopt.checker import check
@@ -20,7 +21,7 @@ def test_2d_job_end_to_end(tmp_path):
                                  f"paths.queue_dir={(tmp_path / 'queue').as_posix()}",
                                  f"paths.results_dir={(tmp_path / 'results').as_posix()}",
                                  f"paths.db_path={(tmp_path / 'runlog.sqlite').as_posix()}",
-                                 f"paths.models.2d={(ROOT / cfg_model()).as_posix()}"])
+                                 f"paths.models.2d={(ROOT / cfg_model()).as_posix()}", *CFG1_PINS])
     from ionopt.worker.comsol_worker import run_worker
 
     job = build_job(cfg, cfg.b0_configs.get("example_einzel"), {"LV1": 100.0, "LV2": 60.0, "HV1": -10000.0,
@@ -32,10 +33,10 @@ def test_2d_job_end_to_end(tmp_path):
     b = backend.fetch(jid)
     assert b.status == "success", b.error
     meta = json.loads((Path(b.result_dir) / "meta.json").read_text())
-    assert meta["n_ions"] == 78 and meta["comsol_params"]["z_mcp_c1"] == "250.0[mm]"
+    assert meta["n_ions"] == cfg.spec.launch.n_theta * cfg.spec.launch.n_E and meta["comsol_params"]["z_mcp_c1"] == "250.0[mm]"
     m = check(b.result_dir, cfg)
     assert m.validity["potentials_match"] and m.validity["energy_conserved"] and m.validity["no_in_flight"]
-    assert m.fate_counts["mcp_active"] > 30
+    assert m.fate_counts["mcp_active"] > 0.38 * meta["n_ions"]  # was > 30 of 78
 
 
 def cfg_model() -> str:
