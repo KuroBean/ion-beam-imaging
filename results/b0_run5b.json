@@ -1,0 +1,35 @@
+{
+ "tag": "run5b",
+ "budget": 500,
+ "studies": [
+  {
+   "config_id": "c1_asbuilt_einzel_nomesh",
+   "study_id": "b0-c1_asbuilt_einzel_nomesh-2d-run5b",
+   "sampler": "tpe",
+   "n_trials": 500,
+   "n_failed": 0,
+   "n_feasible": 280,
+   "best_job_id": "2b559c41d11a41909cbefca4e19fd317",
+   "best_score_deg": 14.53956788662152,
+   "best_mcp": 0.9240073194652437,
+   "best_eta": 0.9240073194652437,
+   "best_channels": {
+    "LV1": 189.9100854870539,
+    "LV2": 7.047796689024764,
+    "LV3": -166.09190110718177,
+    "LV4": -291.94585496800215,
+    "HV1": -7301.744433574324,
+    "HV4": 0.0
+   },
+   "best_positions_mm": {
+    "lens_gap": 28.159413231525278,
+    "z_mcp": 140.99359089237504,
+    "mesh_gap": 12.7,
+    "mesh_open_diameter": 11.0
+   },
+   "report": "D:\\Users\\kshimojo\\projects\\ion_beam_measurement\\results\\report_b0-c1_asbuilt_einzel_nomesh-2d-run5b.html",
+   "solve_time_s_total": 18215,
+   "wall_time_s_this_session": 19219
+  }
+ ]
+}
