@@ -509,3 +509,55 @@ wrote D:\Users\kshimojo\projects\ion_beam_measurement\results\b0_run5b.json
 
 ===== [2026-11-24 03:44:31] ionopt agent-run --run-id =====
 [run-5b-c1-nomesh-eta85] start: method agent, budget 500 solves, 50 rounds
+[run-5b-c1-nomesh-eta85] round 1 planner: optimize (none)
+[run-5b-c1-nomesh-eta85] round 1 optimize: study run-5b-c1-nomesh-eta85-r01, 40 solves
+[run-5b-c1-nomesh-eta85] round 1: 40 solves, 22 feasible, best 0.9370104843672674
+[run-5b-c1-nomesh-eta85] round 1 critic: dispute
+[run-5b-c1-nomesh-eta85] round 2 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 2 optimize: study run-5b-c1-nomesh-eta85-r02, 40 solves
+[run-5b-c1-nomesh-eta85] round 2: 40 solves, 23 feasible, best 0.43644063617028556
+[run-5b-c1-nomesh-eta85] round 2 critic: accept
+[run-5b-c1-nomesh-eta85] round 3 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 3 optimize: study run-5b-c1-nomesh-eta85-r03, 50 solves
+[run-5b-c1-nomesh-eta85] round 3: 50 solves, 20 feasible, best 0.3040770867189583
+[run-5b-c1-nomesh-eta85] round 3 critic: accept
+[run-5b-c1-nomesh-eta85] round 4 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 4 optimize: study run-5b-c1-nomesh-eta85-r04, 45 solves
+[run-5b-c1-nomesh-eta85] round 4: 45 solves, 24 feasible, best 1.4934861741065537
+[run-5b-c1-nomesh-eta85] round 4 critic: dispute
+[run-5b-c1-nomesh-eta85] round 5 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 5 optimize: study run-5b-c1-nomesh-eta85-r05, 40 solves
+[run-5b-c1-nomesh-eta85] round 5: 40 solves, 16 feasible, best 0.2589598099064858
+[run-5b-c1-nomesh-eta85] round 5 critic: accept
+[run-5b-c1-nomesh-eta85] round 6 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 6 optimize: study run-5b-c1-nomesh-eta85-r06, 50 solves
+[run-5b-c1-nomesh-eta85] round 6: 50 solves, 18 feasible, best 0.2731938470710439
+[run-5b-c1-nomesh-eta85] round 6 critic: dispute
+[run-5b-c1-nomesh-eta85] round 7 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 7 optimize: study run-5b-c1-nomesh-eta85-r07, 40 solves
+[run-5b-c1-nomesh-eta85] round 7: 40 solves, 13 feasible, best 0.29781853162799216
+[run-5b-c1-nomesh-eta85] round 7 critic: dispute
+[run-5b-c1-nomesh-eta85] round 8 planner: optimize (structural)
+[run-5b-c1-nomesh-eta85] round 8 optimize: study run-5b-c1-nomesh-eta85-r08, 35 solves
+[run-5b-c1-nomesh-eta85] round 8: 35 solves, 17 feasible, best 0.4388878609824762
+[run-5b-c1-nomesh-eta85] round 8 critic: dispute
+[run-5b-c1-nomesh-eta85] round 9 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 9 optimize: study run-5b-c1-nomesh-eta85-r09, 45 solves
+[run-5b-c1-nomesh-eta85] round 9: 45 solves, 18 feasible, best 0.29122887912953715
+[run-5b-c1-nomesh-eta85] round 9 critic: dispute
+[run-5b-c1-nomesh-eta85] round 10 planner: optimize (structural)
+[run-5b-c1-nomesh-eta85] round 10 optimize: study run-5b-c1-nomesh-eta85-r10, 30 solves
+[run-5b-c1-nomesh-eta85] round 10: 30 solves, 11 feasible, best 1.2028944678449451
+[run-5b-c1-nomesh-eta85] round 10 critic: dispute
+[run-5b-c1-nomesh-eta85] round 11 planner: optimize (structural)
+[run-5b-c1-nomesh-eta85] round 11 optimize: study run-5b-c1-nomesh-eta85-r11, 45 solves
+[run-5b-c1-nomesh-eta85] round 11: 45 solves, 29 feasible, best 0.6250366675765612
+[run-5b-c1-nomesh-eta85] round 11 critic: dispute
+[run-5b-c1-nomesh-eta85] round 12 planner: optimize (parametric)
+[run-5b-c1-nomesh-eta85] round 12 optimize: study run-5b-c1-nomesh-eta85-r12, 40 solves
+[run-5b-c1-nomesh-eta85] round 12: 40 solves, 0 feasible, best -
+[run-5b-c1-nomesh-eta85] round 12 critic: dispute
+[run-5b-c1-nomesh-eta85] stop: budget; best 0.259 (success)
+
+run run-5b-c1-nomesh-eta85: stop budget; 12 rounds, 500/500 solves; best 0.259 deg (job bdffd6d340d344c9bca0bea8b81f13c7, round 5)
+trace: ionopt trace run-5b-c1-nomesh-eta85

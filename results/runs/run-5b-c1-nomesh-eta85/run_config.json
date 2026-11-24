@@ -1,0 +1,12 @@
+{
+ "overrides": [
+  "@file:config/exp_c1_nomesh_eta85.yaml"
+ ],
+ "loop": {
+  "no_improvement_rounds": 12,
+  "improvement_tol_deg": 0.002,
+  "require_removed": [
+   "screen_mesh"
+  ]
+ }
+}
