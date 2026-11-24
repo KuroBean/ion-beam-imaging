@@ -1,6 +1,10 @@
 {
- "state": "RUNNING",
- "time": "2026-11-24 03:44:31",
+ "state": "DONE",
+ "time": "2026-11-24 08:37:24",
  "run_id": "run-5b-c1-nomesh-eta85",
- "solves": 0
+ "solves": 500,
+ "summary": [
+  "run run-5b-c1-nomesh-eta85: stop budget; 12 rounds, 500/500 solves; best 0.259 deg (job bdffd6d340d344c9bca0bea8b81f13c7, round 5)",
+  "trace: ionopt trace run-5b-c1-nomesh-eta85"
+ ]
 }

@@ -5,3 +5,5 @@
 [2026-11-24 03:44:31] status RUNNING {'solves': 0}
 [2026-11-24 03:44:31] ionopt agent-run --run-id run-5b-c1-nomesh-eta85 --budget 500 --rounds 50 --no-improvement-rounds 12 --improvement-tol 0.002 --require-removed screen_mesh --overrides config\exp_c1_nomesh_eta85.yaml --goal Run 5b, chamber setup 1 (tube chamber alone) WITHOUT the scr...
 [2026-11-24 08:36:51] exit 0
+[2026-11-24 08:37:24] reports: exit 0
+[2026-11-24 08:37:24] status DONE {'solves': 500, 'summary': ['run run-5b-c1-nomesh-eta85: stop budget; 12 rounds, 500/500 solves; best 0.259 deg (job bdffd6d340d344c9bca0bea8b81f13c7, round 5)', 'trace: ionopt trace run-5b-c1-nomesh-eta85']}
