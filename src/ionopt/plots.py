@@ -332,7 +332,7 @@ def _stats_text(job, cfg: Config, metrics: dict, meta: dict, pots: dict, geom: d
         "  lost: " + (", ".join(f"{k.replace('_', ' ')} {v:.1%}" for k, v in lost.items()) or "none"),
         "",
         "IMAGE",
-        f"  score (worst dθ)     {metrics.get('score') if metrics.get('score') is None else f'{metrics['score']:.3g}°'}",
+        f"  score (worst dθ)     {'None' if metrics.get('score') is None else format(metrics['score'], '.3g') + '°'}",
         f"  evaluated θ          0–{mp.get('eval_theta_max_deg')}°   monotonic: {'yes' if mp.get('monotonic') else 'NO'}",
         f"  spot rms / r90       {_n(sp.get('rms_axis_mm'), '.2f')} / {_n(sp.get('r90_mm'), '.2f')} mm",
         f"  impact KE, TOF       {_n(sp.get('impact_KE_mean_eV'), '.0f')} eV, {_n(sp.get('tof_mean_us'), '.1f')} µs",

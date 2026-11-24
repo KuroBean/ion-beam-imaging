@@ -58,8 +58,11 @@ def _overview_html(rows: list[dict]) -> str:
     def f(v, fmt):
         return "–" if v is None else format(v, fmt)
 
+    def link_open(r):  # kept out of the f-string: nested quotes/backslashes need Python 3.12+
+        return f'<a href="{html.escape(Path(r["report"]).name)}">' if r.get("report") else ""
+
     body = "".join(
-        f"<tr><td>{f'<a href=\"{html.escape(Path(r['report']).name)}\">' if r.get('report') else ''}"
+        f"<tr><td>{link_open(r)}"
         f"{html.escape(r['config_id'])}{'</a>' if r.get('report') else ''}</td>"
         f"<td class='num'>{r['n_trials']}</td><td class='num'>{r['n_failed']}</td>"
         f"<td class='num'>{r['n_feasible']}</td><td class='num'>{f(r['best_score_deg'], '.3g')}{'°' if r['best_score_deg'] is not None else ''}</td>"
