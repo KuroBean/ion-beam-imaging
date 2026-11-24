@@ -4,16 +4,44 @@ Ion beam imaging / measurement project: COMSOL simulations of MCP-based beam ima
 plus `ionopt`, the Phase 1 tool chain from [plan_v1.md](plan_v1.md) (config, launch
 grid, wiring, backends, checker, plots, run log, optimizer).
 
-COMSOL `.mph` model files are not tracked in this repo due to their size.
+COMSOL `.mph` model files and run results are not tracked in this repo (size). See
+[Files to copy by hand](#files-to-copy-by-hand-not-in-git) when setting up a new computer.
 
 ## Setup
 
+Python 3.10 or later (tested on 3.11 and 3.12).
+
 ```powershell
-uv pip install --python .venv\Scripts\python.exe -e ".[dev]"
-.venv\Scripts\python.exe -m pytest            # COMSOL tests are skipped by default (-m comsol to run them)
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install uv                                  # or use pip directly
+uv pip install --python .venv\Scripts\python.exe -e ".[dev,agents]"        # agents = the Phase 2 loop
+.venv\Scripts\python.exe -m pytest            # COMSOL tests are skipped by default
+.venv\Scripts\python.exe -m pytest -m comsol  # one real 2D solve end to end (~1 min), checks COMSOL + the 2D model
 ```
 
 COMSOL 5.5 bundles Java 8, so `jpype1` must stay below 1.6.
+
+### Files to copy by hand (not in git)
+
+When moving to a new computer, copy these from the old one, keeping the same paths relative to the
+repository root (the locations are set in `config/paths.yaml`). Everything else comes with `git clone`.
+
+| Path | Size | Needed for |
+|---|---|---|
+| `lens8_axisym_v3.mph` | ~56 MB | **Required.** The 2D base model (`models: 2d`). Every 2D solve, B0 study and agent run. |
+| `lens8newMCP_ks_v6_tip.mph` | ~1.2 GB | The 3D model (`models: 3d`). Only for 3D work: `fidelity-check`, `promote`, the 3D scripts. |
+| `results/runlog.sqlite` | ~20 MB | Run log: every job, its metrics, the studies. The planner's B0 table and `ionopt report` / `trace` read it. Without it, history starts empty (rerun `baseline-b0`). |
+| `results/optuna.sqlite` | ~5 MB | Optimizer studies (needed to resume or extend a study). Copy together with `runlog.sqlite`. |
+| `results/variants/` | ~55 MB per variant | Model variants built by the editor (each has its own `model.mph`). Needed by any configuration with a `variant_id`, e.g. `v-demo-1-r01-e0` and `v-run-2-high-collection-r06-e1` in `config/b0_configs.yaml`. |
+| `results/runs/` | small | Agent run folders (prompts, responses, trace). Only to look at or resume old runs (`ionopt trace`, `agent-resume`, `scripts/agent_run_report.py`). |
+| `results/<job_id>/` | large in total | Raw exports and plots per job. Only to look at old jobs' plots or `recheck` them; new runs don't need them. |
+
+Not copied: `.venv/` (recreate it, see above), `queue/` (transient job queue, empty between runs),
+`logs/mesh_stats_3d.npz` (regenerable). COMSOL 5.5 and its license are installed separately, at
+`comsol_root` in `config/paths.yaml`. The older models (`lens8_axisym_v2.mph`,
+`lens8newMCP_ks_v2..v5*.mph`) are history: only needed to rerun the scripts that built the current ones.
+
+Check the result with `ionopt config-check` and `pytest -m comsol`.
 
 ## Configuration
 
@@ -67,7 +95,8 @@ into a new 2D model variant, which you approve before it is used.
 - **COMSOL 5.5**, installed where `comsol_root` in `config/paths.yaml` points.
 - **The COMSOL models.** `.mph` files are not in the repo: get them from the author and put them where
   `models:` in `config/paths.yaml` says (the 2D model must have the part switches, `lens8_axisym_v3.mph`
-  or later).
+  or later). The variants and run history in `results/` also come separately; see
+  [Files to copy by hand](#files-to-copy-by-hand-not-in-git).
 - **Claude Code CLI** (`claude`), installed and logged in. The loop calls it headless (`claude -p`) for
   the planner, critic and editor; models and effort are set in `config/agents.yaml`.
 
