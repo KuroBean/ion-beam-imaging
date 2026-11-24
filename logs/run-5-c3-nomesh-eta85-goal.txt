@@ -1,0 +1,7 @@
+Run 5, chamber setup 3 (chambers joined) WITHOUT the screen mesh, very high collection: find the finest worst-case dtheta while collecting at least 85% of the emitted weight on the active MCP (eta_min 0.85; with no mesh the transmission is 1, so eta is the MCP fraction). Find out whether cfg 3 can reach this collection level, and at what resolution.
+
+Rules for this run: every configuration must use a model variant that removes the screen mesh (the validator enforces it); v-run-2-high-collection-r06-e1 is the approved one. The tip-E1 extraction voltage may be chosen between 120 and 300 V. The MCP position is fixed in cfg 3.
+
+The Baseline B0 table shows the optimizer alone on the as-built stack (all plates and both deflectors present, unused ones grounded) with the same budget. Your job is to beat it. Beyond voltages and positions you can change the structure: remove any of E2-E9 and the deflectors d1/d2, move plates, choose the wiring of the four LV channels, and propose inventory edits that keep the screen mesh out.
+
+You have many rounds: probe new structures with small studies and refine the promising ones.

@@ -8,11 +8,17 @@ Starts `ionopt agent-run` (or resumes the run if it already exists) and then:
   * crash / killed       -> kill orphaned COMSOL servers, wait, `agent-resume <run>`; after --max-stalls
                             restarts in a row without a new solve, stop with status CRITICAL
 
+Optional B0 phase first (run 5, 2026-11-23): with --b0 CONFIG_ID it runs `ionopt baseline-b0 --configs CONFIG_ID
+--budget N --tag TAG` (with the --overrides / --set pairs of the agent-run arguments) until that study is
+complete, restarting it after a crash the same way (the study resumes from the Optuna storage), and only then
+starts the agent run, which therefore sees the finished B0 in its planner prompt.
+
 Run it detached from the editor/terminal, e.g. (PowerShell):
   Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine = '<python> scripts\\supervise_agent_run.py ...'; CurrentDirectory = '<repo>'}
 
 Usage:
-  python scripts/supervise_agent_run.py RUN_ID [--answer TEXT] [--goal-file F] -- <agent-run arguments>
+  python scripts/supervise_agent_run.py RUN_ID [--answer TEXT] [--goal-file F]
+      [--b0 CONFIG_ID --b0-budget N --b0-tag TAG] -- <agent-run arguments>
 """
 from __future__ import annotations
 
@@ -51,11 +57,15 @@ class Sup:
                                                indent=1), encoding="utf-8")
         self.note(f"status {state} {extra if extra else ''}")
 
-    def solves(self) -> int:
-        """Jobs of this run's studies in the run log (progress measure)."""
+    def solves(self, study_id: str | None = None) -> int:
+        """Jobs of this run's studies (or of one study) in the run log (progress measure)."""
         try:
             con = sqlite3.connect(REPO / "results" / "runlog.sqlite", timeout=30)
-            n = con.execute("SELECT COUNT(*) FROM jobs WHERE study_id LIKE ?", (f"{self.run_id}-%",)).fetchone()[0]
+            if study_id:
+                n = con.execute("SELECT COUNT(*) FROM jobs WHERE study_id = ?", (study_id,)).fetchone()[0]
+            else:
+                n = con.execute("SELECT COUNT(*) FROM jobs WHERE study_id LIKE ?",
+                                (f"{self.run_id}-%",)).fetchone()[0]
             con.close()
             return int(n)
         except Exception as e:      # noqa: BLE001
@@ -96,6 +106,53 @@ def kill_orphan_comsol(sup: Sup) -> None:
         sup.note(f"orphan check failed: {e}")
 
 
+def config_args(run_args: list[str]) -> list[str]:
+    """The --overrides / --set pairs of the agent-run arguments (shared with the B0 study)."""
+    out, i = [], 0
+    while i < len(run_args):
+        if run_args[i] in ("--overrides", "--set") and i + 1 < len(run_args):
+            out += run_args[i:i + 2]
+            i += 2
+        else:
+            i += 1
+    return out
+
+
+def b0_command(config_id: str, budget: int, tag: str, run_args: list[str]) -> list[str]:
+    return ["baseline-b0", "--configs", config_id, "--budget", str(budget), "--tag", tag, *config_args(run_args)]
+
+
+def run_b0(sup: Sup, a, run_args: list[str]) -> int | None:
+    """B0 study until complete; None when done, else the exit code to stop the supervisor with."""
+    study = f"b0-{a.b0}-2d-{a.b0_tag}"
+    cmd = b0_command(a.b0, a.b0_budget, a.b0_tag, run_args)
+    stalls, last = 0, sup.solves(study)
+    while True:
+        n = sup.solves(study)
+        if n >= a.b0_budget:
+            sup.note(f"B0 study {study} has {n} solves: done")
+            return None
+        sup.status("B0", study=study, solves=n)
+        rc, out = sup.call(cmd)
+        if rc == 0:
+            sup.note(f"B0 study {study} finished ({sup.solves(study)} solves)")
+            return None
+        if rc == 2:
+            sup.status("CRITICAL", reason="ionopt refused the B0 command (exit 2)", tail=out.strip().splitlines()[-5:])
+            return 2
+        n = sup.solves(study)
+        stalls = 0 if n > last else stalls + 1
+        last = max(last, n)
+        if stalls >= a.max_stalls:
+            sup.status("CRITICAL", reason=f"B0: {stalls} restarts in a row without a new solve",
+                       tail=out.strip().splitlines()[-15:])
+            return 1
+        sup.status("B0_RESTARTING", exit=rc, study=study, solves=n, stalls=stalls,
+                   tail=out.strip().splitlines()[-5:])
+        kill_orphan_comsol(sup)
+        time.sleep(a.wait_s)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("run_id")
@@ -103,13 +160,22 @@ def main() -> int:
     ap.add_argument("--goal-file", default=None, help="file whose text is passed as --goal on the first start")
     ap.add_argument("--max-stalls", type=int, default=6, help="restarts in a row without a new solve before CRITICAL")
     ap.add_argument("--wait-s", type=int, default=120, help="pause before restarting after a crash")
+    ap.add_argument("--b0", default=None, metavar="CONFIG_ID", help="run this B0 study to completion first")
+    ap.add_argument("--b0-budget", type=int, default=None, help="solves of the B0 study (needed with --b0)")
+    ap.add_argument("--b0-tag", default=None, help="B0 study tag, b0-<config>-2d-<tag> (needed with --b0)")
     argv = sys.argv[1:]
     cut = argv.index("--") if "--" in argv else len(argv)
     a = ap.parse_args(argv[:cut])
+    if a.b0 and (not a.b0_budget or not a.b0_tag):
+        ap.error("--b0 needs --b0-budget and --b0-tag")
     run_args = argv[cut + 1:]          # agent-run arguments after "--" (first start only)
     if a.goal_file:
         run_args += ["--goal", (REPO / a.goal_file).read_text(encoding="utf-8").strip()]
     sup = Sup(a.run_id)
+    if a.b0 and not sup.exists():
+        rc = run_b0(sup, a, run_args)
+        if rc is not None:
+            return rc
     sup.status("RUNNING", solves=sup.solves())
     answer, stalls, last = a.answer, 0, sup.solves()
 
