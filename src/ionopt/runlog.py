@@ -37,6 +37,24 @@ CREATE TABLE IF NOT EXISTS promotions (
     PRIMARY KEY (job_id_2d, job_id_3d)
 );
 CREATE INDEX IF NOT EXISTS jobs_study ON jobs(study_id);
+-- Phase 2 agent loop (plan_phase2 section 9)
+CREATE TABLE IF NOT EXISTS agent_runs (
+    run_id TEXT PRIMARY KEY, method TEXT, case_id TEXT, seed INTEGER, models_json TEXT,
+    spec_hash TEXT, constraints_hash TEXT, agents_hash TEXT, config_hash TEXT, assumptions_json TEXT,
+    started_at TEXT, finished_at TEXT, stop_reason TEXT, best_job_id TEXT, best_score REAL, solves_used INTEGER
+);
+CREATE TABLE IF NOT EXISTS agent_rounds (
+    run_id TEXT, round INTEGER, action TEXT, diagnosis TEXT, validation_status TEXT, study_id TEXT,
+    n_solves INTEGER, best_job_id TEXT, score REAL, eta REAL, feasible INTEGER, critic_verdict TEXT,
+    counted INTEGER, record_json TEXT, created_at TEXT,
+    PRIMARY KEY (run_id, round)
+);
+CREATE TABLE IF NOT EXISTS agent_calls (
+    call_id TEXT PRIMARY KEY, run_id TEXT, round INTEGER, role TEXT, model TEXT, call_dir TEXT,
+    prompt_hash TEXT, template_hash TEXT, output_json TEXT, raw_json TEXT, session_id TEXT,
+    duration_s REAL, cost_usd REAL, retries INTEGER, error TEXT, created_at TEXT
+);
+CREATE INDEX IF NOT EXISTS agent_calls_run ON agent_calls(run_id);
 """
 
 
@@ -110,6 +128,59 @@ class RunLog:
         with self.con:
             self.con.execute("INSERT OR REPLACE INTO promotions VALUES (?,?,?,?,?,?,?)",
                              (job_id_2d, job_id_3d, score_2d, score_3d, eta_2d, eta_3d, now_iso()))
+
+    # ---------------------------------------------------------------- agent loop (Phase 2)
+
+    def start_agent_run(self, run_id: str, method: str, case_id: str, seed: int, models: dict,
+                        spec_hash: str, constraints_hash: str, agents_hash: str, config_hash: str,
+                        assumptions: list[str]) -> None:
+        with self.con:
+            self.con.execute(
+                "INSERT OR IGNORE INTO agent_runs (run_id, method, case_id, seed, models_json, spec_hash, "
+                "constraints_hash, agents_hash, config_hash, assumptions_json, started_at) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                (run_id, method, case_id, seed, json.dumps(models), spec_hash, constraints_hash, agents_hash,
+                 config_hash, json.dumps(assumptions), now_iso()))
+
+    def finish_agent_run(self, run_id: str, stop_reason: str | None, best_job_id: str | None,
+                         best_score: float | None, solves_used: int) -> None:
+        with self.con:
+            self.con.execute("UPDATE agent_runs SET finished_at=?, stop_reason=?, best_job_id=?, best_score=?, "
+                             "solves_used=? WHERE run_id=?",
+                             (now_iso(), stop_reason, best_job_id, best_score, solves_used, run_id))
+
+    def record_round(self, run_id: str, rec: dict) -> None:
+        """rec: a RoundRecord as JSON-compatible dict (agents/state.py)."""
+        p, v, c, m = rec.get("proposal") or {}, rec.get("validation") or {}, rec.get("critic") or {}, \
+            rec.get("metrics") or {}
+        row = (run_id, rec["round"], p.get("action"), p.get("diagnosis"), v.get("status"), rec.get("study_id"),
+               rec.get("n_solves", 0), rec.get("best_job_id"), m.get("score"), m.get("eta"),
+               None if m.get("feasible") is None else int(bool(m.get("feasible"))), c.get("verdict"),
+               int(bool(rec.get("counted", True))), json.dumps(rec, default=str), now_iso())
+        with self.con:
+            self.con.execute("INSERT OR REPLACE INTO agent_rounds VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", row)
+
+    def record_agent_call(self, call_id: str, run_id: str, round_: int, role: str, model: str, call_dir: str,
+                          prompt_hash: str, template_hash: str | None, output: dict | None, raw: dict | None,
+                          session_id: str | None, duration_s: float, cost_usd: float, retries: int,
+                          error: str | None) -> None:
+        with self.con:
+            self.con.execute(
+                "INSERT OR REPLACE INTO agent_calls VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                (call_id, run_id, round_, role, model, call_dir, prompt_hash, template_hash,
+                 json.dumps(output) if output is not None else None,
+                 json.dumps(raw, default=str) if raw is not None else None, session_id, duration_s, cost_usd,
+                 retries, error, now_iso()))
+
+    def agent_run(self, run_id: str) -> dict | None:
+        r = self._rows("SELECT * FROM agent_runs WHERE run_id=?", (run_id,))
+        return r[0] if r else None
+
+    def agent_rounds(self, run_id: str) -> list[dict]:
+        return self._rows("SELECT * FROM agent_rounds WHERE run_id=? ORDER BY round", (run_id,))
+
+    def agent_calls(self, run_id: str) -> list[dict]:
+        return self._rows("SELECT * FROM agent_calls WHERE run_id=? ORDER BY created_at, rowid", (run_id,))
 
     # ---------------------------------------------------------------- reads
 

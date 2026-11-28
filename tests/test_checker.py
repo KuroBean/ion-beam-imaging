@@ -180,3 +180,30 @@ def test_energy_abs_tolerance(cfg_tmp):
     assert loose.validity["energy_conserved"]
     tight = check(res.result_dir, cfg_tmp.with_overrides([f"spec.tolerances.energy_conservation_abs_eV={worst * 0.5}"]))
     assert not tight.validity["energy_conserved"]
+
+
+def test_ghost_rays_do_not_count_in_eta(cfg_tmp):
+    """Rays at an angle past the first fully lost angle that still land (between plates in the real models) are
+    ghosts: eta counts only the main image, and more than spec.tolerances.max_ghost_frac of them is infeasible."""
+    c = no_chroma(cfg_tmp, "backend.mock.f0=0.3", "spec.requirements.eta_min=0.01")
+    res, m0 = run(c)
+    assert m0.mapping["main_theta_max_deg"] == pytest.approx(6.0) and m0.mapping["ghost_theta_deg"] == []
+    assert m0.requirements["ghost_frac"] == 0 and m0.requirements["eta"] == pytest.approx(m0.requirements["eta_all"])
+    # make every 30 deg ion land near the axis on the MCP face, like a ghost ray that slipped between plates
+    launch = pd.read_csv(res.files["ions_launch"])
+    final = pd.read_csv(res.files["ions_final"])
+    ghost_ids = launch.loc[np.isclose(launch["theta_deg"], 30.0), "ion_id"]
+    sel = final["ion_id"].isin(ghost_ids)
+    final.loc[sel, ["x_m", "y_m", "z_m"]] = [0.001, 0.0, Z_MCP]
+    final.loc[sel, "V_end_V"] = -5000.0
+    final.loc[sel, "KE_eV"] = final.loc[sel, "KE_eV"] + 4800.0
+    final.to_csv(res.files["ions_final"], index=False)
+    m = check(res.result_dir, c)
+    w30 = launch.loc[np.isclose(launch["theta_deg"], 30.0), "weight"].sum()
+    assert m.mapping["ghost_theta_deg"] == [30.0]
+    assert m.requirements["ghost_frac"] == pytest.approx(0.8 * w30)
+    assert m.requirements["eta"] == pytest.approx(m0.requirements["eta"])          # ghosts not counted
+    assert m.requirements["eta_all"] == pytest.approx(m0.requirements["eta"] + 0.8 * w30)
+    assert not m.requirements["ghosts_ok"] and not m.feasible and any("ghost rays" in f for f in m.flags)
+    loose = check(res.result_dir, c.with_overrides(["spec.tolerances.max_ghost_frac=1.0"]), write=False)
+    assert loose.requirements["ghosts_ok"]

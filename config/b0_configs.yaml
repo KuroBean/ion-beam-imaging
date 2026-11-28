@@ -46,3 +46,64 @@ configurations:
     description: "DRAFT: grounded tip, negative extractor E1, Einzel centre E3, E2+E4"
     cfg: 3
     wiring: {e1: LV1, e3: LV2, e2: LV3, e4: LV3}
+
+  # ---- run 1 "no deflectors" (author 2026-11-20): Einzel lens, deflectors d1/d2 removed so they do not
+  # impede the beam, screen mesh opening fixed large (approved variant, 37-40 mm window of 10-40).
+  - config_id: c3_einzel_nodefl_widemesh
+    description: "Run 1: tip, E1, Einzel centre E3; deflectors removed; screen mesh opening 37-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3}
+    removed: [d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [37, 40]}
+
+  # ---- run 1 (author 2026-11-20): Einzel lens on E2-E3-E4 (E2 = E4 on one channel), every unused plate and both
+  # deflectors removed so nothing obstructs the beam, wide screen mesh. Run with --set optimizer.fixed_extraction_V=120.
+  - config_id: c3_einzel_234_nodefl_widemesh
+    description: "Run 1: tip, E1 (fixed dV), Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9, d1, d2 removed; mesh opening 37-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    removed: [e5, e6, e7, e8, e9, d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [37, 40]}
+
+  # ---- cfg 1 (tube chamber alone; deflectors do not exist there). DRAFT by Claude 2026-11-22 to test the
+  # cfg 1 pipeline: Einzel on E2-E3-E4, screen mesh deleted (approved no-mesh variant) to make room.
+  - config_id: c1_einzel_234_nomesh
+    description: "DRAFT cfg 1: tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); screen mesh deleted"
+    cfg: 1
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    variant_id: v-run-2-high-collection-r06-e1
+
+  # ---- run 3 result (2026-11-23): best cfg 1 design, point projection. Tip + extractor E1 only (E2-E9 removed),
+  # wide screen mesh close in front of the MCP on the rods. Run 3 best 0.143 deg (job bdf3ffdb), image 16.6 of 20 mm.
+  - config_id: c1_point_projection_widemesh
+    description: "cfg 1: tip + E1 only, E2-E9 removed, wide screen mesh (36-40 mm); MCP on the rods"
+    cfg: 1
+    wiring: {tip: LV1, e1: LV2}
+    removed: [e2, e3, e4, e5, e6, e7, e8, e9]
+    variant_id: v-demo-1-r01-e0
+    # region of run 3's good trials of this layout (395 valid solves)
+    bounds: {mesh_open_diameter_mm: [36, 40], z_mcp_mm: [135, 183.7], lens_gap_mm: [15, 45], LV1: [40, 260],
+             HV1: [-6000, -2700], HV4: [-300, 0], mesh_gap_mm: [12.7, 40]}
+
+  # ---- cfg 3 fill study (2026-11-23): run 2's mesh-kept layout (Einzel E2-E3-E4 behind E1, wide screen mesh),
+  # searched with the image required to reach 19 mm (optional constraint min_r_max_mm). Same structure as
+  # c3_einzel_234_nodefl_widemesh, separate id so its B0 row stays run 1's.
+  - config_id: c3_einzel_234_widemesh_fill
+    description: "cfg 3: tip, E1, Einzel E2-E3-E4 (E2+E4 one channel); E5-E9, d1, d2 removed; wide mesh 36-40 mm"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    removed: [e5, e6, e7, e8, e9, d1, d2]
+    variant_id: v-demo-1-r01-e0
+    bounds: {mesh_open_diameter_mm: [36, 40]}
+
+  # ---- run 5 (author 2026-11-23): B0 for the cfg 3 no-mesh, eta_min 0.85 test (agent loop vs optimizer alone).
+  # As-built stack: every plate and both deflectors present (unwired ones grounded), screen mesh removed
+  # (approved no-mesh variant). Run with --overrides config/exp_c3_nomesh_eta85.yaml (that file repeats this entry
+  # as the only B0 configuration, so the planner's B0 table shows this experiment alone).
+  - config_id: c3_asbuilt_einzel_nomesh
+    description: "Run 5 B0: tip, E1, Einzel E2-E3-E4 (E2+E4 one channel, E3 centre); E5-E9, d1, d2 present, grounded; no screen mesh"
+    cfg: 3
+    wiring: {tip: LV1, e1: LV2, e3: LV3, e2: LV4, e4: LV4}
+    variant_id: v-run-2-high-collection-r06-e1

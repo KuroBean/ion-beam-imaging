@@ -1,0 +1,4 @@
+[2026-11-22 03:35:06] status RUNNING {'solves': 0}
+[2026-11-22 03:35:06] ionopt agent-run --run-id run-3-cfg1 --budget 700 --rounds 50 --no-improvement-rounds 12 --improvement-tol 0.002 --overrides config/cfg1_only.yaml --set backend.backend=comsol --set spec.requirements.eta_min=0.6 --set optimizer.min_extraction_V=120 --set optimizer.max_extraction_V=300 --goal Run 3, chamber setup 1 (tube alone), high collection: find t...
+[2026-11-23 00:05:53] exit 0
+[2026-11-23 00:05:53] status DONE {'solves': 700, 'summary': ['run run-3-cfg1: stop budget; 18 rounds, 700/700 solves; best 0.143 deg (job bdf3ffdb1cef4691854817fff4b4998f, round 9)', 'trace: ionopt trace run-3-cfg1']}

@@ -1,0 +1,7 @@
+[run-2-high-collection] start: method agent, budget 700 solves, 50 rounds
+[run-2-high-collection] round 1 planner: optimize (none)
+[run-2-high-collection] round 1 optimize: study run-2-high-collection-r01, 40 solves
+[run-2-high-collection] round 1: 40 solves, 6 feasible, best 3.2095951769462356
+[run-2-high-collection] round 1 critic: dispute
+[run-2-high-collection] round 2 planner: optimize (parametric)
+[run-2-high-collection] round 2 optimize: study run-2-high-collection-r02, 50 solves

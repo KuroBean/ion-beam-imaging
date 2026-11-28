@@ -71,22 +71,24 @@ class ComsolRunner:
             # process, so a "restart" clears all models and reloads them.
         self.adapters = {}
 
-    def adapter(self, fidelity: str) -> ModelAdapter:
+    def adapter(self, fidelity: str, variant_id: str = "base") -> ModelAdapter:
+        """The loaded model for (fidelity, model variant)."""
         if self.client is None:
             self._start()
-        if fidelity not in self.adapters:
+        key = f"{fidelity}:{variant_id}"
+        if key not in self.adapters:
             # one model in memory at a time: the 3D model needs most of an 8 GB machine
             # (2026-11-12: a 3D solve with the 2D model still loaded was killed for low memory)
             for other in list(self.adapters):
-                log.info("unloading the %s model before loading %s", other, fidelity)
+                log.info("unloading the %s model before loading %s", other, key)
                 try:
                     self.client.remove(self.adapters.pop(other).model)
                 except Exception:  # noqa: BLE001
                     self.dirty = True
-            a = ModelAdapter(self.client, self.cfg, fidelity)
+            a = ModelAdapter(self.client, self.cfg, fidelity, variant_id)
             a.load()
-            self.adapters[fidelity] = a
-        return self.adapters[fidelity]
+            self.adapters[key] = a
+        return self.adapters[key]
 
     # ---- one job
     def __call__(self, job: JobSpec, cfg: Config, out_dir: Path) -> dict:
@@ -102,7 +104,7 @@ class ComsolRunner:
         params = expand(job, cfg)
         ions, pre = job_launch(job, cfg)
         deadline = time.time() + cfg.backend.job_timeout_s
-        ad = self.adapter(job.fidelity)
+        ad = self.adapter(job.fidelity, job.variant_id)
         self.jobs_since_start += 1
         try:
             meta = ad.run(job, params, ions, out_dir, deadline=deadline)

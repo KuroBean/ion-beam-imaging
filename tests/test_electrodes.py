@@ -101,11 +101,33 @@ def test_field_limit(cfg):
 
 
 def test_stack_vs_mesh(cfg):
-    # stack ends at lens_gap + 108.84 mm; mesh at 145 - 12.7 = 132.3 mm
+    # E9 front at lens_gap + 93.84 mm; its back lip (+15) must clear the cross hub (2.9 mm ahead of the mesh
+    # plane at 145 - 12.7 = 132.3 mm) by min_gap 2.23 mm: lens_gap <= 132.3 - 93.84 - 17.9 - 2.23 = 18.33
     c = cfg.with_overrides(["constraints.chamber_setups.1.lens_gap_mm=[5, 30]"])
-    validate_job(einzel_job(c, positions={"lens_gap": 23 * MM}), c)
-    with pytest.raises(JobValidationError, match="mesh plane"):
-        validate_job(einzel_job(c, positions={"lens_gap": 24 * MM}), c)
+    validate_job(einzel_job(c, positions={"lens_gap": 18.3 * MM}), c)
+    with pytest.raises(JobValidationError, match="clears the screen mesh"):
+        validate_job(einzel_job(c, positions={"lens_gap": 18.4 * MM}), c)
+
+
+def test_rear_reach_profiles():
+    from ionopt.electrodes import rear_reach
+    # MCP: plate face is the plane, the surround stands 4 mm ahead at r 25..33
+    assert rear_reach("accel", "mcp") / MM == pytest.approx(15.0)      # back lip r 12..13 at +15
+    assert rear_reach("lens", "mcp") / MM == pytest.approx(14.0)       # back lip at +14 (rim +9 + 4 = 13)
+    assert rear_reach("deflector", "mcp") / MM == pytest.approx(16.0)  # plates to +12, surround 4 mm ahead
+    # mesh: hub 2.9 mm ahead of the mesh plane at r > 5.5
+    assert rear_reach("accel", "mesh") / MM == pytest.approx(17.9)
+    assert rear_reach("lens", "mesh") / MM == pytest.approx(16.9)
+
+
+def test_mcp_on_the_rods(cfg):
+    """cfg 1 as the author set it (2026-11-22): MCP at most rod end - 10 mm = 130.698 mm behind E1."""
+    c = cfg.with_overrides(["constraints.chamber_setups.1.mcp_rod_margin_mm=10",
+                            "constraints.chamber_setups.1.z_mcp_mm=[10, 183.704]",
+                            "constraints.chamber_setups.1.lens_gap_mm=[10, 53.0]"])
+    validate_job(einzel_job(c, positions={"lens_gap": 14.302 * MM}), c)         # 145 - 14.302 = 130.698
+    with pytest.raises(JobValidationError, match="rod end"):
+        validate_job(einzel_job(c, positions={"lens_gap": 14.2 * MM}), c)
 
 
 def test_tbd_limits_give_warnings_not_errors(cfg):

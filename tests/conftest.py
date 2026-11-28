@@ -18,7 +18,15 @@ TEST_PINS = [   # values the analytic tests were written for (not the physical s
     "spec.tolerances.convergence_rel=0.05", "spec.tolerances.fate_position_tol_um=50",
     "optimizer.write_plots=false",                 # plots have their own tests; keeps the optimizer tests fast
     "spec.requirements.eta_min=0.3", "constraints.supplies.mesh_V=[-1000, 500]",   # the mock optimizer tests' ranges
+    "spec.requirements.impact_threshold_mps=null", "spec.requirements.impact_threshold_eV_per_charge=1000",
 ]
+# cfg 1 as the tests' generic chamber (the old dev_overrides placeholders): MCP fixed, held by the chamber.
+# The real cfg 1 (MCP on the rods, author 2026-11-22) has its own tests.
+CFG1_PINS = [
+    "constraints.chamber_setups.1.z_mcp_mm=[145, 145]", "constraints.chamber_setups.1.mesh_gap_mm=[12.7, 12.7]",
+    "constraints.chamber_setups.1.lens_gap_mm=[5, 15]", "constraints.chamber_setups.1.mcp_rod_margin_mm=null",
+]
+TEST_PINS += CFG1_PINS
 
 
 @pytest.fixture

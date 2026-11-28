@@ -14,6 +14,7 @@ from ..schemas import FILES, JobSpec, ResultBundle
 
 class LocalComsolBackend:
     name = "comsol"
+    supports_variants = True        # 2D model variants (ionopt.variants): the runner loads the variant's model
 
     def __init__(self, cfg: Config):
         self.cfg = cfg

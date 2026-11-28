@@ -26,6 +26,7 @@ import pandas as pd
 
 from .. import units
 from ..config import Config
+from ..variants import load_variant
 from ..electrodes import (expand, expected_potentials, geometry_electrodes, hv_potentials, job_launch,
                           model_tip_potential, node_potentials, used_lv_channels, validate_job)
 from ..results import JobTimeout, execute, prepare_job_dir, read_bundle
@@ -50,6 +51,10 @@ def mock_geometry(job: JobSpec, cfg: Config) -> dict:
     z_mcp = job.positions["z_mcp"]
     z_mesh = z_mcp - job.positions["mesh_gap"]
     r_mesh = cfg.require("spec.detector.mesh_opening_diameter_mm") / 2 * units.MM
+    var = load_variant(cfg, job.variant_id)
+    no_mesh = var is not None and "screen_mesh" in var.removed_base
+    if var is not None:       # toy model: a variant opening-diameter parameter widens the mesh opening
+        r_mesh = next((job.positions[x.name] / 2 for x in var.variables() if "diameter" in x.name), r_mesh)
     return {
         "source": "mock",
         "fidelity": job.fidelity,
@@ -58,10 +63,11 @@ def mock_geometry(job: JobSpec, cfg: Config) -> dict:
         "z_launch_m": (job.launch.launch_offset_um or 0.0) * units.UM,
         "z_mcp_m": z_mcp,
         "r_mcp_active_m": spec.detector.mcp_active_diameter_mm / 2 * units.MM,
+        "mesh_present": not no_mesh,
         "z_mesh_m": z_mesh,
-        "r_mesh_open_m": r_mesh,
-        "mesh_frame_z_m": [z_mesh, z_mesh],
-        "mesh_frame_r_m": [r_mesh, None],
+        "r_mesh_open_m": None if no_mesh else r_mesh,
+        "mesh_frame_z_m": None if no_mesh else [z_mesh, z_mesh],
+        "mesh_frame_r_m": None if no_mesh else [r_mesh, None],
         "electrodes": geometry_electrodes(job, cfg),
         "t_end_s": job.launch.t_end_us * units.US if job.launch.t_end_us else None,
     }
@@ -125,7 +131,8 @@ def run_mock(job: JobSpec, cfg: Config, out_dir: Path) -> dict:
     z_end = np.full(n, z_mcp)
     r_end = r_land.copy()
     v_end_pot = np.full(n, hv["mcp_front"])
-    at_mesh = np.abs(rho_mesh) > geom["r_mesh_open_m"]
+    r_open = geom["r_mesh_open_m"]
+    at_mesh = np.abs(rho_mesh) > (r_open if r_open is not None else np.inf)
     z_end[at_mesh] = z_mesh
     r_end[at_mesh] = rho_mesh[at_mesh]
     v_end_pot[at_mesh] = hv["mesh"]
@@ -222,6 +229,7 @@ class MockBackend:
     """Synchronous backend: each submit runs the toy simulator immediately."""
 
     name = "mock"
+    supports_variants = True        # toy: variant parts are ignored, a removed screen mesh stops no ions
 
     def __init__(self, cfg: Config):
         self.cfg = cfg

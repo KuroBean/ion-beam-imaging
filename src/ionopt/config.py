@@ -24,16 +24,19 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, ValidationErr
 
 from . import units
 
-CONFIG_FILES = ("paths", "parameters", "spec", "constraints", "backend", "optimizer", "b0_configs")
+CONFIG_FILES = ("paths", "parameters", "spec", "constraints", "backend", "optimizer", "b0_configs", "inventory")
 CONFIG_DIR_ENV = "IONOPT_CONFIG_DIR"
 # keys where null means "not used" rather than TBD (fnmatch patterns over dotted keys)
 NOT_TBD = (
     "parameters.parameters.*.unit",
     "parameters.parameters.*.allowed",
+    "parameters.parameters.*.default",       # null = no as-built value (the model must have the parameter)
+    "inventory.*",                           # optional item fields (replaces, transmission, as_built)
     "spec.analysis.spline_smoothing",
     "backend.mock.fold_theta_deg",           # null = no fold
     "constraints.electrodes.deflectors.*.plate_mm",   # optional (defaults to length)
     "constraints.electrodes.stack.*.plate_mm",
+    "constraints.chamber_setups.*.mcp_rod_margin_mm",   # null = MCP not on the rods
     "spec.requirements.impact_threshold_mps",   # alternative to impact_threshold_eV_per_charge
     "spec.launch.emission_distance_um",         # null = model_tip_radius_um / tan(hwhm_deg)
 )
@@ -98,6 +101,8 @@ class ParameterDef(_Model):
     unit: str | None = None
     allowed: list[Any] | None = None
     per_electrode: bool = False
+    default: float | None = None       # value meaning "as built": a model without this parameter may skip it
+    geometric: bool = False            # a change needs a geometry rebuild
     description: str = ""
 
     @model_validator(mode="after")
@@ -144,8 +149,8 @@ class LaunchConfig(_Model):
     emission_distance_um: float | None = Field(None, gt=0)
     # where hwhm_deg applies (with preaccel): 'launch' = beam spread at the model launch point;
     # 'meniscus' = velocity directions of the E0 ions at the meniscus, bent toward the axis by the
-    # emitter field before the launch point (launch.trace_preacceleration)
-    emission_angle_at: Literal["launch", "meniscus"] = "launch"
+    # emitter field before the launch point (launch.trace_preacceleration). Default 'meniscus' (author 2026-11-21)
+    emission_angle_at: Literal["launch", "meniscus"] = "meniscus"
 
     @field_validator("charge")
     @classmethod
@@ -205,6 +210,10 @@ class TolerancesConfig(_Model):
     convergence_rel: float | None = Field(None, gt=0)
     fate_position_tol_um: float | None = Field(None, ge=0)
     eval_range_landed_frac: float = Field(0.99, gt=0, le=1)
+    # "ghost" rays: wide angles that slip past the stack after a fully lost angle and land inside the image at
+    # the radius of a small angle. eta counts only the main image (0 deg up to the first angle with nothing on
+    # the active MCP); ghosts may carry at most this fraction of the beam (author 2026-11-23)
+    max_ghost_frac: float = Field(0.01, ge=0, le=1)
 
 
 class AnalysisConfig(_Model):
@@ -228,6 +237,10 @@ class ChamberSetup(_Model):
     z_mcp_mm: Range = [None, None]
     mesh_gap_mm: Range = [None, None]
     lens_gap_mm: Range = [None, None]      # tip apex to the L1 (E1) front face
+    # MCP mounted on the stack's tie rods (the last part on them): its front face stays at least this far in
+    # front of the rod end (electrodes.max_offset_mm behind the E1 front face), so z_mcp - lens_gap <=
+    # max_offset_mm - margin. null = the MCP is held by the chamber, independent of the stack.
+    mcp_rod_margin_mm: float | None = Field(None, ge=0)
 
 
 class MeshConstraints(_Model):
@@ -235,7 +248,8 @@ class MeshConstraints(_Model):
 
 
 class StackPart(_Model):
-    """One part of the fixed lens stack, positioned relative to the E1 (L1) front face."""
+    """One part of the lens stack, positioned relative to the E1 (L1) front face (as built)."""
+    profile: Literal["lens", "accel", "deflector"] | None = None   # r-z shape (electrodes.PROFILES)
     front_mm: float = Field(ge=0)          # front face, measured from the E1 front face along +z
     length_mm: float = Field(gt=0)         # full axial extent including lips (bounding box)
     plate_mm: float | None = Field(None, gt=0)   # plate thickness without lips (field checks)
@@ -251,6 +265,7 @@ class StackPart(_Model):
 
 class Deflector(StackPart):
     name: str                              # d1, d2; halves are <name>a / <name>b
+    profile: Literal["lens", "accel", "deflector"] | None = "deflector"
     cfgs: list[int]                        # chamber setups in which the deflector exists
 
 
@@ -260,6 +275,10 @@ class ElectrodeConstraints(_Model):
     deflectors: list[Deflector] = []
     deflectors_grounded: bool = True       # Phase 1: every deflector half at 0 V
     clearance_mm: float | None = Field(None, gt=0)   # smallest gap between neighbouring plates
+    removable: list[str] = []              # parts a configuration may leave out (e2..e9, deflector names)
+    movable: list[str] = []                # plates whose front offset from E1 the optimizer may tune
+    min_gap_mm: float | None = Field(None, gt=0)     # smallest axial gap between neighbouring parts' faces
+    max_offset_mm: float | None = Field(None, gt=0)  # optional limit on a moved plate's back end (from E1 front)
 
     @model_validator(mode="after")
     def _stack(self):
@@ -268,6 +287,16 @@ class ElectrodeConstraints(_Model):
         fr = [e.front_mm for e in self.stack]
         if fr != sorted(fr) or (fr and fr[0] != 0):
             raise ValueError("electrodes.stack front_mm must start at 0 (E1) and increase")
+        plates = {f"e{k}" for k in range(1, self.count + 1)}
+        parts = plates | {d.name for d in self.deflectors}
+        if "e1" in self.removable or "e1" in self.movable:
+            raise ValueError("e1 (extractor) is the stack reference: it cannot be removable or movable")
+        bad = sorted(set(self.removable) - parts) + sorted(set(self.movable) - plates)
+        if bad:
+            raise ValueError(f"electrodes.removable/movable: unknown parts {bad} (plates {sorted(plates)}, "
+                             f"deflectors {[d.name for d in self.deflectors]}; only plates are movable)")
+        if self.movable and (self.min_gap_mm is None or any(e.profile is None for e in self.stack)):
+            raise ValueError("movable plates need electrodes.min_gap_mm and a profile for every stack part")
         return self
 
 
@@ -371,6 +400,10 @@ class OptimizerConfig(_Model):
     write_plots: bool = False
     # with pre-acceleration, keep q (V_tip - V_E1) >= this (V): E1 is sampled inside the accelerating range
     min_extraction_V: float = Field(1.0, gt=0)
+    # optional fixed extraction voltage dV (V): E1 follows the tip at q (V_tip - V_E1) = dV and is not sampled
+    fixed_extraction_V: float | None = Field(None, gt=0)
+    # optional upper limit (V) on q (V_tip - V_E1); E1 is then sampled in [min, max] below the tip
+    max_extraction_V: float | None = Field(None, gt=0)
     # no ion mirrors: q V <= q V_tip for every electrode and the mesh, and q V_tip >= 0 (grounded parts)
     no_mirror: bool = True
 
@@ -388,6 +421,11 @@ class ConfigurationDef(_Model):
     description: str = ""
     cfg: int
     wiring: dict[str, str] = {}
+    removed: list[str] = []                # stack parts left out (constraints.electrodes.removable)
+    moved: list[str] = []                  # plates whose offset the optimizer tunes (electrodes.movable)
+    variant_id: str = "base"               # model variant (results/variants/<id>/variant.json)
+    variant_settings: dict[str, float] = {}   # values of the variant's switch parameters (others: as built)
+    bounds: dict[str, list[float]] = {}    # optional [lo, hi] narrowing optimizer variables (SearchSpace.raw_ranges keys)
 
 
 class B0Config(_Model):
@@ -409,6 +447,50 @@ class B0Config(_Model):
         raise ConfigError(f"unknown config_id '{config_id}'; known: {[c.config_id for c in self.configurations]}")
 
 
+# --------------------------------------------------------------------------- inventory
+
+
+class InventoryParam(_Model):
+    range: list[float]                     # [lo, hi]
+    unit: Literal["mm"] = "mm"
+    as_built: float | None = None          # value of the part it replaces, if any
+
+    @field_validator("range")
+    @classmethod
+    def _rng(cls, v):
+        if len(v) != 2 or v[0] > v[1]:
+            raise ValueError("range must be [lo, hi] with lo <= hi")
+        return v
+
+
+class InventoryItem(_Model):
+    """A part the editor may build into a model variant (hypothetical: could be ordered)."""
+    id: str
+    description: str
+    kind: Literal["mesh", "grid", "electrode", "aperture", "removal", "other"]
+    replaces: str | None = None
+    parameters: dict[str, InventoryParam] = {}
+    transmission: float | None = Field(None, gt=0, le=1)
+    connectable: bool = False
+    notes: str = ""
+
+
+class InventoryConfig(_Model):
+    items: list[InventoryItem] = []
+
+    @field_validator("items")
+    @classmethod
+    def _unique(cls, v):
+        ids = [i.id for i in v]
+        dup = {i for i in ids if ids.count(i) > 1}
+        if dup:
+            raise ValueError(f"duplicate inventory ids: {sorted(dup)}")
+        return v
+
+    def get(self, item_id: str) -> InventoryItem | None:
+        return next((i for i in self.items if i.id == item_id), None)
+
+
 # --------------------------------------------------------------------------- root
 
 
@@ -420,6 +502,7 @@ class Config(_Model):
     backend: BackendConfig
     optimizer: OptimizerConfig
     b0_configs: B0Config
+    inventory: InventoryConfig = InventoryConfig()
 
     # not part of the files
     root_dir: Path = Field(default=Path("."), exclude=True)

@@ -122,6 +122,63 @@ def test_search_space_keeps_extraction_accelerating(cfg, wiring, charge):
     assert SearchSpace.from_config(c.with_overrides(["spec.launch.preaccel=false"]), conf).tip_ch is None
 
 
+@pytest.mark.parametrize("wiring", [{"tip": "LV1", "e1": "LV2", "e3": "LV3"},      # tip and E1 on channels
+                                    {"tip": "LV1", "e3": "LV2"},                    # E1 grounded: tip constant
+                                    {"e1": "LV1", "e3": "LV2"}])                    # grounded tip: E1 constant
+@pytest.mark.parametrize("charge", [1, -1])
+def test_fixed_extraction_voltage(cfg, wiring, charge):
+    from ionopt.config import ConfigurationDef
+    dv = 120.0
+    c = cfg.with_overrides(["spec.launch.preaccel=true", f"spec.launch.charge={charge}",
+                            f"optimizer.fixed_extraction_V={dv}"])
+    conf = ConfigurationDef(config_id="x", description="", cfg=1, wiring=wiring)
+    space = SearchSpace.from_config(c, conf)
+    study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=2))
+    lo, hi = c.constraints.supplies.low_voltage.range_V
+    tips = []
+    for _ in range(100):
+        t = study.ask()
+        ch, pos = space.suggest(t)
+        assert not any(k == f"u_{wiring.get('e1')}" for k in t.params)   # E1 is never sampled
+        v_tip = ch[wiring["tip"]] if "tip" in wiring else 0.0
+        v_e1 = ch[wiring["e1"]] if "e1" in wiring else 0.0
+        assert charge * (v_tip - v_e1) == pytest.approx(dv)
+        assert all(lo - 1e-9 <= ch[k] <= hi + 1e-9 for k in ch if k.startswith("LV"))
+        assert space.contains(ch, pos)
+        tips.append(v_tip)
+    if "tip" in wiring and "e1" in wiring:
+        assert max(tips) - min(tips) > 50                 # the tip still varies; E1 rides along
+    with pytest.raises(ConfigError, match="min_extraction_V"):
+        SearchSpace.from_config(c.with_overrides(["optimizer.min_extraction_V=200"]), conf)
+
+
+@pytest.mark.parametrize("wiring", [{"tip": "LV1", "e1": "LV2", "e3": "LV3"},      # tip and E1 on channels
+                                    {"tip": "LV1", "e3": "LV2"},                    # E1 grounded
+                                    {"e1": "LV1", "e3": "LV2"}])                    # grounded tip
+@pytest.mark.parametrize("charge", [1, -1])
+def test_extraction_voltage_window(cfg, wiring, charge):
+    from ionopt.config import ConfigurationDef
+    c = cfg.with_overrides(["spec.launch.preaccel=true", f"spec.launch.charge={charge}",
+                            "optimizer.min_extraction_V=120", "optimizer.max_extraction_V=300"])
+    conf = ConfigurationDef(config_id="x", description="", cfg=1, wiring=wiring)
+    space = SearchSpace.from_config(c, conf)
+    study = optuna.create_study(sampler=optuna.samplers.RandomSampler(seed=4))
+    lo, hi = c.constraints.supplies.low_voltage.range_V
+    dvs = []
+    for _ in range(200):
+        ch, pos = space.suggest(study.ask())
+        v_tip = ch[wiring["tip"]] if "tip" in wiring else 0.0
+        v_e1 = ch[wiring["e1"]] if "e1" in wiring else 0.0
+        dv = charge * (v_tip - v_e1)
+        assert 120 - 1e-9 <= dv <= 300 + 1e-9
+        assert all(lo - 1e-9 <= ch[k] <= hi + 1e-9 for k in ch if k.startswith("LV"))
+        assert space.contains(ch, pos)
+        dvs.append(dv)
+    assert max(dvs) - min(dvs) > 100                      # the window is explored, not pinned
+    with pytest.raises(ConfigError, match="max_extraction_V"):
+        SearchSpace.from_config(c.with_overrides(["optimizer.max_extraction_V=50"]), conf)
+
+
 def test_search_space_rejects_tip_and_e1_on_one_channel(cfg):
     from ionopt.config import ConfigurationDef
     c = cfg.with_overrides(["spec.launch.preaccel=true"])

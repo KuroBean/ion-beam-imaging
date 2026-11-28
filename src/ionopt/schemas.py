@@ -56,7 +56,13 @@ class JobSpec(BaseModel):
     cfg: int
     wiring: dict[str, str] = {}                # tip / e<k> -> LV1..LV4 or GND; unlisted nodes are GND
     channels: dict[str, float]                 # V, e.g. {"LV1": 100, "LV2": 85, "HV1": -10000, "HV4": 0}
-    positions: dict[str, float]                # m: lens_gap, z_mcp, mesh_gap (fixed lens stack)
+    positions: dict[str, float]                # m: lens_gap, z_mcp, mesh_gap; e<k>_offset for moved plates
+                                               # (front face from the E1 front face; unlisted = as built)
+    removed: list[str] = []                    # stack parts left out (constraints.electrodes.removable)
+    variant_id: str = "base"                   # model variant (ionopt.variants); variable parameters of the
+                                               # variant are lengths in positions (m), switches below
+    variant_settings: dict[str, float] = {}    # variant switch parameters (0/1); unset = as built
+    mesh_open_fraction: float | None = None    # screen-mesh transmission of the variant (None: spec value)
     launch: LaunchConfig
     mesh_level: Literal["normal", "fine"] = "normal"
     ion_level: Literal["search", "convergence"] = "search"   # convergence = more ions
