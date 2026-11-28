@@ -1,0 +1,61 @@
+# Launch assumptions, detector, thresholds and tolerances (plan section 10).
+# null = TBD: loading succeeds, but any step that needs the value stops with an error
+# naming the key. Ask the author before changing values here.
+
+launch:
+  hwhm_deg: 20               # half width at half max of dI/dOmega (Gaussian in theta)
+  theta_max_deg: 50          # largest launch angle
+  n_theta: 26                # theta grid points incl. 0 (2 deg steps to 50 deg); 2D check vs 51 (task 10)
+  n_E: 1                     # one energy for now (author 2026-11-12: ~constant energy, spread added later)
+  n_phi: 8                   # 3D only, azimuth points (45 deg); 3D cost scales with n_theta * n_phi * n_E
+  E0_eV: 2                   # mean kinetic energy leaving the meniscus (author 2026-11-12, lit. review)
+  dE_eV: 0                   # full width of the uniform spread; author: 2 (1..3 eV), set to 0 for now (n_E = 1)
+  charge: 1                  # signed charge number; +1 for Na+, -1 would be Cl-
+  mass_Da: 22.99             # Na+ (NaCl solutions first); 175.1 for protonated arginine later
+  launch_offset_um: 0.001    # launch point 1 nm in front of the model tip face (numerical only; the physical
+                             # emitter-to-launch distance is emission_distance_um below)
+  axis_offset_nm: 1          # 2D release: start this far off the axis (verified: r = 1e-6 mm)
+  t_end_us: 100              # Na+: MCP arrival ~11 us with a 100 V tip in cfg 3, ~3x longer at ~10 V; the
+                             # checker flags any ion still in flight (scale by sqrt(mass) for heavier ions)
+  convergence_ion_factor: 2  # ion_level=convergence multiplies n_theta by this
+  # Pre-acceleration (author 2026-11-12): the model tip (0.1 mm flat) stands in for a <100 nm nanopore.
+  # Ions are launched with the energy gained over the distance s at which the HWHM cone reaches the
+  # model tip radius: KE0 = E0 +- dE/2 + q (V_tip - V_E1) ln(1 + 2s/r_e) / ln(4 lens_gap / r_e)
+  # (hyperboloid emitter; ionopt.launch.preacceleration).
+  preaccel: true
+  emitter_radius_nm: 50      # r_e, apex radius of the real emitter (<100 nm nanopore); enters only via ln()
+  model_tip_radius_um: 100   # R_tip, flat tip face radius in both models (r_tip = 0.1 mm)
+  emission_distance_um: null # s; null = model_tip_radius_um / tan(hwhm_deg) (275 um at 20 deg)
+  # Where hwhm_deg applies (author 2026-11-13, to be confirmed with the lab, KNOWN_ISSUES #22):
+  # 'meniscus' = the 2 eV ions just outside the meniscus move in directions with 20 deg HWHM; the
+  # emitter field bends them toward the axis before s (~20 -> 7-9 deg at V_tip - V_E1 = 35-66 V,
+  # ~4 deg at 300 V; launch.trace_preacceleration). 'launch' = 20 deg HWHM at the launch point.
+  emission_angle_at: meniscus
+
+detector:
+  model: Hamamatsu F2225-21P
+  mcp_active_diameter_mm: 40 # plate diameter
+  sigma_mcp_um: 70           # MCP + phosphor + camera resolution, 1 sigma (author 2026-11-12, lit.; plausible 30-100)
+  mesh_opening_diameter_mm: 10   # TBD: current model has 11
+  mesh_open_fraction: 0.7    # electroformed Ni mesh, 200 wires/inch (author 2026-11-12, approx.)
+
+requirements:
+  eta_min: 0.4               # minimum collection efficiency (MCP x mesh transmission), author 2026-11-14
+  impact_threshold_eV_per_charge: null   # TBD (literature review); set this OR impact_threshold_mps
+  impact_threshold_mps: null             # TBD, alternative: minimum impact speed of the threshold species
+  threshold_species_mass_Da: null        # TBD, heaviest species of interest (Na+ 22.99, Na2Cl+ ~81, hydrated Na+?); null = launch mass
+  frac_fast_min: 0.90        # minimum weighted fraction of MCP ions above the threshold
+  optional_constraints: {}   # extra constraints on spot statistics, e.g. {min_fill_fraction: 0.5, max_rms_axis_mm: 8}
+
+tolerances:
+  energy_conservation_rel: 0.02   # 3D at rtol 1e-9: MCP ions median 0.2%, max 1.5%; 2D max 0.2% (2026-11-12)
+  energy_conservation_abs_eV: 3   # ...or within this many eV (3D ions ending on electrodes: up to 2.8 eV)
+  potential_match_V: 0.1          # exported surface means match the assigned values to ~1e-12 V
+  monotonic_tol_um: 50            # 3D landing noise: remesh moves landings ~27 um median (p90 ~100 um)
+  convergence_rel: 0.05           # max relative change of dtheta and eta in a convergence rerun
+  fate_position_tol_um: 50        # all 2D/3D runs so far classified every ion at 50 um
+  eval_range_landed_frac: 0.99    # theta is in the evaluation range while this fraction of its weight lands on the active MCP
+
+analysis:
+  drdtheta_method: central   # central | spline
+  spline_smoothing: null     # smoothing factor s for scipy UnivariateSpline (spline method only; null = interpolate)

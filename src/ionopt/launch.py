@@ -1,0 +1,269 @@
+"""Deterministic launch grid and weights (plan 9.1).
+
+The grid describes ions at the simulated launch point (``launch_offset_um`` in front of
+the model tip apex, on the axis), not at the real emission site.
+
+Weights for each ion:
+    w_theta = exp(-theta^2 / (2 sigma^2)) * sin(theta) * dtheta   (trapezoid quadrature)
+    w_E     = energy_weight(KE) * dE_bin                           (uniform by default)
+    w_phi   = dphi = 2 pi / n_phi  (3D)   or 2 pi  (2D: one meridional ray per theta)
+    weight  = w_theta * w_E * w_phi, normalized to sum to 1.
+The separate factors are stored so the checker can weight within a theta group.
+"""
+from __future__ import annotations
+
+import math
+from pathlib import Path
+from typing import Callable
+
+import numpy as np
+import pandas as pd
+
+from . import units
+from .config import LaunchConfig, TBDError
+from .schemas import Fidelity, LAUNCH_COLUMNS
+
+EnergyWeight = Callable[[np.ndarray], np.ndarray]
+
+
+def _req(launch: LaunchConfig, field: str):
+    v = getattr(launch, field)
+    if v is None:
+        raise TBDError(f"spec.launch.{field}")
+    return v
+
+
+def theta_grid(n_theta: int, theta_max_rad: float, sigma_rad: float) -> tuple[np.ndarray, np.ndarray]:
+    """Theta nodes from 0 to theta_max and their weights exp(-t^2/2s^2) sin(t) dtheta."""
+    theta = np.linspace(0.0, theta_max_rad, n_theta)
+    dtheta = np.full(n_theta, theta_max_rad / (n_theta - 1))
+    dtheta[[0, -1]] *= 0.5
+    w = np.exp(-theta**2 / (2 * sigma_rad**2)) * np.sin(theta) * dtheta
+    return theta, w
+
+
+def energy_grid(E0_eV: float, dE_eV: float, n_E: int,
+                energy_weight: EnergyWeight | None = None) -> tuple[np.ndarray, np.ndarray]:
+    """Energies at the midpoints of n_E equal bins across [E0 - dE/2, E0 + dE/2]."""
+    if n_E == 1 or dE_eV == 0:
+        return np.array([E0_eV]), np.array([1.0])
+    edges = np.linspace(E0_eV - dE_eV / 2, E0_eV + dE_eV / 2, n_E + 1)
+    ke = 0.5 * (edges[:-1] + edges[1:])
+    w = np.diff(edges) * (np.ones_like(ke) if energy_weight is None else np.asarray(energy_weight(ke), float))
+    if np.any(w < 0) or w.sum() <= 0:
+        raise ValueError("energy weight function must be non-negative and not all zero")
+    return ke, w / w.sum()
+
+
+def emission_distance_m(launch: LaunchConfig) -> float:
+    """Distance s from the real emitter to the model launch point.
+
+    Explicit spec.launch.emission_distance_um, else the distance at which a cone with the launch
+    HWHM half angle has widened to the model tip radius: s = R_tip / tan(hwhm).
+    """
+    if launch.emission_distance_um is not None:
+        return launch.emission_distance_um * units.UM
+    return _req(launch, "model_tip_radius_um") * units.UM / math.tan(launch.hwhm_deg * units.DEG)
+
+
+def preacceleration(launch: LaunchConfig, v_tip: float, v_ext: float, gap_m: float) -> dict:
+    """Kinetic energy (eV) an ion gains between the real emitter and the model launch point.
+
+    The model tip (flat face of radius R_tip, ~0.1 mm) stands in for a much sharper emitter
+    (nanopore meniscus, radius r_e ~ 50 nm). Ions leave the meniscus with E0 +- dE/2 and are
+    accelerated along the axis by the emitter's own field until the beam (half angle hwhm) has
+    widened to R_tip, i.e. over s = R_tip / tan(hwhm). The model launches them at its tip with the
+    energy they have there.
+
+    Field model: hyperboloid-of-revolution emitter of apex radius r_e at distance D from a planar
+    counter electrode (the extractor E1, D = lens_gap), potential difference U = V_tip - V_E1.
+    In prolate spheroidal coordinates the axial potential is exact:
+        V(s) = V_E1 + U * ln[(1 + eta)/(1 - eta)] / ln[(1 + eta0)/(1 - eta0)],  eta = (D - s)/a,
+    and for r_e << D, s << D:
+        V_tip - V(s) = U * ln(1 + 2 s / r_e) / ln(4 D / r_e)
+    (apex field 2U / (r_e ln(4D/r_e)), the classic sharp-emitter result). So
+        E_gain = q * U * ln(1 + 2 s / r_e) / ln(4 D / r_e)     [eV, q = signed charge number]
+    The dependence on r_e is only logarithmic.
+    """
+    r_e = _req(launch, "emitter_radius_nm") * units.NM
+    s = emission_distance_m(launch)
+    if not (0 < s < gap_m):
+        raise ValueError(f"emission distance {s / units.MM:.3g} mm must be inside the tip-extractor gap "
+                         f"{gap_m / units.MM:.3g} mm")
+    frac = math.log1p(2 * s / r_e) / math.log(4 * gap_m / r_e)
+    U = v_tip - v_ext
+    return {"preaccel_eV": launch.charge * U * frac, "potential_fraction": frac, "emission_distance_m": s,
+            "emitter_radius_m": r_e, "U_tip_extractor_V": U, "gap_m": gap_m}
+
+
+AngleMap = Callable[[np.ndarray, float], np.ndarray]
+
+
+def _hyperboloid(D_re: float) -> tuple[float, float, float]:
+    """Prolate spheroidal frame for a hyperboloid emitter (apex radius 1) at distance D_re from a plane.
+
+    Lengths in units of r_e. Returns (a, c, A): focal distance a, c = a - D (apex to focus,
+    computed without cancellation) and A = atanh(eta0), eta0 = 1/sqrt(1 + 1/D).
+    """
+    c = 1.0 / (math.sqrt(1.0 + 1.0 / D_re) + 1.0)
+    return D_re + c, c, math.atanh(1.0 / math.sqrt(1.0 + 1.0 / D_re))
+
+
+def _hyperboloid_field(x: float, z: float, a: float, c: float, A: float) -> tuple[float, float, float]:
+    """Normalized potential f (1 on the emitter, 0 on the plane) and its gradient at (x, z).
+
+    z is the distance from the apex toward the plane, x the signed distance from the axis, both in
+    units of r_e. eta = (d2 - d1) / 2a with d1, d2 the distances to the foci; 1 - eta is formed
+    without cancellation so the field stays accurate within nanometres of the apex.
+    """
+    rho, w = abs(x), z + c
+    d1 = math.hypot(rho, w)
+    d2 = math.hypot(rho, 2 * a - w)
+    ome = ((4 * a * w - w * w - rho * rho) / (2 * a + d2) + d1) / (2 * a)     # 1 - eta
+    ope = 2.0 - ome                                                           # 1 + eta
+    k = 1.0 / (ome * ope * A * 2 * a)
+    gx = k * (rho / d2 - rho / d1) * (1.0 if x >= 0 else -1.0)
+    gz = k * (-(2 * a - w) / d2 - w / d1)
+    return 0.5 * (math.log(ope) - math.log(ome)) / A, gx, gz
+
+
+def trace_preacceleration(theta0_rad: np.ndarray, E0_eV: float, qU_eV: float, r_e_m: float, gap_m: float,
+                          s_m: float) -> np.ndarray:
+    """Direction (rad from the axis) at distance s of ions leaving the emitter apex at theta0 with E0.
+
+    Emission picture 'meniscus' (author 2026-11-13): the HWHM describes the velocity directions of
+    the few-eV ions just outside the meniscus. The emitter's own field (hyperboloid of apex radius
+    r_e facing the extractor plane at gap D, as in preacceleration) then accelerates them and bends
+    them toward the axis. Each ion is traced from the apex (on axis, so the motion stays in one
+    meridional plane) to the plane at distance s, where the model launches it.
+
+    Dimensionless form: lengths in r_e, speeds in sqrt(2 e 1V / m), so the equation of motion is
+    x'' = -(qU/2) grad f with f the normalized potential, independent of the mass. The
+    energy at s is E0 + qU (1 - f) (checked in the tests against the closed-form gain).
+    """
+    from scipy.integrate import solve_ivp  # noqa: PLC0415
+
+    if qU_eV <= 0:
+        raise ValueError(f"q (V_tip - V_E1) = {qU_eV:.3g} eV: the field at the emitter is retarding")
+    a, c, A = _hyperboloid(gap_m / r_e_m)
+    s = s_m / r_e_m
+    half = qU_eV / 2
+
+    def rhs(_t, y):
+        _, gx, gz = _hyperboloid_field(y[0], y[1], a, c, A)
+        return [y[2], y[3], -half * gx, -half * gz]
+
+    def reach(_t, y):
+        return y[1] - s
+    reach.terminal = True
+
+    v = math.sqrt(E0_eV)
+    out = np.zeros(len(np.atleast_1d(theta0_rad)))
+    for i, th in enumerate(np.atleast_1d(theta0_rad)):
+        if th == 0:
+            continue
+        sol = solve_ivp(rhs, [0.0, 1e12], [0.0, 1e-9, v * math.sin(th), v * math.cos(th)], events=reach,
+                        rtol=1e-10, atol=1e-12, method="DOP853")
+        if not len(sol.t_events[0]):
+            raise RuntimeError(f"pre-acceleration trace at theta0 = {math.degrees(th):.3g} deg did not reach s")
+        _, _, vx, vz = sol.y_events[0][0]
+        out[i] = math.atan2(vx, vz)
+    return out
+
+
+def meniscus_angle_map(launch: LaunchConfig, pre: dict) -> AngleMap | None:
+    """theta at the meniscus -> theta at the model launch point, or None (angles used as given).
+
+    Active when spec.launch.preaccel and emission_angle_at == 'meniscus'; pre is preacceleration().
+    """
+    if not launch.preaccel or launch.emission_angle_at != "meniscus":
+        return None
+    qU = launch.charge * pre["U_tip_extractor_V"]
+    r_e, gap, s = pre["emitter_radius_m"], pre["gap_m"], pre["emission_distance_m"]
+    return lambda th, ke: trace_preacceleration(th, ke, qU, r_e, gap, s)
+
+
+def make_launch(launch: LaunchConfig, fidelity: Fidelity, ion_level: str = "search",
+                energy_weight: EnergyWeight | None = None, preaccel_eV: float = 0.0,
+                angle_map: AngleMap | None = None) -> pd.DataFrame:
+    """Ion table with columns LAUNCH_COLUMNS (SI positions/velocities, plan coordinates).
+
+    preaccel_eV (see preacceleration) shifts every launch energy: KE0 = meniscus energy + preaccel_eV.
+    angle_map (see meniscus_angle_map) turns the grid angle theta (at the meniscus, the angle the
+    weights and the checker's mapping use) into the launch direction theta_launch for each meniscus
+    energy; without it theta_launch = theta.
+    """
+    n_theta = _req(launch, "n_theta")
+    n_E = _req(launch, "n_E")
+    E0 = _req(launch, "E0_eV")
+    mass_kg = _req(launch, "mass_Da") * units.DALTON
+    z0 = _req(launch, "launch_offset_um") * units.UM
+    if ion_level == "convergence":
+        n_theta = (n_theta - 1) * launch.convergence_ion_factor + 1   # keeps the search grid points
+    elif ion_level != "search":
+        raise ValueError(f"unknown ion_level '{ion_level}'")
+
+    theta, w_theta = theta_grid(n_theta, launch.theta_max_deg * units.DEG, launch.sigma_rad)
+    ke, w_E = energy_grid(E0, launch.dE_eV, n_E, energy_weight)
+    tl = {e: (angle_map(theta, e) if angle_map is not None else theta) for e in ke}   # launch angles
+    ke = ke + preaccel_eV
+    if np.any(ke <= 0):
+        raise ValueError(f"launch energies {ke.min():.3g}..{ke.max():.3g} eV after pre-acceleration "
+                         f"{preaccel_eV:.3g} eV: the field at the emitter is retarding")
+
+    rows = []
+    if fidelity == "2d":
+        phis = [(0.0, 2 * math.pi)]
+    elif fidelity == "3d":
+        n_phi = _req(launch, "n_phi")
+        phis = [(2 * math.pi * j / n_phi, 2 * math.pi / n_phi) for j in range(n_phi)]
+    else:
+        raise ValueError(f"unknown fidelity '{fidelity}'")
+    for i, (t, wt) in enumerate(zip(theta, w_theta)):
+        # theta = 0 is the same ray for every phi: launch it once, representing the full ring
+        phi_list = [(0.0, 2 * math.pi)] if i == 0 else phis
+        for phi, wp in phi_list:
+            for e0, e, we in zip(tl, ke, w_E):
+                rows.append((t, tl[e0][i], phi, e, wt, we, wp))
+    a = np.array(rows)
+    t, t_l, phi, e, wt, we, wp = a.T
+    speed = units.ke_eV_to_speed(e, mass_kg)
+    w = wt * we * wp
+    df = pd.DataFrame({
+        "ion_id": np.arange(len(a)),
+        "theta_deg": np.degrees(t),
+        "theta_launch_deg": np.degrees(t_l),
+        "phi_deg": np.degrees(phi),
+        "KE0_eV": e,
+        "w_theta": wt, "w_E": we, "w_phi": wp,
+        "weight": w / w.sum(),
+        "x_m": 0.0, "y_m": 0.0, "z_m": z0,
+        "vx_mps": speed * np.sin(t_l) * np.cos(phi),
+        "vy_mps": speed * np.sin(t_l) * np.sin(phi),
+        "vz_mps": speed * np.cos(t_l),
+    })
+    return df[LAUNCH_COLUMNS]
+
+
+def write_release_file(df: pd.DataFrame, path: Path | str, fidelity: Fidelity, z_shift_m: float = 0.0,
+                       axis_offset_m: float = 0.0) -> None:
+    """Write a COMSOL 'release from data file' table, one row per ion in ion_id order.
+
+    z_shift_m converts plan coordinates (origin at tip apex) to model coordinates
+    (z_model = z + z_shift); the adapter passes the model's tip_z.
+    2D (verified in COMSOL 5.5): columns r[mm] z[mm] vr vz [m/s]; r >= axis_offset.
+    3D (verified in COMSOL 5.5, task 8): columns x y z [mm] vx vy vz [m/s].
+    Both checked by scripts/verify_release_file.py (see docs/comsol_api_notes.md).
+    """
+    d = df.sort_values("ion_id")
+    z_mm = (d["z_m"].to_numpy() + z_shift_m) / units.MM
+    if fidelity == "2d":
+        r = np.maximum(np.hypot(d["x_m"], d["y_m"]).to_numpy(), axis_offset_m) / units.MM
+        vr = np.hypot(d["vx_mps"], d["vy_mps"]).to_numpy()
+        out = np.c_[r, z_mm, vr, d["vz_mps"].to_numpy()]
+        header = "2D-axisymmetric release: r[mm] z[mm] vr vz [m/s]; row i = ion_id i"
+    else:
+        out = np.c_[d["x_m"].to_numpy() / units.MM, d["y_m"].to_numpy() / units.MM, z_mm,
+                    d[["vx_mps", "vy_mps", "vz_mps"]].to_numpy()]
+        header = "3D release: x[mm] y[mm] z[mm] vx vy vz [m/s]; row i = ion_id i"
+    np.savetxt(path, out, fmt="%.10g", comments="% ", header=header)

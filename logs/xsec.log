@@ -1,0 +1,12 @@
+COMSOL 5.5 started in 10.9 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 16.3 s
+reading mesh ...
+vertices 306338, surface triangles 295633, boundaries 1521
+x range -177.8..215.9, y range -215.9..215.9, z range -50.0..781.8
+angle   0: 2961 segments
+angle  45: 3141 segments
+angle  90: 4346 segments
+angle 135: 3122 segments
+wrote xsec_overview.png
+wrote xsec_source.png
+wrote xsec_mcp.png

@@ -1,0 +1,24 @@
+COMSOL 5.5 started in 11.0 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 11.2 s
+baseline           solve    32.2 s | energy error eV median [5%,95%]  t= 1.0us:  +0.53 [ -0.84, +2.41]  t= 5.0us:  +5.53 [ +0.99,+11.97]  t=10.0us:  +4.65 [ +0.62,+11.68]
+genalpha_tol       solve    30.0 s | energy error eV median [5%,95%]  t= 1.0us:  +1.97 [ +0.28, +3.99]  t= 5.0us:  +8.34 [ +4.13,+14.77]  t=10.0us:  +8.77 [ +4.61,+15.36]
+genalpha_maxstep   solve    56.4 s | energy error eV median [5%,95%]  t= 1.0us:  +2.88 [ +1.18, +4.40]  t= 5.0us:  +8.10 [ +3.81,+14.72]  t=10.0us:  +8.46 [ +3.91,+15.12]
+Traceback (most recent call last):
+  File "Thread.java", line 748, in java.lang.Thread.run
+Exception: Java Exception
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "D:\Users\kshimojo\projects\ion_beam_measurement\scripts\tune_3d_timestepping.py", line 69, in <module>
+    main()
+  File "D:\Users\kshimojo\projects\ion_beam_measurement\scripts\tune_3d_timestepping.py", line 63, in main
+    j.sol("sol2").runAll()
+com.comsol.util.exceptions.com.comsol.util.exceptions.FlException: Exception:
+	com.comsol.util.exceptions.FlException: The following feature has encountered a problem
+Messages:
+	The following feature has encountered a problem:
+	- Feature: Time-Dependent Solver 1 (sol2/t1)
+
+	Time-dependent solver does not support segregated iterations.
+

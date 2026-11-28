@@ -1,0 +1,37 @@
+﻿COMSOL 5.5 started in 9.9 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 9.8 s
+mov7 newposz: tip_z+13.482 -> tip_z+lens_gap
+pot3   L1   V0: L1_v -> L1_v = -120[V]
+pot9   L2   V0: -40 -> L2_v = -40[V]
+pot10  L3   V0: -40 -> L3_v = -40[V]
+pot11  L4   V0: -40 -> L4_v = -40[V]
+pot12  L5   V0: -40 -> L5_v = -40[V]
+pot13  L6   V0: -40 -> L6_v = -40[V]
+pot14  L7   V0: -40 -> L7_v = -40[V]
+pot15  L8   V0: -40 -> L8_v = -40[V]
+pot16  L9   V0: 0 -> L9_v = 0[V]
+pot17  D1a  V0: 0 -> D1a_v = 0[V]
+pot18  D1b  V0: 0 -> D1b_v = 0[V]
+pot19  D2a  V0: 0 -> D2a_v = 0[V]
+pot20  D2b  V0: 0 -> D2b_v = 0[V]
+geometry: 58 domains, 2454 boundaries
+mov7 newposz evaluates to 118.48199999999999 mm
+  L1   geom1_imp8_Imported1_8_bnd: 74 boundaries
+  L2   geom1_imp8_Imported1_6_bnd: 74 boundaries
+  L3   geom1_imp8_Imported1_7_bnd: 74 boundaries
+  L4   geom1_imp8_Imported1_9_bnd: 74 boundaries
+  L5   geom1_imp8_Imported1_1_bnd: 71 boundaries
+  L6   geom1_imp8_Imported1_4_bnd: 71 boundaries
+  L7   geom1_imp8_Imported1_2_bnd: 71 boundaries
+  L8   geom1_imp8_Imported1_5_bnd: 71 boundaries
+  L9   geom1_imp8_Imported1_3_bnd: 71 boundaries
+  D1a  geom1_imp8_Imported1_14_bnd: 74 boundaries
+  D1b  geom1_imp8_Imported1_17_bnd: 74 boundaries
+  D2a  geom1_imp8_Imported1_16_bnd: 74 boundaries
+  D2b  geom1_imp8_Imported1_15_bnd: 74 boundaries
+  rods 16 bnd, bracket 32 bnd, ground total 48
+  faces shared bracket/L9: []; rods touching electrodes: []
+ccn1 permittivity source: from_mat
+domains without a material: []
+es features: ['ccn1', 'zc1', 'init1', 'gnd1', 'gnd3', 'gnd2', 'pot5', 'pot6', 'pot7', 'pot8', 'gnd4', 'pot3', 'pot9', 'pot10', 'pot11', 'pot12', 'pot13', 'pot14', 'pot15', 'pot17', 'pot18', 'pot19', 'pot20', 'gnd_asm', 'pot16']
+saved D:\Users\kshimojo\projects\ion_beam_measurement\lens8newMCP_ks_v4_lens_voltages.mph

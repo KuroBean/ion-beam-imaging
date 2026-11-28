@@ -1,0 +1,86 @@
+[  41 s] S #0 LV1=+200 LV2=-110 LV3=-300 LV4=+0 fates {'mcp_active': 0.083, 'electrode': 0.917} eta 0.058 score 6.07889331152118 rms 2.692354889636763 KE0 209.7 Emax 0.0032/32eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+[  19 s] S #1 LV1=+100 LV2=-110 LV3=-150 LV4=+0 fates {'mcp_active': 0.083, 'electrode': 0.917} eta 0.058 score 2.363788330789044 rms 2.6570206236708223 KE0 142.7 Emax 0.0019/19eV tof [10.2, 10.2] flags ['collection efficiency 0.0582 < eta_min 0.3']
+[  18 s] S #2 LV1=+10 LV2=-110 LV3=-200 LV4=-110 fates {'electrode': 1.0} eta 0.000 score None rms None KE0 82.4 Emax 0.0006/0.7eV tof [19.8, 19.8] flags ['evaluation range has 1 theta points (need 2): too few ions land', 'collection efficiency 0 < eta_min 0.3', 'fast fraction 0 < frac_fast_min 0.9']
+[  16 s] S #3 LV1=+165 LV2=+129 LV3=+62 LV4=+27 fates {'mcp_active': 0.334, 'mesh_frame': 0.073, 'electrode': 0.593} eta 0.234 score 1.0803275564504653 rms 2.9165945903872235 KE0 25.8 Emax 0.0019/19eV tof [9.4, 9.6] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.234 < eta_min 0.3']
+[  17 s] S #4 LV1=+127 LV2=+88 LV3=-37 LV4=+235 fates {'electrode': 1.0} eta 0.000 score None rms None KE0 28.5 Emax 0.00037/0.01eV tof None flags ['evaluation range has 0 theta points (need 2): too few ions land', 'collection efficiency 0 < eta_min 0.3', 'fast fraction 0 < frac_fast_min 0.9']
+[  20 s] S #5 LV1=+289 LV2=-70 LV3=+175 LV4=+17 fates {'mcp_active': 0.042, 'mesh_frame': 0.041, 'electrode': 0.917} eta 0.030 score 0.4003732605232743 rms 1.199076238090792 KE0 242.5 Emax 0.0015/15eV tof [7.0, 7.2] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0297 < eta_min 0.3']
+[   0 s] S #6 LV1=+170 LV2=+255 LV3=-257 LV4=-248 failed: ValueError: launch energies -54.9..-54.9 eV after pre-acceleration -56.9 eV: the field at the emitter is retarding
+[   0 s] S #7 LV1=+6 LV2=+200 LV3=+167 LV4=+222 failed: ValueError: launch energies -128..-128 eV after pre-acceleration -130 eV: the field at the emitter is retarding
+[  19 s] S #8 LV1=+294 LV2=+179 LV3=-23 LV4=+168 fates {'mcp_active': 0.042, 'mesh_frame': 0.092, 'electrode': 0.865} eta 0.030 score 0.25014621171817936 rms 2.0263234177774976 KE0 78.4 Emax 0.00014/1.4eV tof [7.4, 7.4] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[   0 s] S #9 LV1=+35 LV2=+84 LV3=-214 LV4=+267 failed: ValueError: launch energies -30.5..-30.5 eV after pre-acceleration -32.5 eV: the field at the emitter is retarding
+[  19 s] S #10 LV1=+137 LV2=+88 LV3=-105 LV4=-146 fates {'mcp_active': 0.195, 'mesh_frame': 0.067, 'electrode': 0.738} eta 0.137 score 8.306922657315356 rms 1.9743307877921639 KE0 34.7 Emax 0.0023/23eV tof [9.4, 9.4] flags ['collection efficiency 0.137 < eta_min 0.3']
+[  22 s] S #11 LV1=+122 LV2=+101 LV3=-11 LV4=-193 fates {'mcp_active': 0.042, 'mesh_frame': 0.041, 'electrode': 0.917} eta 0.030 score 0.0837911913957612 rms 3.1481110793911786 KE0 16.3 Emax 0.0007/7.1eV tof [10.0, 10.0] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  16 s] S #12 LV1=+218 LV2=+151 LV3=-156 LV4=-30 fates {'mcp_active': 0.334, 'electrode': 0.666} eta 0.234 score 2.0104481304249786 rms 2.9041457325847913 KE0 46.5 Emax 0.0013/13eV tof [8.2, 8.2] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.234 < eta_min 0.3']
+[  18 s] S #13 LV1=+273 LV2=+144 LV3=-236 LV4=-50 fates {'mcp_active': 0.042, 'electrode': 0.958} eta 0.030 score 0.05884664391455315 rms 4.4267492379424676 KE0 88.1 Emax 0.0013/13eV tof [7.2, 7.2] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  17 s] S #14 LV1=+196 LV2=+43 LV3=-127 LV4=+33 fates {'mcp_active': 0.042, 'electrode': 0.958} eta 0.030 score 0.07008112655414239 rms 3.93143298617724 KE0 104.5 Emax 0.0012/12eV tof [8.2, 8.2] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  15 s] S #15 LV1=+199 LV2=+132 LV3=+106 LV4=+162 fates {'mcp_active': 0.014, 'mesh_frame': 0.028, 'electrode': 0.958} eta 0.010 score 0.03857889166200952 rms 3.6514595906141283 KE0 47.0 Emax 0.00037/3.8eV tof [9.2, 9.2] flags ['collection efficiency 0.01 < eta_min 0.3']
+[  13 s] S #16 LV1=+198 LV2=-16 LV3=+39 LV4=+24 fates {'mesh_frame': 0.014, 'electrode': 0.986} eta 0.000 score None rms None KE0 145.4 Emax 0.0021/21eV tof [8.2, 8.2] flags ['evaluation range has 1 theta points (need 2): too few ions land', 'collection efficiency 0 < eta_min 0.3', 'fast fraction 0 < frac_fast_min 0.9']
+[   0 s] S #17 LV1=+210 LV2=+242 LV3=-21 LV4=-64 failed: ValueError: launch energies -19.3..-19.3 eV after pre-acceleration -21.3 eV: the field at the emitter is retarding
+[  12 s] S #18 LV1=+284 LV2=+159 LV3=-119 LV4=-167 fates {'mcp_active': 0.114, 'mesh_frame': 0.041, 'electrode': 0.846} eta 0.080 score 0.07465575295936186 rms 2.2217125536075493 KE0 85.3 Emax 0.0023/24eV tof [7.2, 7.2] flags ['collection efficiency 0.0797 < eta_min 0.3']
+[   0 s] S #19 LV1=+142 LV2=+272 LV3=-106 LV4=+128 failed: ValueError: launch energies -84.8..-84.8 eV after pre-acceleration -86.8 eV: the field at the emitter is retarding
+[  14 s] S #20 LV1=+134 LV2=+74 LV3=+188 LV4=+49 fates {'electrode': 0.986, 'wall': 0.014} eta 0.000 score None rms None KE0 42.4 Emax 0.0006/0.082eV tof None flags ['evaluation range has 0 theta points (need 2): too few ions land', 'collection efficiency 0 < eta_min 0.3', 'fast fraction 0 < frac_fast_min 0.9']
+[  13 s] S #21 LV1=+241 LV2=+9 LV3=-78 LV4=-142 fates {'mcp_active': 0.014, 'electrode': 0.986} eta 0.010 score 0.030356330361357025 rms 4.695991148465534 KE0 157.0 Emax 0.0011/11eV tof [7.4, 7.4] flags ['collection efficiency 0.01 < eta_min 0.3']
+[   0 s] S #22 LV1=+163 LV2=+178 LV3=-162 LV4=-87 failed: ValueError: launch energies -8.04..-8.04 eV after pre-acceleration -10 eV: the field at the emitter is retarding
+[  13 s] S #23 LV1=+137 LV2=+33 LV3=-133 LV4=-58 fates {'mcp_active': 0.014, 'electrode': 0.986} eta 0.010 score 0.0487183951317314 rms 2.921653937011319 KE0 71.9 Emax 0.00097/9.8eV tof [9.2, 9.4] flags ['collection efficiency 0.01 < eta_min 0.3']
+[  13 s] S #24 LV1=+279 LV2=+221 LV3=-145 LV4=+76 fates {'mcp_active': 0.195, 'mesh_frame': 0.138, 'electrode': 0.666} eta 0.137 score 22.382701242404035 rms 1.921335713208498 KE0 41.1 Emax 0.0024/25eV tof [7.6, 7.6] flags ['collection efficiency 0.137 < eta_min 0.3']
+[  13 s] S #25 LV1=+184 LV2=+10 LV3=-262 LV4=+7 fates {'mcp_active': 0.083, 'mesh_frame': 0.052, 'electrode': 0.865} eta 0.058 score 0.7761734426562392 rms 1.3121387666663133 KE0 119.0 Emax 0.0019/19eV tof [8.4, 8.4] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+[  15 s] S #26 LV1=+252 LV2=+100 LV3=-158 LV4=+62 fates {'mcp_active': 0.135, 'electrode': 0.865} eta 0.094 score 1.1576807572677497 rms 2.542663409813814 KE0 103.4 Emax 0.0023/24eV tof [7.6, 7.6] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0943 < eta_min 0.3']
+[  13 s] S #27 LV1=+181 LV2=+34 LV3=-250 LV4=-98 fates {'mcp_active': 0.014, 'electrode': 0.986} eta 0.010 score 0.05024693168030602 rms 2.8335013380099734 KE0 100.3 Emax 0.0011/11eV tof [8.2, 8.2] flags ['collection efficiency 0.01 < eta_min 0.3']
+[   0 s] S #28 LV1=+180 LV2=+269 LV3=+79 LV4=-26 failed: ValueError: launch energies -57.5..-57.5 eV after pre-acceleration -59.5 eV: the field at the emitter is retarding
+[  13 s] S #29 LV1=+216 LV2=+115 LV3=-176 LV4=-132 fates {'mcp_active': 0.114, 'electrode': 0.886} eta 0.080 score 0.07903490096026217 rms 2.207654975357531 KE0 69.6 Emax 0.00094/7.8eV tof [7.8, 8.0] flags ['collection efficiency 0.0797 < eta_min 0.3']
+[   0 s] S #30 LV1=+107 LV2=+115 LV3=-122 LV4=+12 failed: ValueError: launch energies -3.43..-3.43 eV after pre-acceleration -5.43 eV: the field at the emitter is retarding
+[  14 s] S #31 LV1=+270 LV2=+201 LV3=-135 LV4=+148 fates {'mcp_active': 0.014, 'mesh_frame': 0.069, 'electrode': 0.917} eta 0.010 score 0.05948737709084 rms 2.549894578923498 KE0 48.7 Emax 0.0019/20eV tof [7.8, 7.8] flags ['collection efficiency 0.01 < eta_min 0.3']
+[   0 s] S #32 LV1=+257 LV2=+285 LV3=-145 LV4=+61 failed: ValueError: launch energies -16.3..-16.3 eV after pre-acceleration -18.3 eV: the field at the emitter is retarding
+[   0 s] S #33 LV1=+242 LV2=+252 LV3=-90 LV4=+5 failed: ValueError: launch energies -4.71..-4.71 eV after pre-acceleration -6.71 eV: the field at the emitter is retarding
+[  16 s] S #34 LV1=+262 LV2=+256 LV3=-236 LV4=+89 fates {'mcp_active': 0.042, 'mesh_frame': 0.041, 'electrode': 0.901, 'wall': 0.015} eta 0.030 score 0.07847420345153963 rms 3.4993881671786817 KE0 6.2 Emax 0.0022/23eV tof [8.4, 8.4] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  13 s] S #35 LV1=+244 LV2=+204 LV3=-192 LV4=+14 fates {'mcp_active': 0.135, 'mesh_frame': 0.128, 'electrode': 0.738} eta 0.094 score 0.3280966968143703 rms 2.770552790810419 KE0 28.6 Emax 0.00067/6.9eV tof [8.0, 8.0] flags ['collection efficiency 0.0943 < eta_min 0.3']
+[  13 s] S #36 LV1=+296 LV2=+240 LV3=-87 LV4=+48 fates {'mcp_active': 0.262, 'mesh_frame': 0.071, 'electrode': 0.666} eta 0.184 score 4.904101568563114 rms 1.3825622297200906 KE0 39.6 Emax 0.0011/11eV tof [7.4, 7.4] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.184 < eta_min 0.3']
+[  14 s] S #37 LV1=+252 LV2=+232 LV3=+36 LV4=+122 fates {'mcp_active': 0.195, 'mesh_frame': 0.067, 'electrode': 0.738} eta 0.137 score 0.323530243456392 rms 3.5067243820803453 KE0 15.5 Emax 0.0014/14eV tof [8.4, 8.4] flags ['collection efficiency 0.137 < eta_min 0.3']
+[   0 s] S #38 LV1=+142 LV2=+177 LV3=-69 LV4=-138 failed: ValueError: launch energies -21.8..-21.8 eV after pre-acceleration -23.8 eV: the field at the emitter is retarding
+[  14 s] S #39 LV1=+174 LV2=+165 LV3=-32 LV4=-71 fates {'mcp_active': 0.042, 'electrode': 0.958} eta 0.030 score 0.06130008686119941 rms 4.445468080624396 KE0 7.8 Emax 0.0017/17eV tof [9.4, 9.4] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  13 s] S #40 LV1=+162 LV2=+37 LV3=-71 LV4=-57 fates {'mcp_active': 0.014, 'electrode': 0.986} eta 0.010 score 0.03572833002632841 rms 3.9681276844748754 KE0 85.5 Emax 0.00034/3.4eV tof [8.8, 8.8] flags ['collection efficiency 0.01 < eta_min 0.3']
+[  14 s] S #41 LV1=+294 LV2=+203 LV3=-86 LV4=+57 fates {'mcp_active': 0.042, 'electrode': 0.958} eta 0.030 score 0.06272232559032256 rms 3.973459031592502 KE0 63.0 Emax 0.002/21eV tof [7.4, 7.4] flags ['collection efficiency 0.0297 < eta_min 0.3']
+[  13 s] S #42 LV1=+273 LV2=+203 LV3=-140 LV4=+9 fates {'mcp_active': 0.334, 'electrode': 0.666} eta 0.234 score 0.5138595465871567 rms 2.8568490329938716 KE0 48.6 Emax 0.0022/23eV tof [7.6, 7.6] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.234 < eta_min 0.3']
+[   0 s] S #43 LV1=+270 LV2=+297 LV3=-177 LV4=-69 failed: ValueError: launch energies -16..-16 eV after pre-acceleration -18 eV: the field at the emitter is retarding
+[  13 s] S #44 LV1=+271 LV2=+187 LV3=-123 LV4=-6 fates {'mcp_active': 0.114, 'mesh_frame': 0.114, 'electrode': 0.772} eta 0.080 score 0.07059685705804378 rms 2.5535573917958985 KE0 58.8 Emax 0.0015/16eV tof [7.4, 7.4] flags ['collection efficiency 0.0797 < eta_min 0.3']
+[  13 s] S #45 LV1=+295 LV2=+251 LV3=-208 LV4=+7 fates {'mcp_active': 0.135, 'mesh_frame': 0.128, 'electrode': 0.738} eta 0.094 score 0.2633645947062813 rms 3.318390392441195 KE0 31.5 Emax 0.0017/17eV tof [7.4, 7.4] flags ['collection efficiency 0.0943 < eta_min 0.3']
+[  13 s] S #46 LV1=+290 LV2=+214 LV3=-264 LV4=+37 fates {'mcp_active': 0.195, 'mesh_frame': 0.138, 'electrode': 0.666} eta 0.137 score 7.890504358789614 rms 2.6332777210957583 KE0 52.9 Emax 0.0013/13eV tof [7.4, 7.4] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.137 < eta_min 0.3']
+[  12 s] S #47 LV1=+253 LV2=+130 LV3=-84 LV4=-12 fates {'mcp_active': 0.014, 'electrode': 0.986} eta 0.010 score 0.036518887347344174 rms 3.945569795935024 KE0 84.5 Emax 0.00083/8.5eV tof [7.6, 7.6] flags ['collection efficiency 0.01 < eta_min 0.3']
+[  13 s] S #48 LV1=+287 LV2=+236 LV3=-153 LV4=-40 fates {'mcp_active': 0.195, 'mesh_frame': 0.067, 'electrode': 0.738} eta 0.137 score 2.1865113526744664 rms 2.890906241122499 KE0 36.4 Emax 0.0026/27eV tof [7.4, 7.4] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.137 < eta_min 0.3']
+[  17 s] S #49 LV1=+274 LV2=+271 LV3=-112 LV4=+120 fates {'mcp_active': 0.042, 'mesh_frame': 0.092, 'electrode': 0.85, 'wall': 0.015} eta 0.030 score 0.08014727897466492 rms 3.2318646134106404 KE0 3.7 Emax 0.00059/6eV tof [8.4, 8.4] flags ['collection efficiency 0.0297 < eta_min 0.3']
+
+best by MCP fraction:
+  S #3 LV1=+165 LV2=+129 LV3=+62 LV4=+27       mcp 0.334 rms 2.9165945903872235 theta_max 14.0 score 1.0803275564504653 b43e12556a284c9ba624d154d233a3ad
+  S #12 LV1=+218 LV2=+151 LV3=-156 LV4=-30     mcp 0.334 rms 2.9041457325847913 theta_max 14.0 score 2.0104481304249786 403ab15d836d4b729612494134c5b6bd
+  S #42 LV1=+273 LV2=+203 LV3=-140 LV4=+9      mcp 0.334 rms 2.8568490329938716 theta_max 14.0 score 0.5138595465871567 7a95fb0fc3d545b88a87ce9082af0da1
+  S #36 LV1=+296 LV2=+240 LV3=-87 LV4=+48      mcp 0.262 rms 1.3825622297200906 theta_max 12.0 score 4.904101568563114 1bc9cf0b670c408da4eb307bf3700ea0
+  S #10 LV1=+137 LV2=+88 LV3=-105 LV4=-146     mcp 0.195 rms 1.9743307877921639 theta_max 10.0 score 8.306922657315356 7309423f1ad641b08bd0a5de0ad144b3
+  S #24 LV1=+279 LV2=+221 LV3=-145 LV4=+76     mcp 0.195 rms 1.921335713208498 theta_max 10.0 score 22.382701242404035 b659a9a2fb3344dbb02b69d6e2cfe96f
+  S #37 LV1=+252 LV2=+232 LV3=+36 LV4=+122     mcp 0.195 rms 3.5067243820803453 theta_max 10.0 score 0.323530243456392 57fbd4dfd9604cdd9d8bb75ec3e2ffac
+  S #46 LV1=+290 LV2=+214 LV3=-264 LV4=+37     mcp 0.195 rms 2.6332777210957583 theta_max 10.0 score 7.890504358789614 548b11bade2648858a9ed92aca0e3636
+wrote D:\Users\kshimojo\projects\ion_beam_measurement\logs\study_2d_search.json
+Total 597 s
+2026-11-12 22:02:35.432:WARN:oejuc.AbstractLifeCycle:FAILED ClientWebSocketCommandManager.factory{0<=10<=10/0,0}: java.lang.InterruptedException: sleep interrupted
+java.lang.InterruptedException: sleep interrupted
+	at java.lang.Thread.sleep(Native Method)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.doStop(QueuedThreadPool.java:122)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.stop(AbstractLifeCycle.java:89)
+	at org.eclipse.jetty.util.component.AggregateLifeCycle.doStop(AggregateLifeCycle.java:107)
+	at org.eclipse.jetty.websocket.WebSocketClientFactory.doStop(WebSocketClientFactory.java:221)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.stop(AbstractLifeCycle.java:89)
+	at com.comsol.client.interfaces.ClientWebSocketCommandManager$c.run(SourceFile:551)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+2026-11-12 22:02:35.432:WARN:oejuc.AbstractLifeCycle:FAILED org.eclipse.jetty.websocket.WebSocketClientFactory@7e6b1c4: java.lang.InterruptedException: sleep interrupted
+java.lang.InterruptedException: sleep interrupted
+	at java.lang.Thread.sleep(Native Method)
+	at org.eclipse.jetty.util.thread.QueuedThreadPool.doStop(QueuedThreadPool.java:122)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.stop(AbstractLifeCycle.java:89)
+	at org.eclipse.jetty.util.component.AggregateLifeCycle.doStop(AggregateLifeCycle.java:107)
+	at org.eclipse.jetty.websocket.WebSocketClientFactory.doStop(WebSocketClientFactory.java:221)
+	at org.eclipse.jetty.util.component.AbstractLifeCycle.stop(AbstractLifeCycle.java:89)
+	at com.comsol.client.interfaces.ClientWebSocketCommandManager$c.run(SourceFile:551)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)

@@ -1,0 +1,3 @@
+COMSOL 5.5 started in 10.8 s
+Loaded lens8newMCP_ks_v3_touchup.mph in 9.8 s
+refined mesh       solve    34.6 s | energy error eV median [5%,95%]  t= 1.0us:  -0.66 [ -1.21, +0.57]  t= 5.0us:  -0.29 [ -0.92, +0.97]  t=10.0us:  +0.28 [ -0.35, +1.55]

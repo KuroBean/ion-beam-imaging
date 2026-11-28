@@ -1,0 +1,21 @@
+COMSOL 5.5 started in 11.1 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 11.5 s
+lens8newMCP_ x/r=0.0: V(105.2)=-42.28  V(140)=-33.22  -int Ez dz=9.08  max |(-int Ez dz) - dV| = 0.15 V at z=119.92
+     z= 105.50  Ez=   42849.4  -dV/dz=   42257.5  V=  -63.42
+     z= 106.00  Ez=   19648.3  -dV/dz=   19648.3  V=  -77.19
+     z= 107.00  Ez=   10109.1  -dV/dz=   10109.1  V=  -90.77
+     z= 108.00  Ez=    6896.7  -dV/dz=    6896.7  V=  -99.04
+     z= 110.00  Ez=    3686.4  -dV/dz=    3686.4  V= -109.38
+     z= 112.00  Ez=    1284.0  -dV/dz=    1284.0  V= -114.30
+     z= 115.00  Ez=   -2143.4  -dV/dz=   -2143.4  V= -113.15
+     z= 118.00  Ez=   -7636.8  -dV/dz=   -7636.8  V=  -99.17
+     z= 120.00  Ez=  -12727.5  -dV/dz=   -3795.5  V=  -82.28
+     z= 122.00  Ez=   -7970.8  -dV/dz=   -7970.8  V=  -62.23
+     z= 125.00  Ez=   -3037.2  -dV/dz=   -3037.2  V=  -46.19
+     z= 130.00  Ez=    -384.7  -dV/dz=    -384.7  V=  -39.78
+lens8newMCP_ x/r=2.0: V(105.2)=-78.40  V(140)=-33.25  -int Ez dz=45.00  max |(-int Ez dz) - dV| = 0.15 V at z=125.84
+lens8newMCP_ x/r=4.0: V(105.2)=-87.97  V(140)=-33.30  -int Ez dz=54.58  max |(-int Ez dz) - dV| = 0.09 V at z=123.26
+Loaded lens8_axisym.mph in 1.3 s
+lens8_axisym x/r=0.0: V(105.2)=-44.64  V(140)=-32.95  -int Ez dz=11.68  max |(-int Ez dz) - dV| = 0.02 V at z=126.80
+lens8_axisym x/r=2.0: V(105.2)=-78.68  V(140)=-32.96  -int Ez dz=45.72  max |(-int Ez dz) - dV| = 0.00 V at z=118.82
+lens8_axisym x/r=4.0: V(105.2)=-87.96  V(140)=-32.99  -int Ez dz=54.97  max |(-int Ez dz) - dV| = 0.00 V at z=121.42

@@ -1,0 +1,11 @@
+{
+ "n_worker": 78,
+ "n_reference": 78,
+ "max_abs_diff_r_m": 0.0,
+ "max_abs_diff_z_m": 0.0,
+ "max_abs_diff_vr": 0.0,
+ "max_abs_diff_vz": 0.0,
+ "max_abs_diff_KE_eV": 0.0
+}
+RESULT: IDENTICAL (worker == independent reference)
+GUI checklist: D:\Users\kshimojo\projects\ion_beam_measurement\results\2075ea3e759643978c4d02e271287ec0\gui_reference.txt

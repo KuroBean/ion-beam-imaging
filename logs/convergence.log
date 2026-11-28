@@ -1,0 +1,6 @@
+COMSOL 5.5 started in 11.9 s
+Loaded lens8_axisym.mph in 7.0 s
+baseline (saved)             hits  986  spot r_rms 2.654  r50 2.271  r90 4.104 mm  crossover z 414.52 mm  energy err -0.08 eV
+fine mesh: 154676 elements
+mesh x2 finer (12 s)         hits  986  spot r_rms 2.653  r50 2.274  r90 4.100 mm  crossover z 414.73 mm  energy err -0.08 eV
+mesh x2 + rtol 1e-6 (5 s)    hits  987  spot r_rms 2.621  r50 2.248  r90 4.043 mm  crossover z 416.94 mm  energy err +0.04 eV

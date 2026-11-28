@@ -1,0 +1,21 @@
+# PLACEHOLDER values for developing and testing the tools with the MOCK backend only.
+# These are NOT physical decisions. Use with:  ionopt --overrides config/dev_overrides.yaml ...
+# Every key here must already exist in the main config files (typos are rejected).
+
+spec:
+  requirements:
+    impact_threshold_eV_per_charge: 1000
+
+constraints:
+  chamber_setups:
+    1:
+      z_mcp_mm: [145, 145]
+      mesh_gap_mm: [12.7, 12.7]
+      lens_gap_mm: [5, 15]
+  mesh:
+    min_gap_to_mcp_mm: 5
+  supplies:
+    mcp_back_offset_V: 1000
+    phosphor_offset_V: 3000
+  electrical:
+    max_field_kV_per_mm: 1.0

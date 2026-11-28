@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ionopt"
+version = "0.1.0"
+description = "Ion optics design tools: COMSOL-driven simulation, checking and optimization"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scipy",
+    "matplotlib",
+    "pydantic>=2",
+    "pyyaml",
+    "optuna>=3.6",
+    "mph>=1.2",
+    "jpype1<1.6",  # COMSOL 5.5 bundles Java 8; JPype 1.6+ refuses to start it
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+ionopt = "ionopt.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not comsol'"
+markers = ["comsol: needs a local COMSOL install (skipped by default; run with -m comsol)"]

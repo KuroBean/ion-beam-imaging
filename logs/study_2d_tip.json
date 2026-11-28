@@ -1,0 +1,343 @@
+[
+ {
+  "case": "B tip=+200 L3=-300 r_tip=200um",
+  "job_id": "96033c0261be4cf6a295c0f12a33f205",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 6.207685494604687,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "electrode": 0.917
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.877855217189861,
+   "r90_mm": 4.088917653993286,
+   "r_max_mm": 4.088917653993286
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 225.11757651738804,
+  "E_err_rel_max": 0.002069586502877093,
+  "E_err_eV_max": 21.11392130285094,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.165,
+   "2.0": 0.748,
+   "4.0": 0.12,
+   "6.000000000000001": 4.089
+  },
+  "timings_s": {
+   "params": 0.68,
+   "release": 0.23,
+   "solve_es": 6.53,
+   "solve_pt": 7.26,
+   "export": 5.0
+  },
+  "mesh_elements": 212909,
+  "preacceleration": {
+   "preaccel_eV": 223.11757651738804,
+   "potential_fraction": 0.719734117798026,
+   "emission_distance_m": 0.0005494954838909244,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-23.117576517388045[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300 r_tip=100um",
+  "job_id": "fc351dc20f324c86819ff1116f03c396",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 6.05519738005337,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "electrode": 0.917
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.6922435268739715,
+   "r90_mm": 3.8234546510447793,
+   "r_max_mm": 3.8234546510447793
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 8.998877111395452e-05,
+  "E_err_eV_max": 0.7426674590296898,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.173,
+   "2.0": 0.677,
+   "4.0": 0.219,
+   "6.000000000000001": 3.823
+  },
+  "timings_s": {
+   "params": 0.56,
+   "release": 0.07,
+   "solve_es": 5.24,
+   "solve_pt": 7.21,
+   "export": 3.67
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300 r_tip=50um",
+  "job_id": "b639009f394a4c3cb309f49d3c4ec283",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 6.1176618150048805,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "mesh_frame": 0.052,
+   "electrode": 0.865
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.375708233113194,
+   "r90_mm": 3.366398170829852,
+   "r_max_mm": 3.366398170829852
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 194.18354040605558,
+  "E_err_rel_max": 0.003052635804817444,
+  "E_err_eV_max": 31.142989055637372,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.199,
+   "2.0": 0.676,
+   "4.0": 0.245,
+   "6.000000000000001": 3.366
+  },
+  "timings_s": {
+   "params": 0.26,
+   "release": 0.09,
+   "solve_es": 6.37,
+   "solve_pt": 8.55,
+   "export": 3.05
+  },
+  "mesh_elements": 331012,
+  "preacceleration": {
+   "preaccel_eV": 192.18354040605558,
+   "potential_fraction": 0.6199469045356631,
+   "emission_distance_m": 0.0001373738709727311,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "7.8164595939444155[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300 r_tip=25um",
+  "job_id": "6bfc6aed4ec844f0b6eb4ac288dcec7f",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 1.2516278183567082,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0582 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.083,
+   "mesh_frame": 0.052,
+   "electrode": 0.865
+  },
+  "eta": 0.058198538408043114,
+  "spot": {
+   "rms_axis_mm": 2.1501395015083826,
+   "r90_mm": 3.0326890799641526,
+   "r_max_mm": 3.0326890799641526
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 178.71905969673276,
+  "E_err_rel_max": 0.002096313355067249,
+  "E_err_eV_max": 21.38658677515923,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.08,
+   "2.0": 0.729,
+   "4.0": 0.304,
+   "6.000000000000001": 3.033
+  },
+  "timings_s": {
+   "params": 0.19,
+   "release": 0.07,
+   "solve_es": 8.69,
+   "solve_pt": 11.86,
+   "export": 2.77
+  },
+  "mesh_elements": 578072,
+  "preacceleration": {
+   "preaccel_eV": 176.71905969673276,
+   "potential_fraction": 0.5700614828926863,
+   "emission_distance_m": 6.868693548636555e-05,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "23.280940303267244[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300 r_tip=100um preaccel off",
+  "job_id": "b29b42db667e44e3bd2a173b3beaad5e",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 19.576856183947054,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range"
+  ],
+  "fates": {
+   "mcp_active": 0.962,
+   "mesh_frame": 0.038
+  },
+  "eta": 0.6730742685188428,
+  "spot": {
+   "rms_axis_mm": 1.2019867285033385,
+   "r90_mm": 1.4133286432013286,
+   "r_max_mm": 4.704510842442923
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 40.0,
+  "KE0_eV": 2.0,
+  "E_err_rel_max": 0.0026566727033210187,
+  "E_err_eV_max": 27.103372753361327,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.021,
+   "2.0": 0.107,
+   "4.0": 0.248,
+   "6.000000000000001": 0.382,
+   "8.0": 0.516,
+   "10.0": 0.652,
+   "12.000000000000002": 0.766,
+   "14.0": 0.771,
+   "16.0": 0.752,
+   "18.0": 0.703,
+   "20.0": 0.648,
+   "22.0": 0.369,
+   "24.000000000000004": 0.26,
+   "26.0": 0.009,
+   "28.0": 0.37,
+   "29.999999999999996": 1.036,
+   "32.0": 1.413,
+   "34.0": 1.932,
+   "36.0": 2.904,
+   "38.0": 3.849,
+   "40.0": 4.705
+  },
+  "timings_s": {
+   "params": 0.24,
+   "release": 0.07,
+   "solve_es": 4.73,
+   "solve_pt": 6.63,
+   "export": 2.71
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 0.0
+  },
+  "v_tip_model": "200.0[V]"
+ },
+ {
+  "case": "B tip=+200 L3=-300 r_tip=100um n_theta=51",
+  "job_id": "aeef15a63f6e4affa385dea40c7a9f5d",
+  "status": "success",
+  "error": null,
+  "valid": true,
+  "score": 0.48865659438295406,
+  "flags": [
+   "r(theta) is not monotonic over the evaluation range",
+   "collection efficiency 0.0511 < eta_min 0.3"
+  ],
+  "fates": {
+   "mcp_active": 0.073,
+   "mesh_frame": 0.023,
+   "electrode": 0.904
+  },
+  "eta": 0.05114480662949109,
+  "spot": {
+   "rms_axis_mm": 2.1410392439644776,
+   "r90_mm": 3.8237067085139245,
+   "r_max_mm": 3.8237067085139245
+  },
+  "monotonic": false,
+  "theta_eval_max_deg": 6.0,
+  "KE0_eV": 209.65005090934702,
+  "E_err_rel_max": 0.0011836933270221125,
+  "E_err_eV_max": 12.076039067529564,
+  "tof_mcp_us": [
+   8.0,
+   8.0
+  ],
+  "r_land_mm": {
+   "0.0": 0.221,
+   "1.0": 0.422,
+   "2.0": 0.67,
+   "3.0000000000000004": 0.708,
+   "4.0": 0.221,
+   "5.0": 1.272,
+   "6.000000000000001": 3.824
+  },
+  "timings_s": {
+   "params": 0.16,
+   "release": 0.05,
+   "solve_es": 4.46,
+   "solve_pt": 7.47,
+   "export": 2.36
+  },
+  "mesh_elements": 211726,
+  "preacceleration": {
+   "preaccel_eV": 207.65005090934702,
+   "potential_fraction": 0.6698388739011194,
+   "emission_distance_m": 0.0002747477419454622,
+   "emitter_radius_m": 5.0000000000000004e-08,
+   "U_tip_extractor_V": 310.0,
+   "gap_m": 0.013482
+  },
+  "v_tip_model": "-7.650050909347016[V]"
+ }
+]

@@ -1,0 +1,12 @@
+COMSOL 5.5 started in 9.6 s
+Loaded lens8_axisym.mph in 7.4 s
+2D particle array shape (2, 999, 801)
+Loaded lens8newMCP_ks_v3_touchup.mph in 3.4 s
+3D particle array shape (3, 1000, 501)
+2D: 999 particles, 801 times; final z: min 500.30 max 515.90 mm; final r: mean 2.6197, rms 2.9370, max 6.9028 mm
+   particles ending on MCP front (z=515.9): 976
+   MCP spot: r mean 2.542, rms 2.829, r50 2.436, r90 4.338, max 5.701 mm
+3D: 1000 particles, 501 times; final z: min 125.20 max 515.90 mm; final r: mean 2.6396, rms 2.9564, max 6.2601 mm
+   particles ending on MCP front (z=515.9): 972
+   MCP spot: r mean 2.558, rms 2.848, r50 2.374, r90 4.402, max 6.047 mm
+wrote compare_particles.png

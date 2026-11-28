@@ -1,0 +1,24 @@
+submitted a83f0655987c44d6ab92facd30aef591 (queue); running the COMSOL worker ...
+2026-11-12 18:23:01,488 mph Starting local Comsol session.
+2026-11-12 18:23:01,741 mph Starting external server process.
+2026-11-12 18:23:08,633 mph Server listening on port 52440.
+2026-11-12 18:23:08,633 mph Starting Java virtual machine.
+2026-11-12 18:23:08,899 mph Java virtual machine has started.
+2026-11-12 18:23:09,215 mph Connecting to server "localhost" at port 52440.
+2026-11-12 18:23:10,209 ionopt.worker.comsol_worker COMSOL 5.5 started in 9 s
+2026-11-12 18:23:10,284 mph Loading model "lens8newMCP_ks_v6_tip.mph".
+2026-11-12 18:23:19,615 mph Finished loading model.
+2026-11-12 18:23:19,615 ionopt.worker.model_adapter loaded lens8newMCP_ks_v6_tip.mph in 9 s
+2026-11-12 18:23:22,615 ionopt.worker.model_adapter disabling release feature pbeam1 (ParticleBeam)
+2026-11-12 18:27:34,342 ionopt.worker.queue_worker job a83f0655987c44d6ab92facd30aef591 -> done
+worker processed 1 job(s) in 273 s
+status success
+timings (s): {"params": 0.46, "release": 0.27, "solve_es": 159.26, "solve_pt": 78.63, "export": 12.24}
+mesh elements: 2409756 | ions: 603 | rebuilt geometry: False | particle rtol: 1e-05
+comsol params: {'cfg': '3', 'mesh_gap': '12.7[mm]', 'lens_gap': '13.482[mm]', 'v_tip': '100.0[V]', 'V_screen': '-1000.0[V]', 'V_mcp_front': '-10000.0[V]', 'm_ion': '3.8175793141134e-26[kg]', 'Z_ion': '1', 't_end': '100.0[us]', 'dt_out': '0.2[us]', 'V_mcp_back': '-9000.0[V]', 'L1_v': '0.0[V]', 'L2_v': '0.0[V]', 'L3_v': '60.0[V]', 'L4_v': '0.0[V]', 'L5_v': '0.0[V]', 'L6_v': '0.0[V]', 'L7_v': '0.0[V]', 'L8_v': '0.0[V]', 'L9_v': '0.0[V]', 'D1a_v': '0.0[V]', 'D1b_v': '0.0[V]', 'D2a_v': '0.0[V]', 'D2b_v': '0.0[V]'}
+checker: valid=False feasible=False score=95.25143275396957 flags=['r(theta) is not monotonic over the evaluation range', 'energy conservation error 0.146 > 0.01 (relative)']
+fates: {'mcp_active': 0.604, 'mcp_outside': 0.0, 'mesh_frame': 0.095, 'electrode': 0.3, 'wall': 0.0, 'in_flight': 0.0} counts: {'mcp_active': 265, 'mcp_outside': 0, 'mesh_frame': 38, 'electrode': 300, 'wall': 0, 'in_flight': 0}
+validity: {'files_present': True, 'fate_counts_complete': True, 'energy_conserved': False, 'potentials_match': True, 'no_in_flight': True}
+plots: ['trajectories.png', 'field_map.png', 'axis_potential.png', 'r_theta.png', 'dtheta.png', 'fates.png', 'landing.png']
+result dir: D:\Users\kshimojo\projects\ion_beam_measurement\results\a83f0655987c44d6ab92facd30aef591
+2026-11-12 18:27:37,434 mph Exiting the Java virtual machine.

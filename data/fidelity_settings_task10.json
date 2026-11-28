@@ -1,0 +1,127 @@
+[
+ {
+  "name": "s3_33pct",
+  "description": "2D search S #3 LV1=+165 LV2=+129 LV3=+62 LV4=+27 (b43e12556a284c9ba624d154d233a3ad): MCP fraction 0.334",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 164.6,
+   "LV2": 129.1,
+   "LV3": 61.7,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 26.9
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "s12_33pct",
+  "description": "2D search S #12 LV1=+218 LV2=+151 LV3=-156 LV4=-30 (403ab15d836d4b729612494134c5b6bd): MCP fraction 0.334",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 217.7,
+   "LV2": 151.3,
+   "LV3": -155.7,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": -30.1
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "s36_26pct_tight",
+  "description": "2D search S #36 LV1=+296 LV2=+240 LV3=-87 LV4=+48 (1bc9cf0b670c408da4eb307bf3700ea0): MCP fraction 0.262",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 296.4,
+   "LV2": 240.3,
+   "LV3": -87.0,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 48.4
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "s24_20pct_bestscore",
+  "description": "2D search S #24 LV1=+279 LV2=+221 LV3=-145 LV4=+76 (b659a9a2fb3344dbb02b69d6e2cfe96f): MCP fraction 0.195",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 279.4,
+   "LV2": 221.0,
+   "LV3": -144.7,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 75.6
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "s10_20pct_negL24",
+  "description": "2D search S #10 LV1=+137 LV2=+88 LV3=-105 LV4=-146 (7309423f1ad641b08bd0a5de0ad144b3): MCP fraction 0.195",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 137.4,
+   "LV2": 88.5,
+   "LV3": -105.4,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": -146.1
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ }
+]

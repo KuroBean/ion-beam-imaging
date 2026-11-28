@@ -1,0 +1,127 @@
+[
+ {
+  "name": "m4_96pct",
+  "description": "2D search (meniscus picture) S #4 LV1=+218 LV2=+151 LV3=-156 LV4=-30 (3ad7eba82f2c47b794cef7ff09ce4d37): MCP 0.962, score 39.19 deg, highest MCP fraction at moderate extraction (= old s12_33pct); mapping folds",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 217.7,
+   "LV2": 151.3,
+   "LV3": -155.7,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": -30.1
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "m25_96pct_strong",
+  "description": "2D search (meniscus picture) S #25 LV1=+198 LV2=-202 LV3=-259 LV4=-12 (311afeb9974e4729962c46d929984ebd): MCP 0.962, score 2.67 deg, 96% with strong extraction (E1 -202 V, ~270 eV at launch); mapping folds",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 198.21444157926794,
+   "LV2": -202.31848401264847,
+   "LV3": -258.75422218453673,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": -12.492810753992202
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "m3_83pct_mono",
+  "description": "2D search (meniscus picture) S #3 LV1=+165 LV2=+129 LV3=+62 LV4=+27 (5d446d075c1c479a923f254183f42f82): MCP 0.827, score 5.49 deg, = old s3_33pct; monotonic mapping, 83%",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 164.6,
+   "LV2": 129.1,
+   "LV3": 61.7,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 26.9
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "m46_79pct_mono",
+  "description": "2D search (meniscus picture) S #46 LV1=+292 LV2=+205 LV3=-297 LV4=+43 (57d43cff011847309c7ca05d2fc105c3): MCP 0.786, score 17.78 deg, monotonic over 0-28 deg, 79%",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 292.12616255311843,
+   "LV2": 204.9159449644791,
+   "LV3": -296.79489790068953,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 43.039606291279334
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ },
+ {
+  "name": "m43_62pct_res",
+  "description": "2D search (meniscus picture) S #43 LV1=+257 LV2=-171 LV3=-260 LV4=+82 (9d7cd42b336b4b949a0555f3a7ae50ae): MCP 0.618, score 0.90 deg, monotonic, best resolution among >60% (score 0.9 deg)",
+  "cfg": 3,
+  "wiring": {
+   "tip": "LV1",
+   "e1": "LV2",
+   "e3": "LV3",
+   "e2": "LV4",
+   "e4": "LV4"
+  },
+  "channels": {
+   "LV1": 256.91302286427145,
+   "LV2": -170.73092298212725,
+   "LV3": -260.2993894392108,
+   "HV1": -10000.0,
+   "HV4": -1000.0,
+   "LV4": 82.02898903467263
+  },
+  "positions_mm": {
+   "lens_gap": 13.482,
+   "z_mcp": 410.9,
+   "mesh_gap": 12.7
+  }
+ }
+]

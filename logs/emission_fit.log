@@ -1,0 +1,238 @@
+{
+ "target_hwhm_deg": 20.0,
+ "theta_max_deg_spec": 50.0,
+ "maps": [
+  {
+   "file": "emission_map2d_ref.npz",
+   "meta": {
+    "model": "lens8_axisym_asm.mph",
+    "set": [],
+    "plane_offset_mm": 0.5,
+    "z_plane_mm": 117.98199999999999,
+    "tip_z_mm": 105.0,
+    "lens_gap_mm": 13.482,
+    "E_ion_eV": 0.9999999917612081,
+    "m_ion_Da": 1023.7639295537908,
+    "v0_mps": 434.15592493128685,
+    "launch_z0_nm": 1.0,
+    "n_rays": 180,
+    "n_crossed": 180,
+    "t_end_us": 20.0,
+    "dt_out_us": 0.01,
+    "L1_v": -120.0,
+    "tag": "ref"
+   },
+   "map_max_theta_ext_deg": 10.3393017061888,
+   "beam": {
+    "sigma_s": 19.182131421971004,
+    "cdf_rms": 0.2519757735555831,
+    "ks": 0.8244908378970585,
+    "extractor_equiv_hwhm_deg": 9.419280180123796,
+    "extractor_median_deg": 10.325814873249112,
+    "launch_prob_beyond_map": 1.7964840504092194e-08,
+    "at_sweep_edge": false,
+    "vperp_rms_per_axis_mps_model_mass": 305.6660296271044,
+    "vperp_rms_per_axis_mps_spec_mass": 2039.753101501518
+   },
+   "omega_cut": {
+    "launch_hwhm_deg": 359.75000000000006,
+    "theta_max_deg": 50.0,
+    "cdf_rms": 0.31459558846795993,
+    "ks": 0.9045071317255691,
+    "extractor_equiv_hwhm_deg": 4.886251593439219,
+    "at_sweep_edge": true
+   },
+   "omega_uncut": {
+    "launch_hwhm_deg": 359.75000000000006,
+    "theta_max_deg": 90.0,
+    "cdf_rms": 0.2668390046193441,
+    "ks": 0.8244908378970585,
+    "extractor_equiv_hwhm_deg": 7.358812640721715,
+    "launch_prob_beyond_map": 0.008526860027237237,
+    "at_sweep_edge": true
+   },
+   "with_reference_sigma_s": {
+    "sigma_s": 19.182131421971004,
+    "extractor_equiv_hwhm_deg": 9.419280180123796,
+    "cdf_rms": 0.2519757735555831,
+    "ks": 0.8244908378970585
+   }
+  },
+  {
+   "file": "emission_map2d_E5eV.npz",
+   "meta": {
+    "model": "lens8_axisym_asm.mph",
+    "set": [
+     "E_ion=5[eV]"
+    ],
+    "plane_offset_mm": 0.5,
+    "z_plane_mm": 117.98199999999999,
+    "tip_z_mm": 105.0,
+    "lens_gap_mm": 13.482,
+    "E_ion_eV": 4.999999958806041,
+    "m_ion_Da": 1023.7639295537908,
+    "v0_mps": 970.8021609806531,
+    "launch_z0_nm": 1.0,
+    "n_rays": 180,
+    "n_crossed": 180,
+    "t_end_us": 20.0,
+    "dt_out_us": 0.01,
+    "L1_v": -120.0,
+    "tag": "E5eV"
+   },
+   "map_max_theta_ext_deg": 21.47968724236792,
+   "beam": {
+    "sigma_s": 1.7865433044920778,
+    "cdf_rms": 0.13078618711456627,
+    "ks": 0.46049499273793515,
+    "extractor_equiv_hwhm_deg": 16.130517308461997,
+    "extractor_median_deg": 18.40693059802063,
+    "launch_prob_beyond_map": 1.1900591623259515e-10,
+    "at_sweep_edge": false,
+    "vperp_rms_per_axis_mps_model_mass": 589.3774591961154,
+    "vperp_rms_per_axis_mps_spec_mass": 3933.000019063156
+   },
+   "omega_cut": {
+    "launch_hwhm_deg": 359.75000000000006,
+    "theta_max_deg": 50.0,
+    "cdf_rms": 0.2125337321402725,
+    "ks": 0.6585590781136301,
+    "extractor_equiv_hwhm_deg": 9.890244189129984,
+    "at_sweep_edge": true
+   },
+   "omega_uncut": {
+    "launch_hwhm_deg": 359.75000000000006,
+    "theta_max_deg": 90.0,
+    "cdf_rms": 0.11810668885673924,
+    "ks": 0.43828854266933037,
+    "extractor_equiv_hwhm_deg": 15.129718789323846,
+    "launch_prob_beyond_map": 0.008526860027237237,
+    "at_sweep_edge": true
+   },
+   "with_reference_sigma_s": {
+    "sigma_s": 19.182131421971004,
+    "extractor_equiv_hwhm_deg": 19.7216178771342,
+    "cdf_rms": 0.16867209599692023,
+    "ks": 0.496437726482776
+   }
+  },
+  {
+   "file": "emission_map2d_E15eV.npz",
+   "meta": {
+    "model": "lens8_axisym_asm.mph",
+    "set": [
+     "E_ion=15[eV]"
+    ],
+    "plane_offset_mm": 0.5,
+    "z_plane_mm": 117.98199999999999,
+    "tip_z_mm": 105.0,
+    "lens_gap_mm": 13.482,
+    "E_ion_eV": 14.999999876418123,
+    "m_ion_Da": 1023.7639295537908,
+    "v0_mps": 1681.4786669161515,
+    "launch_z0_nm": 1.0,
+    "n_rays": 180,
+    "n_crossed": 180,
+    "t_end_us": 20.0,
+    "dt_out_us": 0.01,
+    "L1_v": -120.0,
+    "tag": "E15eV"
+   },
+   "map_max_theta_ext_deg": 33.38733922697863,
+   "beam": {
+    "sigma_s": 0.8576030942577869,
+    "cdf_rms": 0.07359122759031825,
+    "ks": 0.22126763577898056,
+    "extractor_equiv_hwhm_deg": 18.544207854618723,
+    "extractor_median_deg": 20.64856853824232,
+    "launch_prob_beyond_map": 5.164437766325136e-10,
+    "at_sweep_edge": false,
+    "vperp_rms_per_axis_mps_model_mass": 821.5703944827628,
+    "vperp_rms_per_axis_mps_spec_mass": 5482.456661253542
+   },
+   "omega_cut": {
+    "launch_hwhm_deg": 359.75000000000006,
+    "theta_max_deg": 50.0,
+    "cdf_rms": 0.11933021791207754,
+    "ks": 0.40844681750706424,
+    "extractor_equiv_hwhm_deg": 14.658754780317656,
+    "at_sweep_edge": true
+   },
+   "omega_uncut": {
+    "launch_hwhm_deg": 52.25,
+    "theta_max_deg": 90.0,
+    "cdf_rms": 0.040807674410712126,
+    "ks": 0.13654495287371404,
+    "extractor_equiv_hwhm_deg": 19.191783367002234,
+    "launch_prob_beyond_map": 0.002482245010022255,
+    "at_sweep_edge": false
+   },
+   "with_reference_sigma_s": {
+    "sigma_s": 19.182131421971004,
+    "extractor_equiv_hwhm_deg": 31.260236097785842,
+    "cdf_rms": 0.28871442797961466,
+    "ks": 0.7933149618510026
+   }
+  },
+  {
+   "file": "emission_map2d_E40eV.npz",
+   "meta": {
+    "model": "lens8_axisym_asm.mph",
+    "set": [
+     "E_ion=40[eV]"
+    ],
+    "plane_offset_mm": 0.5,
+    "z_plane_mm": 117.98199999999999,
+    "tip_z_mm": 105.0,
+    "lens_gap_mm": 13.482,
+    "E_ion_eV": 39.999999670448325,
+    "m_ion_Da": 1023.7639295537908,
+    "v0_mps": 2745.8431648798964,
+    "launch_z0_nm": 1.0,
+    "n_rays": 180,
+    "n_crossed": 180,
+    "t_end_us": 20.0,
+    "dt_out_us": 0.01,
+    "L1_v": -120.0,
+    "tag": "E40eV"
+   },
+   "map_max_theta_ext_deg": 47.40976014629262,
+   "beam": {
+    "sigma_s": 0.5610766198665275,
+    "cdf_rms": 0.04557189299589151,
+    "ks": 0.11687831702438789,
+    "extractor_equiv_hwhm_deg": 19.427265371505328,
+    "extractor_median_deg": 20.858901423624406,
+    "launch_prob_beyond_map": 1.206566846434498e-09,
+    "at_sweep_edge": false,
+    "vperp_rms_per_axis_mps_model_mass": 1091.850143501838,
+    "vperp_rms_per_axis_mps_spec_mass": 7286.0720548491945
+   },
+   "omega_cut": {
+    "launch_hwhm_deg": 55.75,
+    "theta_max_deg": 50.0,
+    "cdf_rms": 0.05757625581738737,
+    "ks": 0.20483293422109183,
+    "extractor_equiv_hwhm_deg": 18.485337353492948,
+    "at_sweep_edge": false
+   },
+   "omega_uncut": {
+    "launch_hwhm_deg": 33.75,
+    "theta_max_deg": 90.0,
+    "cdf_rms": 0.0143423352928956,
+    "ks": 0.028610117705054394,
+    "extractor_equiv_hwhm_deg": 19.898229380511516,
+    "launch_prob_beyond_map": 0.0002828531717488092,
+    "at_sweep_edge": false
+   },
+   "with_reference_sigma_s": {
+    "sigma_s": 19.182131421971004,
+    "extractor_equiv_hwhm_deg": 51.21733597942313,
+    "cdf_rms": 0.4579630357742698,
+    "ks": 0.94013176637454
+   }
+  }
+ ]
+}
+wrote D:\Users\kshimojo\projects\ion_beam_measurement\logs\emission_fit.png
+wrote D:\Users\kshimojo\projects\ion_beam_measurement\logs\emission_sensitivity.png

@@ -1,0 +1,25 @@
+COMSOL 5.5 started in 10.2 s
+geometry: 10 domains, 96 boundaries
+geom1_csel_cond_pnt Conductors (excluded)
+geom1_csel_cond_bnd Conductors (excluded)
+geom1_csel_cond_dom Conductors (excluded)
+geom1_csel_diel_pnt Dielectrics (MCP, holder, ring)
+geom1_csel_diel_bnd Dielectrics (MCP, holder, ring)
+geom1_csel_diel_dom Dielectrics (MCP, holder, ring)
+geom1_ch1_dom Chamber 1 tube + flanges (gnd)
+geom1_ch2_dom Chamber 2 (gnd)
+geom1_needle_dom Needle (gnd)
+geom1_lens1_dom Lens 1
+geom1_lens2_dom Lens 2
+geom1_mcp_dom MCP plate
+geom1_holder_dom MCP holder (304L, no potential in 3D model)
+geom1_ring_dom Polyimide ring
+geom1_hub_dom Screen cross hub (axisymmetric part)
+geom1_meshline_dom Screen mesh (transparent, -1 kV)
+geom1_sel_es es domains (not conductors)
+geom1_sel_solid All solids
+geom1_sel_vac Vacuum (particle domain)
+geom1_sel_tip Needle tip face
+geom1_bnd_mcpfront MCP front face
+geom1_bnd_mcpback MCP back face
+dom

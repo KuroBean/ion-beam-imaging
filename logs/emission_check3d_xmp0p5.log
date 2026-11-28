@@ -1,0 +1,36 @@
+loaded lens8newMCP_ks_v5_params.mph in 11 s
+pbeam1: xmp 0.5 -> 0.5, sampling Gaussian, N 1000, El 1[eV]
+std2 ran in 45 s
+1 particle(s) without a t = 0 state dropped
+{
+ "slope_std_x": 0.3098495130551782,
+ "slope_std_y": 0.3005207050449288,
+ "slope_mean_x": 0.011339057923830734,
+ "slope_mean_y": -0.015317965218457586,
+ "sigma_s_hat": 0.3055181084602564,
+ "sigma_s_per_xmp": 0.6110362169205128,
+ "speed_min": 434.1559249312868,
+ "speed_max": 434.1559249312869,
+ "ks_launch_angles_vs_gaussian_slopes": 0.10639535813840595
+}
+{
+ "z_plane_mm": 117.98199999999999,
+ "plane_offset_mm": 0.5,
+ "n_crossed": 999,
+ "last_crossing_us": 3.3957764280951497,
+ "equiv_hwhm_deg": 2.884654555162913,
+ "median_deg": 2.8474999999999997,
+ "target_hwhm_deg": 20.0,
+ "vs_target_rms": 0.34853857603627825,
+ "vs_target_ks": 0.8990041390303627,
+ "map2d": "emission_map2d_ref.npz",
+ "pred2d_gaussian_slopes_equiv_hwhm_deg": 3.120136559666007,
+ "vs_2d_gaussian_slopes_ks": 0.09175033091165347,
+ "pred2d_per_ion_equiv_hwhm_deg": 2.8257840540371384,
+ "vs_2d_per_ion_ks": 0.02202202202202197,
+ "angle_ratio_3d_over_2d_median": 1.0268223543302384,
+ "angle_ratio_3d_over_2d_iqr": [
+  1.0028556497926535,
+  1.0425537280320327
+ ]
+}

@@ -1,0 +1,7 @@
+loaded lens8newMCP_ks_v6_tip.mph in 10 s
+geometry built in 3 s: 58 domains
+plate domain [41]; ULTEM now on sel_holder_noplate [6, 9, 17, 20, 50, 53]
+mesh built in 257 s: 2409756 elements
+effective: plate -> mat3; holder domains -> {6: 'mat6', 9: 'mat8', 17: 'mat8', 20: 'mat8', 50: 'mat8', 53: 'mat8'}
+saved lens8newMCP_ks_v6_tip.mph in 2 s
+Total 288 s

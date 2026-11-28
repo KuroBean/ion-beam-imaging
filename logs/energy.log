@@ -1,0 +1,15 @@
+COMSOL 5.5 started in 11.0 s
+Loaded lens8_axisym.mph in 7.7 s
+lens8_axisym.mph
+  t=   1.0 us  n= 999  energy error Ek-(E0-qV): median    0.17 eV, 5-95% [   0.14,    0.19] eV; median drift Ek   105.08 eV
+  t=   5.0 us  n= 999  energy error Ek-(E0-qV): median    0.34 eV, 5-95% [   0.21,    0.47] eV; median drift Ek    46.90 eV
+  t=  30.0 us  n= 999  energy error Ek-(E0-qV): median    0.35 eV, 5-95% [   0.22,    0.48] eV; median drift Ek    11.98 eV
+  t=  50.0 us  n= 999  energy error Ek-(E0-qV): median    0.35 eV, 5-95% [   0.22,    0.48] eV; median drift Ek     6.32 eV
+  t= 100.0 us  n= 999  energy error Ek-(E0-qV): median    0.35 eV, 5-95% [   0.22,    0.48] eV; median drift Ek     3.77 eV
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 6.7 s
+lens8newMCP_ks_v2_multi_flange_config_11_2.mph
+  t=   1.0 us  n= 999  energy error Ek-(E0-qV): median    4.22 eV, 5-95% [   2.98,    6.22] eV; median drift Ek   109.26 eV
+  t=   5.0 us  n= 999  energy error Ek-(E0-qV): median   11.37 eV, 5-95% [   6.03,   17.56] eV; median drift Ek    56.09 eV
+  t=  30.0 us  n= 999  energy error Ek-(E0-qV): median   12.67 eV, 5-95% [   7.10,   19.19] eV; median drift Ek    21.86 eV
+  t=  50.0 us  n= 999  energy error Ek-(E0-qV): median   12.65 eV, 5-95% [   7.12,   19.20] eV; median drift Ek    16.94 eV
+  t= 100.0 us  n= 999  energy error Ek-(E0-qV): median   12.68 eV, 5-95% [   7.11,   19.12] eV; median drift Ek    26.60 eV

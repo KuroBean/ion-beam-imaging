@@ -1,0 +1,18 @@
+loaded lens8newMCP_ks_v4_lens_voltages.mph in 10 s
+check ok  es/pot5  'MCP Front Electric Potential'  V0 = -10000
+check ok  es/pot6  'MCP Back Electric Potential'  V0 = -5000
+check ok  es/pot7  'Screen Mesh Cross Electric Potential'  V0 = -1000
+check ok  es/pot8  'Screen Mesh Electric Potential 1'  V0 = -1000
+check ok  cpt/pp1   'Particle Properties 1'  mp = 1.7e-24
+check ok  cpt/pp1   'Particle Properties 1'  Z = 1
+check ok  std2/time tlist = range(0,0.5[us],250[us]) (501 times)
+check ok  sol2/t1 tlist = range(0,0.5e-6,250e-6) (501 times)
+set       es/pot5  V0 = V_mcp_front -> -10000
+set       es/pot6  V0 = V_mcp_back -> -5000
+set       es/pot7  V0 = V_screen -> -1000
+set       es/pot8  V0 = V_screen -> -1000
+set       cpt/pp1   mp = m_ion -> 1.7e-24
+set       cpt/pp1   Z = Z_ion -> 1
+set       std2/time tlist = range(0,dt_out,t_end) (501 times, last 0.00025 s)
+set       sol2/t1 tlist = range(0,dt_out,t_end) (501 times, last 0.00025 s)
+saved lens8newMCP_ks_v5_params.mph in 1 s (input lens8newMCP_ks_v4_lens_voltages.mph not saved)

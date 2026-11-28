@@ -1,0 +1,33 @@
+COMSOL 5.5 started in 10.7 s
+Loaded lens8newMCP_ks_v2_multi_flange_config_11_2.mph in 12.4 s
+mat1 304L [solid,polished] relpermittivity ['1']
+mat1 304L [solid,polished] electricconductivity ['sigma(T[1/K])[S/m]']
+mat1 304L [solid,polished] density ['rho(T[1/K])[kg/m^3]']
+mat2 Corning 7740 (Pyrex) [solid,1.05 mm thick] relpermittivity ['4.6']
+mat2 Corning 7740 (Pyrex) [solid,1.05 mm thick] electricconductivity ['sigma(T[1/K])[S/m]']
+mat2 Corning 7740 (Pyrex) [solid,1.05 mm thick] density ['rho(T[1/K])[kg/m^3]']
+mat3 Leaded 1 [solid] relpermittivity ['8']
+mat3 electricconductivity n/a
+mat3 density n/a
+mat5 P25N Polyimide-based No Flow Prepreg relpermittivity ['3']
+mat5 electricconductivity n/a
+mat5 density n/a
+pbeam1 rt 0
+pbeam1 TimeDistributionFunction ListOfValues
+pbeam1 Nvalt 10
+pbeam1 N 1000
+pbeam1 BeamPosition CentroidOfSelection
+pbeam1 El 1[eV]
+pbeam1 LongitudinalVelocitySpecification SpecifyKineticEnergy
+pbeam1 e1rms 100[nm]
+pbeam1 twbeta0 100[nm]
+pbeam1 xm 50[nm]
+pbeam1 xmp 0.5
+pbeam1 EmittanceSpecification SpecifyEmittance
+pbeam1 TransverseVelocityDistributionSpecification SpecifyPhaseSpaceEllipseDimensions
+pbeam1 SamplingFromPhaseSpaceEllipse Gaussian
+pp1 mp 1.7e-24
+pp1 Z 1
+Traceback (most recent call last):
+  File "<stdin>", line 16, in <module>
+AttributeError: 'com.comsol.clientapi.physics.impl.PhysicsClient' object has no attribute 'properties'

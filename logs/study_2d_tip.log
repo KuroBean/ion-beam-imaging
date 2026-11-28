@@ -1,0 +1,13 @@
+r_tip = 200 um: remeshed in 30 s, 212909 elements
+[  20 s] B tip=+200 L3=-300 r_tip=200um     fates {'mcp_active': 0.083, 'electrode': 0.917} eta 0.058 score 6.207685494604687 rms 2.877855217189861 KE0 225.1 Emax 0.0021/21eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+r_tip = 100 um: remeshed in 26 s, 211726 elements
+[  17 s] B tip=+200 L3=-300 r_tip=100um     fates {'mcp_active': 0.083, 'electrode': 0.917} eta 0.058 score 6.05519738005337 rms 2.6922435268739715 KE0 209.7 Emax 9e-05/0.74eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+r_tip = 50 um: remeshed in 61 s, 331012 elements
+[  18 s] B tip=+200 L3=-300 r_tip=50um      fates {'mcp_active': 0.083, 'mesh_frame': 0.052, 'electrode': 0.865} eta 0.058 score 6.1176618150048805 rms 2.375708233113194 KE0 194.2 Emax 0.0031/31eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+r_tip = 25 um: remeshed in 196 s, 578072 elements
+[  24 s] B tip=+200 L3=-300 r_tip=25um      fates {'mcp_active': 0.083, 'mesh_frame': 0.052, 'electrode': 0.865} eta 0.058 score 1.2516278183567082 rms 2.1501395015083826 KE0 178.7 Emax 0.0021/21eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0582 < eta_min 0.3']
+r_tip = 100 um: remeshed in 1 s, 211726 elements
+[  15 s] B tip=+200 L3=-300 r_tip=100um preaccel off fates {'mcp_active': 0.962, 'mesh_frame': 0.038} eta 0.673 score 19.576856183947054 rms 1.2019867285033385 KE0 2.0 Emax 0.0027/27eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range']
+[  15 s] B tip=+200 L3=-300 r_tip=100um n_theta=51 fates {'mcp_active': 0.073, 'mesh_frame': 0.023, 'electrode': 0.904} eta 0.051 score 0.48865659438295406 rms 2.1410392439644776 KE0 209.7 Emax 0.0012/12eV tof [8.0, 8.0] flags ['r(theta) is not monotonic over the evaluation range', 'collection efficiency 0.0511 < eta_min 0.3']
+wrote D:\Users\kshimojo\projects\ion_beam_measurement\logs\study_2d_tip.json
+Total 441 s
