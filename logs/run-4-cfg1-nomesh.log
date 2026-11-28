@@ -1,0 +1,53 @@
+
+===== [2026-11-23 03:01:42] ionopt agent-run --run-id =====
+[run-4-cfg1-nomesh] start: method agent, budget 400 solves, 50 rounds
+[run-4-cfg1-nomesh] round 1 planner: optimize (none)
+[run-4-cfg1-nomesh] round 1 optimize: study run-4-cfg1-nomesh-r01, 50 solves
+[run-4-cfg1-nomesh] round 1: 50 solves, 32 feasible, best 0.35384028698637143
+[run-4-cfg1-nomesh] round 1 critic: dispute
+[run-4-cfg1-nomesh] round 2 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 2 optimize: study run-4-cfg1-nomesh-r02, 35 solves
+[run-4-cfg1-nomesh] round 2: 35 solves, 21 feasible, best 0.12057804107261452
+[run-4-cfg1-nomesh] round 2 critic: dispute
+[run-4-cfg1-nomesh] round 3 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 3 optimize: study run-4-cfg1-nomesh-r03, 40 solves
+[run-4-cfg1-nomesh] round 3: 40 solves, 27 feasible, best 0.11196568356405222
+[run-4-cfg1-nomesh] round 3 critic: reject
+[run-4-cfg1-nomesh] round 4 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 4 optimize: study run-4-cfg1-nomesh-r04, 40 solves
+[run-4-cfg1-nomesh] round 4: 40 solves, 33 feasible, best 0.17698257994703004
+[run-4-cfg1-nomesh] round 4 critic: dispute
+[run-4-cfg1-nomesh] round 5 planner: optimize (structural)
+[run-4-cfg1-nomesh] round 5 optimize: study run-4-cfg1-nomesh-r05, 35 solves
+[run-4-cfg1-nomesh] round 5: 35 solves, 23 feasible, best 0.10823151581254264
+[run-4-cfg1-nomesh] round 5 critic: reject
+[run-4-cfg1-nomesh] round 6 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 6 optimize: study run-4-cfg1-nomesh-r06, 40 solves
+[run-4-cfg1-nomesh] round 6: 40 solves, 32 feasible, best 0.24282017939637304
+[run-4-cfg1-nomesh] round 6 critic: dispute
+[run-4-cfg1-nomesh] round 7 planner: optimize (parametric)
+[run-4-cfg1-nomesh] validator: invalid (1): bounds: HV1 = [-3400, -2800] is narrower than 10% of its usable range [-10000, -2000]; the optimizer picks values, the planner only sets regions
+[run-4-cfg1-nomesh] round 7 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 7 optimize: study run-4-cfg1-nomesh-r07, 45 solves
+[run-4-cfg1-nomesh] round 7: 45 solves, 40 feasible, best 0.22881543968286105
+[run-4-cfg1-nomesh] round 7 critic: dispute
+[run-4-cfg1-nomesh] round 8 planner: optimize (structural)
+[run-4-cfg1-nomesh] round 8 optimize: study run-4-cfg1-nomesh-r08, 30 solves
+[run-4-cfg1-nomesh] round 8: 30 solves, 9 feasible, best 0.6554136713601868
+[run-4-cfg1-nomesh] round 8 critic: dispute
+[run-4-cfg1-nomesh] round 9 planner: optimize (structural)
+[run-4-cfg1-nomesh] round 9 optimize: study run-4-cfg1-nomesh-r09, 35 solves
+[run-4-cfg1-nomesh] round 9: 35 solves, 20 feasible, best 0.14366191425215616
+[run-4-cfg1-nomesh] round 9 critic: dispute
+[run-4-cfg1-nomesh] round 10 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 10 optimize: study run-4-cfg1-nomesh-r10, 30 solves
+[run-4-cfg1-nomesh] round 10: 30 solves, 21 feasible, best 0.12805298494592285
+[run-4-cfg1-nomesh] round 10 critic: dispute
+[run-4-cfg1-nomesh] round 11 planner: optimize (parametric)
+[run-4-cfg1-nomesh] round 11 optimize: study run-4-cfg1-nomesh-r11, 20 solves
+[run-4-cfg1-nomesh] round 11: 20 solves, 14 feasible, best 0.11803267783216623
+[run-4-cfg1-nomesh] round 11 critic: reject
+[run-4-cfg1-nomesh] stop: budget; best 0.121 (success)
+
+run run-4-cfg1-nomesh: stop budget; 11 rounds, 400/400 solves; best 0.121 deg (job 5467567cbd374b2e8f071093113c305a, round 2)
+trace: ionopt trace run-4-cfg1-nomesh

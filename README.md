@@ -170,6 +170,20 @@ shows the ranges per configuration.
 To test a specific configuration exactly as written, do not rely on `--goal`: add it to
 `b0_configs.yaml` and run `ionopt optimize --config <id> --budget N`.
 
+### 6b. Or use the console (GUI)
+
+```powershell
+.\agent_console.bat          # or: .venv\Scripts\python scripts\agent_gui.py
+```
+
+A local window (127.0.0.1 only) with a chamber drop-down and a live 2D diagram, a goal box for the planner, and
+parameter pages behind a drop-down (voltage ranges, positions, run limits, beam and detector, lens hints).
+Start writes `logs/<run>-goal.txt` and `logs/<run>-overrides.yaml`, checks them with the config loader, and starts
+`scripts/supervise_agent_run.py` detached (the run survives closing the console or the editor). The Monitor tab shows
+state, solves, rounds, best score and the log, answers planner questions, and stops or resumes a run.
+The voltage ranges are enforced; the lens hints are soft guidance appended to the goal text. Test mode uses the
+mock backend (the planner still calls Claude).
+
 ### 7. While it runs
 
 The loop pauses when the editor proposes a model variant or the planner asks a question

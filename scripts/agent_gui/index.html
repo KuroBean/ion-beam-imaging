@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ion Beam Agent Console</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body data-token="__TOKEN__">
+
+<header class="top">
+  <div class="brand"><span class="logo" aria-hidden="true"></span>Ion Beam Agent</div>
+
+  <label class="field-inline">
+    <span>Chamber</span>
+    <select id="chamber" class="select" aria-label="Chamber setup"></select>
+  </label>
+
+  <nav class="tabs" role="tablist" aria-label="View">
+    <button role="tab" id="tab-setup" class="on" data-tab="setup">Setup</button>
+    <button role="tab" id="tab-monitor" data-tab="monitor">Monitor</button>
+  </nav>
+
+  <div id="pill" class="pill idle" role="status"><span class="pdot"></span><span id="pill-text">Idle</span></div>
+</header>
+
+<section class="stage idle" id="stage" aria-label="Chamber diagram">
+  <div class="caption"><span id="cap-title" class="cap-title"></span><span id="cap-sub" class="cap-sub"></span></div>
+  <svg id="diagram" viewBox="0 0 1200 330" preserveAspectRatio="xMidYMid meet" role="img"
+       aria-label="Side view of the selected chamber with the lens plates and the ion beam"></svg>
+  <div id="tip" class="tip" hidden></div>
+</section>
+
+<main id="view-setup" class="view">
+  <section class="card goal">
+    <div class="card-head">
+      <h2>Goal for the planner</h2>
+      <select id="goal-load" class="select small" aria-label="Load an earlier goal"></select>
+    </div>
+    <textarea id="goal" spellcheck="true"
+      placeholder="Describe what the planner should find. For example: find the finest worst-case angular resolution with at least 60 percent collection, using only the tip and the first lens."></textarea>
+    <p class="help">The planner reads this at the start of every round. Be specific about what to optimize and what to avoid.</p>
+  </section>
+
+  <section class="card params">
+    <div class="card-head">
+      <h2>Parameters</h2>
+      <select id="page" class="select small" aria-label="Parameter set"></select>
+    </div>
+    <div id="page-body" class="page-body"></div>
+  </section>
+</main>
+
+<main id="view-monitor" class="view hidden">
+  <section class="card">
+    <div class="card-head">
+      <h2>Run status</h2>
+      <select id="watch" class="select small" aria-label="Run to watch"></select>
+    </div>
+    <p id="headline" class="headline">No run selected.</p>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="tile-label">Solves</div>
+        <div class="tile-num" id="t-solves">0</div>
+        <div class="meter"><div class="meter-fill" id="t-bar"></div></div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Rounds</div>
+        <div class="tile-num" id="t-rounds">0</div>
+        <div class="tile-sub" id="t-rounds-sub"></div>
+      </div>
+      <div class="tile">
+        <div class="tile-label">Best resolution</div>
+        <div class="tile-num" id="t-best">none</div>
+        <div class="tile-sub" id="t-best-sub"></div>
+      </div>
+    </div>
+
+    <div id="question" class="question hidden">
+      <div class="q-title">The planner is waiting for you</div>
+      <pre id="q-text" class="q-text"></pre>
+      <textarea id="q-answer" placeholder="Your answer"></textarea>
+      <div class="row-actions">
+        <button class="btn primary" id="q-send">Send answer and continue</button>
+      </div>
+    </div>
+
+    <div class="links">
+      <a href="/results/index.html" target="_blank" rel="noopener">All results</a>
+      <a href="#" id="link-report" class="hidden" target="_blank" rel="noopener">Round report</a>
+      <span id="edits" class="muted"></span>
+    </div>
+  </section>
+
+  <section class="card logcard">
+    <div class="card-head"><h2>Live log</h2><span id="log-time" class="muted"></span></div>
+    <pre id="log" class="log" tabindex="0" aria-label="Run log"></pre>
+  </section>
+</main>
+
+<footer class="bar">
+  <div id="bar-setup" class="bar-group">
+    <label class="field-inline">
+      <span>Run name</span>
+      <input id="run-id" class="text-input" type="text" autocomplete="off" spellcheck="false" maxlength="59">
+    </label>
+    <span id="bar-msg" class="bar-msg" role="status"></span>
+  </div>
+  <div id="bar-monitor" class="bar-group hidden">
+    <span id="bar-watch" class="bar-msg"></span>
+  </div>
+  <div class="bar-actions">
+    <button class="btn ghost" id="btn-check" title="Check the settings without starting a run">Check settings</button>
+    <button class="btn primary" id="btn-main">Start agent loop</button>
+  </div>
+</footer>
+
+<div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <h3 id="modal-title"></h3>
+    <div id="modal-body" class="modal-body"></div>
+    <div class="row-actions">
+      <button class="btn ghost" id="modal-cancel">Cancel</button>
+      <button class="btn primary" id="modal-ok">Confirm</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+[2026-11-23 03:01:42] status RUNNING {'solves': 0}
+[2026-11-23 03:01:42] ionopt agent-run --run-id run-4-cfg1-nomesh --budget 400 --rounds 50 --no-improvement-rounds 12 --improvement-tol 0.002 --require-removed screen_mesh --overrides config/cfg1_only.yaml --set backend.backend=comsol --set spec.requirements.eta_min=0.6 --set optimizer.min_extraction_V=120 --set optimizer.max_extraction_V=300 --goal Run 4, chamber setup 1 (tube alone) WITHOUT the screen mesh:...
+[2026-11-23 06:59:38] exit 0
+[2026-11-23 06:59:38] status DONE {'solves': 400, 'summary': ['run run-4-cfg1-nomesh: stop budget; 11 rounds, 400/400 solves; best 0.121 deg (job 5467567cbd374b2e8f071093113c305a, round 2)', 'trace: ionopt trace run-4-cfg1-nomesh']}

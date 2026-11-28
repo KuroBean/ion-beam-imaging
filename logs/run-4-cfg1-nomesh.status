@@ -1,0 +1,10 @@
+{
+ "state": "DONE",
+ "time": "2026-11-23 06:59:38",
+ "run_id": "run-4-cfg1-nomesh",
+ "solves": 400,
+ "summary": [
+  "run run-4-cfg1-nomesh: stop budget; 11 rounds, 400/400 solves; best 0.121 deg (job 5467567cbd374b2e8f071093113c305a, round 2)",
+  "trace: ionopt trace run-4-cfg1-nomesh"
+ ]
+}
